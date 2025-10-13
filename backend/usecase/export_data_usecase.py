@@ -120,6 +120,9 @@ class ExportDataUsecase:
             if field.name != 'imageIdUrl'
         }
 
+        if 'sprintDay' in column_mapping:
+            column_mapping['sprintDay'] = 'Join Sprint Day'
+
         processed_records = []
         for item in data:
             record = item.dict()
@@ -291,6 +294,12 @@ class ExportDataUsecase:
         successful_downloads = 0
         failed_downloads = 0
 
+        cell_width_px = int(worksheet.column_dimensions[image_column_letter].width / self.__EXCEL_COLUMN_WIDTH_FACTOR)
+        max_image_height_px = 200
+
+        successful_downloads = 0
+        failed_downloads = 0
+
         for idx, result in enumerate(results):
             row_idx = idx + 2
 
@@ -306,9 +315,55 @@ class ExportDataUsecase:
             if isinstance(result, Image):
                 try:
                     img = result
-                    worksheet.row_dimensions[row_idx].height = img.height * self.__EXCEL_ROW_HEIGHT_FACTOR
-                    worksheet.add_image(img, f'{image_column_letter}{row_idx}')
+
+                    if img.height > max_image_height_px:
+                        scale_factor = max_image_height_px / img.height
+                        img.height = max_image_height_px
+                        img.width = int(img.width * scale_factor)
+
+                    if img.width > cell_width_px:
+                        scale_factor = (cell_width_px * 0.9) / img.width  # 90% of cell width for padding
+                        img.width = int(cell_width_px * 0.9)
+                        img.height = int(img.height * scale_factor)
+
+                    row_height_points = (img.height * self.__EXCEL_ROW_HEIGHT_FACTOR) + 5
+                    worksheet.row_dimensions[row_idx].height = row_height_points
+
+                    try:
+                        from openpyxl.drawing.spreadsheet_drawing import (
+                            AnchorMarker,
+                            TwoCellAnchor,
+                        )
+
+                        padding_x = 19050
+                        padding_y = 19050
+
+                        start_marker = AnchorMarker(
+                            col=image_column_idx - 1, row=row_idx - 1, colOff=padding_x, rowOff=padding_y
+                        )
+
+                        end_marker = AnchorMarker(
+                            col=image_column_idx - 1,
+                            row=row_idx - 1,
+                            colOff=int((img.width * 9525) + padding_x),
+                            rowOff=int((img.height * 9525) + padding_y),
+                        )
+
+                        img.anchor = TwoCellAnchor(editAs='oneCell', _from=start_marker, to=end_marker)
+                        logger.debug(f'Using advanced cell anchoring for row {row_idx}')
+
+                    except (ImportError, AttributeError, Exception) as anchor_error:
+                        logger.debug(f'Using simple anchoring for row {row_idx}: {anchor_error}')
+                        pass
+
+                    if hasattr(img, 'anchor') and img.anchor and not isinstance(img.anchor, str):
+                        worksheet.add_image(img)
+                    else:
+                        worksheet.add_image(img, f'{image_column_letter}{row_idx}')
+
                     successful_downloads += 1
+                    logger.debug(f'Successfully embedded image in row {row_idx} ({img.width}x{img.height}px)')
+
                 except Exception as e:
                     logger.error(f'Error embedding image in row {row_idx}: {e}')
                     worksheet.cell(row=row_idx, column=image_column_idx, value='Error: Failed to embed')
