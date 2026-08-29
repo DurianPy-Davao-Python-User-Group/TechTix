@@ -1,8 +1,9 @@
-service: sparcs-events-api
+service: ${self:custom.organization}-events-api
 frameworkVersion: "^3.40.0"
 
 custom:
-  projectName: sparcs-events
+  organization: ${opt:organization, 'durianpy'}
+  projectName: ${self:custom.organization}-events
   serviceName: events
   stage: ${opt:stage, self:provider.stage}
   paymentQueue: ${self:custom.stage}-${self:custom.projectName}-payment-queue.fifo
@@ -27,7 +28,7 @@ custom:
       - boto3
       - botocore
     layer:
-      name: sparcs-events-${self:custom.stage}-python-requirements
+      name: ${self:custom.organization}-events-${self:custom.stage}-python-requirements
       compatibleRuntimes:
         - python3.11
     slim: true

@@ -48,4 +48,4 @@ paymentHandler:
         - "sqs:SendMessage"
         - "sqs:ReceiveMessage"
         - "sqs:DeleteMessage"
-      Resource: "arn:aws:sqs:${self:provider.region}:${aws:accountId}:${self:custom.stage}-sparcs-events-email-queue.fifo"
+      Resource: "arn:aws:sqs:${self:provider.region}:${aws:accountId}:${self:custom.stage}-${self:custom.organization}-events-email-queue.fifo"
