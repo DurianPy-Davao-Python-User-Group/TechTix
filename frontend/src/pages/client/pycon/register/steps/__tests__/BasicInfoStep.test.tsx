@@ -62,8 +62,7 @@ describe('BasicInfoStep Component', () => {
       createRoot(container!).render(<TestWrapper />);
     });
 
-    const getPlaceholder = (placeholder: string) =>
-      container?.querySelector(`input[placeholder="${placeholder}"]`);
+    const getPlaceholder = (placeholder: string) => container?.querySelector(`input[placeholder="${placeholder}"]`);
 
     expect(getPlaceholder('e.g. Maria')).not.toBeNull();
     expect(getPlaceholder('e.g. Santos')).not.toBeNull();
