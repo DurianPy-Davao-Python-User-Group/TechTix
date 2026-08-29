@@ -1,4 +1,4 @@
-# SPARCS Events API
+# DurianPy Events API
 
 A serverless REST API implemented with Clean Architecture and Domain Driven Design.
 
@@ -50,6 +50,8 @@ backend/
 │   └── ...                     # Templates, schemas, and static assets
 │
 ├── scripts/                    # Utility scripts
+│   ├── deploy/
+│   │   └── deploy-service.sh  # Service deployment script
 │   └── generate-env.py        # Environment configuration generator
 │
 ├── usecase/                    # Application Layer - Business logic
@@ -126,7 +128,8 @@ Following Clean Architecture, the dependencies flow inward:
    ```
    
    Where `<stage>` can be: `dev` (default) | `local` | `prod` | `test`
-   
+   Optional: `--organization`, `-o` (default: `durianpy`)
+
    Example:
    ```shell
    python scripts/generate-env.py --stage local
@@ -198,9 +201,28 @@ Following Clean Architecture, the dependencies flow inward:
    .venv\Scripts\activate
    ```
 3. **Deploy:**
+   Run the deployment script:
    ```shell
-   AWS_SDK_LOAD_CONFIG=1 npx sls deploy --stage dev --aws-profile <profile-name> --verbose
+   ./scripts/deploy/deploy-service.sh [options]
    ```
+
+   **Options:**
+   - `--stage`, `-s`: Deployment stage (default: `staging`). e.g., `dev` | `staging` | `prod`
+   - `--aws-profile`, `--profile`, `-p`: AWS profile to use (default: `durianpy-nonprod`)
+
+   **Examples:**
+   ```shell
+   # Deploy using default stage (staging) and default profile (durianpy-nonprod)
+   ./scripts/deploy/deploy-service.sh
+
+   # Deploy to dev with a custom profile
+   ./scripts/deploy/deploy-service.sh --stage dev --aws-profile <profile-name>
+
+   # Deploy to prod with production profile
+   ./scripts/deploy/deploy-service.sh --stage prod --aws-profile durianpy-prod
+   ```
+
+   *Note:* Defaults can also be specified via the `STAGE` and `AWS_PROFILE` environment variables. The script automatically exports requirements via `uv export` and deploys using Serverless Framework v3.
 
 ## Docstrings
 1. There are many Python docstring formats, but reStructuredText (reST) is recommended by the PEP 287.
