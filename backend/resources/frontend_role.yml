@@ -33,10 +33,10 @@ Resources:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/techtix/cognito-signin-redirect-${sls:stage}"
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/techtix/cognito-signin-redirect-local"
 
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${sls:stage}-sparcs-events*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${sls:stage}-${self:custom.organization}-events*"
 
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/sparcs-events-email-queue-url-${sls:stage}"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/sparcs-events-certificate-queue-url-${sls:stage}"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.organization}-events-email-queue-url-${sls:stage}"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.organization}-events-certificate-queue-url-${sls:stage}"
 
 Outputs:
   FrontendRoleArn:

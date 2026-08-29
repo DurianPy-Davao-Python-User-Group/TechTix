@@ -144,34 +144,34 @@ Resources:
   EntitiesParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /${self:custom.stage}-sparcs-events-entities
+      Name: /${self:custom.stage}-${self:custom.organization}-events-entities
       Type: String
       Value: ${self:custom.entities}
 
   RegistrationsParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /${self:custom.stage}-sparcs-events-registrations
+      Name: /${self:custom.stage}-${self:custom.organization}-events-registrations
       Type: String
       Value: ${self:custom.registrations}
 
   PreRegistrationsParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /${self:custom.stage}-sparcs-events-preregistrations
+      Name: /${self:custom.stage}-${self:custom.organization}-events-preregistrations
       Type: String
       Value: ${self:custom.preregistrations}
 
   EvaluationsParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /${self:custom.stage}-sparcs-events-evaluations
+      Name: /${self:custom.stage}-${self:custom.organization}-events-evaluations
       Type: String
       Value: ${self:custom.evaluations}
 
   EventsParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /${self:custom.stage}-sparcs-events-events
+      Name: /${self:custom.stage}-${self:custom.organization}-events-events
       Type: String
       Value: ${self:custom.events}

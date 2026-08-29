@@ -21,6 +21,6 @@ Resources:
   BucketNameParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: /${self:custom.stage}-sparcs-events-file-bucket
+      Name: /${self:custom.stage}-${self:custom.organization}-events-file-bucket
       Type: String
       Value: ${self:custom.bucket}

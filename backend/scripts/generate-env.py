@@ -18,9 +18,15 @@ class ConfigAssembler:
     Assembles the TechTix (Backend) config file
     """
 
-    def __init__(self, aws_region='ap-southeast-1', environment=Environments.DEV.value):
+    def __init__(
+        self,
+        aws_region='ap-southeast-1',
+        environment=Environments.DEV.value,
+        organization=None,
+    ):
         self.__input_environment = environment
-        self.__project_name = 'sparcs-events'
+        self.__organization = organization or os.environ.get('ORGANIZATION') or 'durianpy'
+        self.__project_name = f'{self.__organization}-events'
 
         # Determine the deployment stage, defaulting to 'dev' for None or 'local' environments
         if not self.__input_environment or self.__input_environment == Environments.LOCAL.value:
@@ -89,17 +95,18 @@ class ConfigAssembler:
         :return: None
         """
         
-        region = 'ap-southeast-1'
+        region = self.__region
         stage = self.__stage
-        events_table = f"{stage}-sparcs-events"
+        organization = self.__organization
+        events_table = f"{stage}-{organization}-events"
 
-        entities_table = self.__get_parameter(f"/{stage}-sparcs-events-entities")
-        registrations_table = self.__get_parameter(f"/{stage}-sparcs-events-registrations")
-        preregistrations_table = self.__get_parameter(f"/{stage}-sparcs-events-preregistrations")
-        evaluations_table = self.__get_parameter(f"/{stage}-sparcs-events-evaluations")
-        email_queue = self.__get_parameter(f"/sparcs-events-email-queue-url-{stage}")
-        certificate_queue = self.__get_parameter(f"/sparcs-events-certificate-queue-url-{stage}")
-        s3_bucket = self.__get_parameter(f"/{stage}-sparcs-events-file-bucket")
+        entities_table = self.__get_parameter(f"/{stage}-{organization}-events-entities")
+        registrations_table = self.__get_parameter(f"/{stage}-{organization}-events-registrations")
+        preregistrations_table = self.__get_parameter(f"/{stage}-{organization}-events-preregistrations")
+        evaluations_table = self.__get_parameter(f"/{stage}-{organization}-events-evaluations")
+        email_queue = self.__get_parameter(f"/{organization}-events-email-queue-url-{stage}")
+        certificate_queue = self.__get_parameter(f"/{organization}-events-certificate-queue-url-{stage}")
+        s3_bucket = self.__get_parameter(f"/{stage}-{organization}-events-file-bucket")
         
         userpool_id = self.__get_parameter(f"/techtix/cognito-user-pool-id-{stage}")
         userpool_client_id = self.__get_parameter(f"/techtix/cognito-user-pool-client-id-{stage}")
@@ -136,15 +143,21 @@ class ConfigAssembler:
 
 
 if __name__ == '__main__':
-    print(Environments)
     parser = argparse.ArgumentParser(description='TechTix (Backend) Configuration Assembler')
     parser.add_argument('-r', '--region', help='AWS Region (default: ap-southeast-1)')
     parser.add_argument('-s', '--stage', help='Environment Name (default: dev)')
+    parser.add_argument(
+        '-o',
+        '--organization',
+        default=os.environ.get('ORGANIZATION', 'durianpy'),
+        help='Organization name (default: durianpy)',
+    )
     args = parser.parse_args()
 
     print('Arguments:', args)
     region = args.region
     input_stage = args.stage
+    organization = args.organization
 
-    config_assembler = ConfigAssembler(region, input_stage)
+    config_assembler = ConfigAssembler(region, input_stage, organization)
     config_assembler.construct_config_file()

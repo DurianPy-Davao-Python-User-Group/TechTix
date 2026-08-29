@@ -1,4 +1,4 @@
-# SPARCS Events Platform
+# DurianPy Events Platform
 
 ## Tech Stack
 - Serverless Framework
