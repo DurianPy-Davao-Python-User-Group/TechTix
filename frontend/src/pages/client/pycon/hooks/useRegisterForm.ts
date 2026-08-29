@@ -55,19 +55,23 @@ const RegisterFormSchema = z.object({
   jobTitle: z.string().min(1, {
     message: 'Please select your title'
   }),
-  facebookLink: z.url().pipe(
-    z.string().refine(refineUrl, {
-      message: 'Please enter a valid URL starting with https:// (e.g., https://facebook.com/yourprofile)'
-    })
-  ),
-  linkedInLink: z
-    .url()
-    .pipe(
-      z.string().refine(refineUrl, {
-        message: 'Please enter a valid URL starting with https:// (e.g., https://linkedin.com/in/yourprofile)'
-      })
-    )
+  facebookLink: z
+    .string()
+    .optional()
     .or(z.literal('')),
+  linkedInLink: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine(
+      (val) => {
+        if (!val || val === '') return true;
+        return refineUrl(val);
+      },
+      {
+        message: 'Please enter a valid URL starting with https:// (e.g., https://linkedin.com/in/yourprofile)'
+      }
+    ),
   ticketType: z.string().min(1, {
     error: 'Please select a ticket'
   }),
@@ -98,15 +102,13 @@ const RegisterFormSchema = z.object({
   agreeToCodeOfConduct: z.literal(true, { error: 'Please agree to our code of conduct to proceed' })
 });
 
-const validKeys: readonly string[] = Object.keys(RegisterFormSchema.shape);
-
 export type RegisterFormValues = z.infer<typeof RegisterFormSchema>;
 export type RegisterField = keyof RegisterFormValues;
 type RegisterFieldMap = Record<RegisterStepId, RegisterField[]>;
 
 export const REGISTER_FIELDS: RegisterFieldMap = {
   EventDetails: [],
-  BasicInfo: ['firstName', 'lastName', 'nickname', 'email', 'contactNumber', 'pronouns', 'organization', 'jobTitle', 'facebookLink', 'linkedInLink'],
+  BasicInfo: ['firstName', 'lastName', 'nickname', 'pronouns', 'contactNumber', 'organization', 'jobTitle', 'linkedInLink'],
   TicketSelection: ['ticketType', 'sprintDay', 'shirtSize', 'shirtType'],
   Miscellaneous: ['communityInvolvement', 'futureVolunteer', 'dietaryRestrictions', 'accessibilityNeeds'],
   'Payment&Verification': ['paymentMethod', 'paymentChannel', 'discountCode', 'discountedPrice', 'transactionFee', 'total', 'validIdObjectKey'],

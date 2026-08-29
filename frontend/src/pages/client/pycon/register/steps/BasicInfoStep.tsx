@@ -1,134 +1,154 @@
-import { useFormContext, useWatch } from 'react-hook-form';
-import { FormItem, FormLabel, FormError, FormDescription } from '@/components/Form';
+import { Linkedin } from 'lucide-react';
+import { FormError, FormItem, FormLabel } from '@/components/Form';
 import Input from '@/components/Input';
-import { RegisterFormValues } from '../../hooks/useRegisterForm';
 
 const BasicInfoStep = () => {
-  const { control } = useFormContext<RegisterFormValues>();
-  const [email] = useWatch({ control, name: ['email'] });
-
   return (
-    <>
-      <div className="flex flex-col md:flex-row w-full gap-4">
-        <FormItem name="firstName">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">First Name *</FormLabel>
-              <Input pyconStyles type="text" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem name="lastName">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">Last Name *</FormLabel>
-              <Input pyconStyles type="text" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
+    <div className="flex flex-col gap-8 w-full max-w-4xl text-pycon-dark-blue">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <p className="font-inter font-extrabold text-xs md:text-sm uppercase tracking-[0.14em] text-pycon-teal/60">
+          Registration
+        </p>
+        <h2 className="text-3xl md:text-4xl font-inter font-extrabold text-pycon-orange">
+          Basic Information
+        </h2>
+        <p className="text-pycon-dark-blue/40 text-base md:text-lg font-inter font-normal">
+          Tell us a bit about yourself. Fields marked <span className="text-pycon-orange font-semibold">*</span> are required.
+        </p>
       </div>
 
-      <div className="flex flex-col md:flex-row w-full gap-4">
-        <FormItem name="nickname">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">Nickname *</FormLabel>
-              <Input pyconStyles type="text" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem name="pronouns">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">Pronouns *</FormLabel>
-              <Input pyconStyles type="text" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-      </div>
-
-      <div className="flex flex-col md:flex-row w-full gap-4">
-        <FormItem name="organization">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">Affiliation/Organization/Company *</FormLabel>
-              <Input pyconStyles type="text" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem name="jobTitle">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">Title *</FormLabel>
-              <Input pyconStyles type="text" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-      </div>
-
-      <div className="flex flex-col md:flex-row w-full gap-4">
-        {!email && (
-          <FormItem name="email">
+      {/* Name Section */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">
+          Name
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
+          <FormItem name="firstName">
             {({ field }) => (
-              <div className="flex flex-col gap-1 grow md:basis-1/2">
-                <FormLabel className="font-nunito">Email *</FormLabel>
-                <Input pyconStyles type="email" {...field} />
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  First Name *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="e.g. Maria" {...field} />
                 <FormError />
               </div>
             )}
           </FormItem>
-        )}
 
-        <FormItem name="contactNumber">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 md:basis-1/2">
-              <FormLabel className="font-nunito">Phone number *</FormLabel>
-              <Input pyconStyles type="text" placeholder="09XX XXX XXXX" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
+          <FormItem name="lastName">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  Last Name *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="e.g. Santos" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+
+          <FormItem name="nickname">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  Nickname *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="What should we call you?" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row w-full gap-4">
-        <FormItem name="facebookLink">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito">Facebook Link *</FormLabel>
-              <FormDescription className="font-nunito text-pycon-custard-light">
-                Links should start with https:// (e.g., https://facebook.com/yourprofile)
-              </FormDescription>
-              <Input pyconStyles type="text" placeholder="https://facebook.com/yourprofile" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem name="linkedInLink">
-          {({ field }) => (
-            <div className="flex flex-col gap-1 grow md:basis-1/2">
-              <FormLabel className="font-nunito" optional optionalClass="text-pycon-custard-light">
-                LinkedIn Link
-              </FormLabel>
-              <FormDescription className="font-nunito text-pycon-custard-light">
-                Links should start with https:// (e.g., https://linkedin.com/in/yourprofile)
-              </FormDescription>
-              <Input pyconStyles type="text" placeholder="https://linkedin.com/in/yourprofile" {...field} />
-              <FormError />
-            </div>
-          )}
-        </FormItem>
+      {/* Identity Section */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">
+          Identity
+        </h3>
+        <div className="w-full">
+          <FormItem name="pronouns">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  Pronouns *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="e.g. she/her, they/them" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+        </div>
       </div>
-    </>
+
+      {/* Contact Section */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">
+          Contact
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
+          <FormItem name="contactNumber">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  Contact Number *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="+63 912 345 6789" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+
+          <FormItem name="organization">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  Affiliation / Organization *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="Where do you work or study?" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+
+          <div className="md:col-span-2 w-full">
+            <FormItem name="jobTitle">
+              {({ field }) => (
+                <div className="flex flex-col gap-2 w-full">
+                  <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                    Role in Tech *
+                  </FormLabel>
+                  <Input pyconStyles type="text" placeholder="e.g. Software Engineer, Designer, Student" {...field} />
+                  <FormError />
+                </div>
+              )}
+            </FormItem>
+          </div>
+        </div>
+      </div>
+
+      {/* Socials Section */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">
+          Socials <span className="font-normal normal-case text-pycon-dark-blue/20 text-xs md:text-sm tracking-normal">(optional)</span>
+        </h3>
+        <div className="w-full">
+          <FormItem name="linkedInLink">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  <Linkedin className="w-5 h-5 text-pycon-orange opacity-70" />
+                  LinkedIn
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="linkedin.com/in/username" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+        </div>
+      </div>
+    </div>
   );
 };
 
