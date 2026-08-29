@@ -17,10 +17,3 @@ Resources:
         IgnorePublicAcls: false
         BlockPublicPolicy: false
         RestrictPublicBuckets: false
-
-  BucketNameParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /${self:custom.stage}-${self:custom.organization}-events-file-bucket
-      Type: String
-      Value: ${self:custom.bucket}
