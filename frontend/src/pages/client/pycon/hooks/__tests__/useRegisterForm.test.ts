@@ -3,16 +3,7 @@ import { REGISTER_FIELDS } from '../useRegisterForm';
 
 describe('REGISTER_FIELDS mapping', () => {
   it('contains the correct active fields for BasicInfo step', () => {
-    expect(REGISTER_FIELDS.BasicInfo).toEqual([
-      'firstName',
-      'lastName',
-      'nickname',
-      'pronouns',
-      'contactNumber',
-      'organization',
-      'jobTitle',
-      'linkedInLink'
-    ]);
+    expect(REGISTER_FIELDS.BasicInfo).toEqual(['firstName', 'lastName', 'nickname', 'pronouns', 'contactNumber', 'organization', 'jobTitle', 'linkedInLink']);
   });
 
   it('excludes email, facebookLink, and unused socials from BasicInfo step', () => {
