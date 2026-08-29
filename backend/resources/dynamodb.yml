@@ -140,38 +140,3 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-
-  EntitiesParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /${self:custom.stage}-${self:custom.organization}-events-entities
-      Type: String
-      Value: ${self:custom.entities}
-
-  RegistrationsParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /${self:custom.stage}-${self:custom.organization}-events-registrations
-      Type: String
-      Value: ${self:custom.registrations}
-
-  PreRegistrationsParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /${self:custom.stage}-${self:custom.organization}-events-preregistrations
-      Type: String
-      Value: ${self:custom.preregistrations}
-
-  EvaluationsParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /${self:custom.stage}-${self:custom.organization}-events-evaluations
-      Type: String
-      Value: ${self:custom.evaluations}
-
-  EventsParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: /${self:custom.stage}-${self:custom.organization}-events-events
-      Type: String
-      Value: ${self:custom.events}

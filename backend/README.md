@@ -208,6 +208,7 @@ Following Clean Architecture, the dependencies flow inward:
 
    **Options:**
    - `--stage`, `-s`: Deployment stage (default: `staging`). e.g., `dev` | `staging` | `prod`
+   - `--organization`, `-o`: Organization name (default: `durianpy`)
    - `--aws-profile`, `--profile`, `-p`: AWS profile to use (default: `durianpy-nonprod`)
 
    **Examples:**
@@ -220,9 +221,12 @@ Following Clean Architecture, the dependencies flow inward:
 
    # Deploy to prod with production profile
    ./scripts/deploy/deploy-service.sh --stage prod --aws-profile durianpy-prod
+
+   # Deploy with custom organization
+   ./scripts/deploy/deploy-service.sh --organization durianpy --stage dev --aws-profile <profile-name>
    ```
 
-   *Note:* Defaults can also be specified via the `STAGE` and `AWS_PROFILE` environment variables. The script automatically exports requirements via `uv export` and deploys using Serverless Framework v3.
+   *Note:* Defaults can also be specified via the `STAGE`, `ORGANIZATION`, and `AWS_PROFILE` environment variables. The script automatically exports requirements via `uv export` and deploys using Serverless Framework v3.
 
 ## Docstrings
 1. There are many Python docstring formats, but reStructuredText (reST) is recommended by the PEP 287.
