@@ -76,7 +76,7 @@ export const mapCreateRegistrationDataForPayment = (registration: RegisterFormVa
   contactNumber: registration.contactNumber,
   organization: registration.organization,
   jobTitle: registration.jobTitle,
-  facebookLink: registration.facebookLink,
+  facebookLink: registration.facebookLink || '',
   linkedInLink: registration.linkedInLink || null,
   ticketType: registration.ticketType,
   sprintDay: registration.sprintDay,
