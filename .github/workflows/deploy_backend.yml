@@ -53,7 +53,7 @@ jobs:
         working-directory: backend
 
       - name: Deploy with Serverless v3
-        run: sls deploy --stage dev --verbose
+        run: sls deploy --stage dev --verbose --param="organization=durianpy"
         working-directory: backend
 
   deploy-prod:
@@ -99,5 +99,5 @@ jobs:
         working-directory: backend
 
       - name: Deploy with Serverless v3
-        run: sls deploy --stage prod --verbose
+        run: sls deploy --stage prod --verbose --param="organization=durianpy"
         working-directory: backend
