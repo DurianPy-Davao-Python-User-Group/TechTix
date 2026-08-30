@@ -57,8 +57,12 @@ const RegisterFormSchema = z.object({
   }),
   facebookLink: z
     .string()
-    .optional()
-    .or(z.literal('')),
+    .min(1, {
+      message: 'Please enter your Facebook profile link'
+    })
+    .refine(refineUrl, {
+      message: 'Please enter a valid URL starting with https:// (e.g., https://facebook.com/yourprofile)'
+    }),
   linkedInLink: z
     .string()
     .optional()
@@ -108,7 +112,7 @@ type RegisterFieldMap = Record<RegisterStepId, RegisterField[]>;
 
 export const REGISTER_FIELDS: RegisterFieldMap = {
   EventDetails: [],
-  BasicInfo: ['firstName', 'lastName', 'nickname', 'pronouns', 'contactNumber', 'organization', 'jobTitle', 'linkedInLink'],
+  BasicInfo: ['firstName', 'lastName', 'nickname', 'pronouns', 'contactNumber', 'organization', 'jobTitle', 'facebookLink', 'linkedInLink'],
   TicketSelection: ['ticketType', 'sprintDay', 'shirtSize', 'shirtType'],
   Miscellaneous: ['communityInvolvement', 'futureVolunteer', 'dietaryRestrictions', 'accessibilityNeeds'],
   'Payment&Verification': ['paymentMethod', 'paymentChannel', 'discountCode', 'discountedPrice', 'transactionFee', 'total', 'validIdObjectKey'],
