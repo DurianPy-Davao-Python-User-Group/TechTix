@@ -17,6 +17,7 @@ const TestWrapper = () => {
       contactNumber: '',
       organization: '',
       jobTitle: '',
+      facebookLink: '',
       linkedInLink: ''
     }
   });
@@ -54,7 +55,9 @@ describe('BasicInfoStep Component', () => {
     expect(container?.textContent).toContain('Name');
     expect(container?.textContent).toContain('Identity');
     expect(container?.textContent).toContain('Contact');
-    expect(container?.textContent).toContain('Socials (optional)');
+    expect(container?.textContent).toContain('Socials');
+    expect(container?.textContent).toContain('Facebook *');
+    expect(container?.textContent).toContain('LinkedIn');
   });
 
   it('renders expected placeholders for inputs', async () => {
@@ -71,17 +74,17 @@ describe('BasicInfoStep Component', () => {
     expect(getPlaceholder('+63 912 345 6789')).not.toBeNull();
     expect(getPlaceholder('Where do you work or study?')).not.toBeNull();
     expect(getPlaceholder('e.g. Software Engineer, Designer, Student')).not.toBeNull();
-    expect(getPlaceholder('linkedin.com/in/username')).not.toBeNull();
+    expect(getPlaceholder('https://facebook.com/yourprofile')).not.toBeNull();
+    expect(getPlaceholder('https://linkedin.com/in/username')).not.toBeNull();
   });
 
-  it('does not render excluded fields like Middle Name, Email, GitHub, Facebook or Twitter', async () => {
+  it('does not render excluded fields like Middle Name, Email, GitHub, or Twitter', async () => {
     await act(async () => {
       createRoot(container!).render(<TestWrapper />);
     });
 
     expect(container?.textContent).not.toContain('Middle Name');
     expect(container?.textContent).not.toContain('Email *');
-    expect(container?.textContent).not.toContain('Facebook');
     expect(container?.textContent).not.toContain('GitHub');
     expect(container?.textContent).not.toContain('Twitter');
   });

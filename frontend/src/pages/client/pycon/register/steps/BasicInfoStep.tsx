@@ -1,3 +1,4 @@
+import iconFb from '@/assets/logos/icon-fb.svg';
 import iconLinkedin from '@/assets/logos/icon-linkedin.svg';
 import { FormError, FormItem, FormLabel } from '@/components/Form';
 import Input from '@/components/Input';
@@ -103,18 +104,29 @@ const BasicInfoStep = () => {
       </div>
 
       <div className="flex flex-col gap-4">
-        <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">
-          Socials <span className="font-normal normal-case text-pycon-dark-blue/20 text-xs md:text-sm tracking-normal">(optional)</span>
-        </h3>
-        <div className="w-full">
+        <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">Socials</h3>
+        <div className="flex flex-col gap-5 w-full">
+          <FormItem name="facebookLink">
+            {({ field }) => (
+              <div className="flex flex-col gap-2 w-full">
+                <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
+                  <img src={iconFb} alt="Facebook" className="w-5 h-5 object-contain" />
+                  Facebook *
+                </FormLabel>
+                <Input pyconStyles type="text" placeholder="https://facebook.com/yourprofile" {...field} />
+                <FormError />
+              </div>
+            )}
+          </FormItem>
+
           <FormItem name="linkedInLink">
             {({ field }) => (
               <div className="flex flex-col gap-2 w-full">
                 <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">
                   <img src={iconLinkedin} alt="LinkedIn" className="w-5 h-5 object-contain" />
-                  LinkedIn
+                  LinkedIn <span className="font-normal text-xs md:text-sm text-pycon-dark-blue/40 tracking-normal">(optional)</span>
                 </FormLabel>
-                <Input pyconStyles type="text" placeholder="linkedin.com/in/username" {...field} />
+                <Input pyconStyles type="text" placeholder="https://linkedin.com/in/username" {...field} />
                 <FormError />
               </div>
             )}
