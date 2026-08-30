@@ -25,7 +25,7 @@ interface FormItemContextProps {
     invalid: boolean;
     isDirty: boolean;
     isTouched: boolean;
-    error?: { message?: string } | undefined;
+    error?: FieldError | undefined;
   };
 }
 
