@@ -72,7 +72,13 @@ jobs:
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
           if [[ "$BRANCH" == "main" ]]; then
-            sls deploy --stage prod --conceal
+            echo "Deploying to production..."
+            if ! output=$(sls deploy --stage prod --conceal 2>&1); then
+              echo "Production deployment failed:"
+              echo "$output"
+              exit 1
+            fi
+            echo "Production deployment completed successfully."
           elif [[ "$BRANCH" == "stage" ]]; then
             sls deploy --stage staging --conceal
           fi
