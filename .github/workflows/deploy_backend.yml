@@ -4,6 +4,7 @@ on:
     workflows: ["Backend Formatting Check on Push"]
     types:
       - completed
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -71,8 +72,8 @@ jobs:
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
           if [[ "$BRANCH" == "main" ]]; then
-            sls deploy --stage prod --verbose
+            sls deploy --stage prod --conceal
           elif [[ "$BRANCH" == "stage" ]]; then
-            sls deploy --stage staging --verbose
+            sls deploy --stage staging --conceal
           fi
         working-directory: backend
