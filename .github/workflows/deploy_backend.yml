@@ -1,4 +1,4 @@
-name: Deploy SPARCS Events Service
+name: Deploy DurianPy Events Service
 on:
   workflow_run:
     workflows: ["Backend Formatting Check on Push"]
@@ -10,26 +10,41 @@ permissions:
   contents: read
 
 jobs:
-  deploy-dev:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+  deploy:
+    name: Deploy (${{ (github.event.workflow_run.head_branch == 'main' || github.ref_name == 'main') && 'prod' || 'staging' }})
+    if: >-
+      (github.event_name == 'workflow_run' && 
+       github.event.workflow_run.conclusion == 'success' && 
+       (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'stage')) ||
+      (github.event_name == 'workflow_dispatch' && 
+       (github.ref_name == 'main' || github.ref_name == 'stage'))
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ${{ (github.event.workflow_run.head_branch == 'main' || github.ref_name == 'main') && 'prod' || 'staging' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Configure AWS Credentials for Dev
+      - name: Set ARN for Role to Assume
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$BRANCH" == "main" ]]; then
+            echo "AWS_OIDC_ROLE_ARN=${{ secrets.AWS_OIDC_ROLE_ARN_PROD }}" >> $GITHUB_ENV
+          elif [[ "$BRANCH" == "stage" ]]; then
+            echo "AWS_OIDC_ROLE_ARN=${{ secrets.AWS_OIDC_ROLE_ARN_STAGE }}" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           audience: sts.amazonaws.com
           aws-region: ap-southeast-1
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN_STAGE }}
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
           role-session-name: GithubActionSession
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "backend/.python-version"
@@ -53,51 +68,11 @@ jobs:
         working-directory: backend
 
       - name: Deploy with Serverless v3
-        run: sls deploy --stage dev --verbose --param="organization=durianpy"
-        working-directory: backend
-
-  deploy-prod:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'release/') }}
-    runs-on: ubuntu-latest
-    environment: prod
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-
-      - name: Configure AWS Credentials for Prod
-        uses: aws-actions/configure-aws-credentials@v4.1.0
-        with:
-          audience: sts.amazonaws.com
-          aws-region: ap-southeast-1
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN_PROD }}
-          role-session-name: GithubActionSession
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "backend/.python-version"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-
-      - name: Install dependencies
         run: |
-          uv sync --locked --all-extras --dev
-        working-directory: backend
-
-      - name: Install Serverless Framework
-        run: |
-          npm install
-          npm install -g serverless@3.40.0
-        working-directory: backend
-
-      - name: Create requirements.txt
-        run: uv export --format requirements-txt --no-hashes --output-file requirements.txt --no-dev
-        working-directory: backend
-
-      - name: Deploy with Serverless v3
-        run: sls deploy --stage prod --verbose --param="organization=durianpy"
+          BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$BRANCH" == "main" ]]; then
+            sls deploy --stage prod --verbose
+          elif [[ "$BRANCH" == "stage" ]]; then
+            sls deploy --stage staging --verbose
+          fi
         working-directory: backend
