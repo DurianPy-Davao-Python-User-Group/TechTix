@@ -6,6 +6,9 @@ custom:
   projectName: ${self:custom.organization}-events
   serviceName: events
   stage: ${opt:stage, self:provider.stage}
+  pitr:
+    prod: true
+  pitrEnabled: ${self:custom.pitr.${self:custom.stage}, false}
   paymentQueue: ${self:custom.stage}-${self:custom.projectName}-payment-queue.fifo
   entities: ${self:custom.stage}-${self:custom.projectName}-entities
   events: ${self:custom.stage}-${self:custom.projectName}
