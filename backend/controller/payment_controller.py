@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Path, Query
+from aws.cognito_settings import AccessUser, is_admin_user
+from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from model.common import Message
 from model.payments.payments import PaymentTransactionIn, PaymentTransactionOut
@@ -48,10 +49,13 @@ def create_payment_transaction(
     },
     summary='Get pending payment transactions',
 )
-def get_pending_payment_transactions():
+def get_pending_payment_transactions(
+    current_user: AccessUser = Depends(is_admin_user),
+):
     """
     Get Payment Transaction with pending Status
     """
+    _ = current_user
     payment_uc = PaymentUsecase()
     return payment_uc.query_pending_payment_transactions()
 
@@ -70,10 +74,12 @@ def update_payment_transaction(
         ..., description='The ID of the payment transaction', alias='paymentTransactionId'
     ),
     payment_transaction: PaymentTransactionIn = Body(..., description='The payment transaction data'),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Update payment transaction
     """
+    _ = current_user
     payment_uc = PaymentUsecase()
     return payment_uc.update_payment_transaction(payment_transaction_id, payment_transaction)
 

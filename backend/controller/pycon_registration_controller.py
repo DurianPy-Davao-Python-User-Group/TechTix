@@ -1,9 +1,9 @@
 from http import HTTPStatus
 from typing import List, Optional
 
-from aws.cognito_settings import AccessUser, get_current_user
+from aws.cognito_settings import AccessUser, get_current_user, is_admin_user
 from constants.common_constants import CommonConstants
-from fastapi import APIRouter, Body, Depends, Path, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from model.common import Message
 from model.pycon_registrations.pycon_registration import (
     PyconRegistrationIn,
@@ -155,10 +155,16 @@ def register_pycon(
 def get_registration_by_email(
     email: EmailStr = Path(..., title='Email'),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
+    current_user: AccessUser = Depends(get_current_user),
 ):
     """
     Get a specific registration by email address.
     """
+    if not current_user.can_access_email(email):
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='Unauthorized to access this registration',
+        )
     registrations_uc = PyconRegistrationUsecase()
     return registrations_uc.get_pycon_registration_by_email(event_id=event_id, email=email)
 
@@ -182,7 +188,7 @@ def get_registration_by_email(
 def get_registrations(
     event_id: str = Query(None, title='Event Id', alias=CommonConstants.EVENT_ID),
     is_deleted: Optional[bool] = Query(None, title='Include deleted entries', alias='isDeleted'),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Get a list of registration entries.
@@ -211,7 +217,7 @@ def get_registrations(
 def get_registration(
     entry_id: str = Path(..., title='Registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Get a specific registration entry by its ID.
@@ -242,7 +248,7 @@ def update_registration(
     registration: PyconRegistrationPatch,
     entry_id: str = Path(..., title='Registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Update an existing registration entry.
@@ -270,7 +276,7 @@ def update_registration(
 def delete_registration(
     entry_id: str = Path(..., title='Registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Delete a specific registration entry by its ID.
