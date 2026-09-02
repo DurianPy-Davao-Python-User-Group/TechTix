@@ -1,7 +1,8 @@
 from typing import List, Union
 
+from aws.cognito_settings import AccessUser, is_admin_user
 from constants.common_constants import CommonConstants
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 from model.common import Message
 from model.evaluations.evaluation import (
     EvaluationListIn,
@@ -37,6 +38,7 @@ evaluation_router = APIRouter()
 def get_evaluations(
     event_id: str = Query(None, title='Event Id', alias=CommonConstants.EVENT_ID),
     registration_id: str = Query(None, title='Registration Id'),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Get Evaluation Entries
 
@@ -46,10 +48,14 @@ def get_evaluations(
     :param registration_id: The registration ID.
     :type registration_id: str
 
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
+    :type current_user: AccessUser, optional
+
     :return: List of EvaluationListOut objects.
     :rtype: List[EvaluationListOut]
 
     """
+    _ = current_user
     evaluations_uc = EvaluationUsecase()
     return evaluations_uc.get_evaluations(event_id, registration_id)
 
@@ -73,6 +79,7 @@ def get_evaluations(
 def get_evaluations_by_question(
     event_id: str = Path(..., title='Event Id', alias=CommonConstants.EVENT_ID),
     question: Union[EvaluationQuestionType, PyconEvaluationQuestionType] = Path(..., title='Question'),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Get Evaluation Entries by Question
 
@@ -82,10 +89,14 @@ def get_evaluations_by_question(
     :param question: The question.
     :type question: EvaluationQuestionType
 
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
+    :type current_user: AccessUser, optional
+
     :return: List of EvaluationOut objects.
     :rtype: List[EvaluationOut]
 
     """
+    _ = current_user
     evaluations_uc = EvaluationUsecase()
     return evaluations_uc.get_evaluations_by_question(event_id, question)
 
@@ -184,6 +195,7 @@ def update_evaluation(
     event_id: str = Path(..., title='Event Id', alias=CommonConstants.EVENT_ID),
     registration_id: str = Query(..., title='Registration Id'),
     question: Union[EvaluationQuestionType, PyconEvaluationQuestionType] = Query(..., title='Question'),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Update Evaluation Entry
 
@@ -199,9 +211,13 @@ def update_evaluation(
     :param question: The question.
     :type question: EvaluationQuestionType
 
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
+    :type current_user: AccessUser, optional
+
     :return: EvaluationOut object.
     :rtype: EvaluationOut
 
     """
+    _ = current_user
     evaluations_uc = EvaluationUsecase()
     return evaluations_uc.update_evaluation(event_id, registration_id, question, evaluation)

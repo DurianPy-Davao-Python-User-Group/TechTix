@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import List
 
-from aws.cognito_settings import AccessUser, get_current_user
+from aws.cognito_settings import AccessUser, get_current_user, is_admin_user
 from constants.common_constants import CommonConstants
 from fastapi import APIRouter, Depends, Path, Query
 from model.common import Message
@@ -65,14 +65,14 @@ def get_events(
 )
 def get_admin_events(
     admin_id: str = Query(None, title='Admin Id', alias=CommonConstants.ADMIN_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Get admin events.
 
     :param admin_id: The admin ID. Defaults to Query(None, title='Admin Id', alias=CommonConstants.ADMIN_ID).
     :type admin_id: str, optional
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: List of EventOut, EventAdminOut objects.
@@ -134,7 +134,7 @@ def get_event(
 )
 def get_admin_event(
     entry_id: str = Path(..., title='Event Id', alias=CommonConstants.ENTRY_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Get event
 
@@ -168,14 +168,14 @@ def get_admin_event(
 )
 def create_event(
     event: EventIn,
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Create event
 
     :param event: EventIn object containing the new event data.
     :type event: EventIn
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: EventOut object.
@@ -207,7 +207,7 @@ def create_event(
 def update_event(
     event: EventIn,
     entry_id: str = Path(..., title='Event Id', alias=CommonConstants.ENTRY_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Update event
 
@@ -217,7 +217,7 @@ def update_event(
     :param entry_id: The event ID. Defaults to Path(..., title='Event Id', alias=CommonConstants.ENTRY_ID).
     :type entry_id: str, optional
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: EventOut object.
@@ -244,14 +244,14 @@ def update_event(
 )
 def delete_event(
     entry_id: str = Path(..., title='Event Id', alias=CommonConstants.ENTRY_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Delete event
 
     :param entry_id: The event ID. Defaults to Path(..., title='Event Id', alias=CommonConstants.ENTRY_ID).
     :type entry_id: str, optional
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: None
@@ -280,6 +280,7 @@ def get_presigned_url(
     upload_in: FileUploadIn,
     entry_id: str = Path(..., title='Event Id', alias=CommonConstants.ENTRY_ID),
     upload_type: EventUploadType = Path(..., title='Upload Type', alias=FileUploadConstants.UPLOAD_TYPE),
+    current_user: AccessUser = Depends(get_current_user),
 ):
     """Get presigned URL
 
@@ -292,10 +293,14 @@ def get_presigned_url(
     :param upload_type: The upload type. Defaults to Path(..., title='Upload Type', alias=FileUploadConstants.UPLOAD_TYPE).
     :type upload_type: EventUploadType, optional
 
+    :param current_user: The current authenticated user, defaults to Depends(get_current_user).
+    :type current_user: AccessUser, optional
+
     :return: FileUploadOut object.
     :rtype: FileUploadOut
 
     """
+    _ = current_user
     file_s3_uc = FileS3Usecase()
     return file_s3_uc.create_presigned_url(f'events/{entry_id}/{upload_type.value}/{upload_in.fileName}')
 

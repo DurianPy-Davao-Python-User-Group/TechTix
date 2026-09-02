@@ -20,6 +20,7 @@ export const claimCertificate = (eventId: string, email: string) =>
 export const getEvaluations = (eventId: string, registrationId?: string) => {
   return createApi<Evaluation[]>({
     method: 'get',
+    authorize: true,
     url: `/evaluations`,
     queryParams: { eventId, registrationId }
   });

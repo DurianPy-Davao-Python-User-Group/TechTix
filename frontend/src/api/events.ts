@@ -166,6 +166,7 @@ export const deleteEvent = (entryId: string) =>
 export const getPresignedUrl = (entryId: string, fileName: string, uploadType: UploadType, headers?: object) =>
   createApi<PresignedUrl>({
     method: 'put',
+    authorize: true,
     url: `/events/${entryId}/upload/${uploadType}`,
     headers,
     body: { fileName }
