@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import List
 
-from aws.cognito_settings import AccessUser, get_current_user
+from aws.cognito_settings import AccessUser, is_admin_user
 from constants.common_constants import CommonConstants
 from fastapi import APIRouter, Depends, Path, Query
 from model.common import Message
@@ -175,7 +175,7 @@ def update_preregistration(
     preregistration: PreRegistrationPatch,
     entry_id: str = Path(..., title='Pre-registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Update an existing pre-registration entry.
 
@@ -188,7 +188,7 @@ def update_preregistration(
     :param event_id: The event ID.
     :type event_id: str
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: PreRegistrationOut object.
@@ -220,7 +220,7 @@ def update_preregistration(
 def delete_preregistration(
     entry_id: str = Path(..., title='Pre-registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Delete a specific registration entry by its ID.
 
@@ -230,7 +230,7 @@ def delete_preregistration(
     :param event_id: The event ID.
     :type event_id: str
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: None

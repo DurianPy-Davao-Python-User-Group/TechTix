@@ -1,6 +1,6 @@
 from typing import List
 
-from aws.cognito_settings import AccessUser, get_current_user
+from aws.cognito_settings import AccessUser, is_admin_user
 from constants.common_constants import CommonConstants
 from fastapi import APIRouter, Depends, Path, Query
 from model.common import Message
@@ -28,14 +28,14 @@ discount_router = APIRouter()
 )
 def create_discounts(
     discount_in: DiscountIn,
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Create discounts.
 
     :param discount_in: DiscountIn object containing the new discount data.
     :type discount_in: DiscountIn
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: List of DiscountOut objects.
@@ -101,7 +101,7 @@ def get_discount(
 )
 def get_discounts(
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Get a list of discounts.
 

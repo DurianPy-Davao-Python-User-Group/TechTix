@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import List
 
-from aws.cognito_settings import AccessUser, get_current_user
+from aws.cognito_settings import AccessUser, is_admin_user
 from constants.common_constants import CommonConstants
 from fastapi import APIRouter, Depends, Path, Query
 from model.common import Message
@@ -148,7 +148,7 @@ def update_registration(
     registration: RegistrationPatch,
     entry_id: str = Path(..., title='Registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Update an existing registration entry.
@@ -176,7 +176,7 @@ def update_registration(
 def delete_registration(
     entry_id: str = Path(..., title='Registration Id', alias=CommonConstants.ENTRY_ID),
     event_id: str = Query(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Delete a specific registration entry by its ID.

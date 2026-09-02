@@ -1,4 +1,4 @@
-from aws.cognito_settings import AccessUser, get_current_user
+from aws.cognito_settings import AccessUser, is_admin_user
 from constants.common_constants import CommonConstants
 from fastapi import APIRouter, Depends, Path
 from model.common import Message
@@ -60,7 +60,7 @@ def get_faqs(
 def update_faqs(
     faqs: FAQsIn,
     event_id: str = Path(..., title='Event Id', alias=CommonConstants.EVENT_ID),
-    current_user: AccessUser = Depends(get_current_user),
+    current_user: AccessUser = Depends(is_admin_user),
 ):
     """Update FAQs
 
@@ -70,7 +70,7 @@ def update_faqs(
     :param event_id: The event ID. Defaults to Path(..., title='Event Id', alias=CommonConstants.EVENT_ID).
     :type event_id: str, optional
 
-    :param current_user: The current user, defaults to Depends(get_current_user).
+    :param current_user: The current admin user, defaults to Depends(is_admin_user).
     :type current_user: AccessUser, optional
 
     :return: FAQsOut object.
