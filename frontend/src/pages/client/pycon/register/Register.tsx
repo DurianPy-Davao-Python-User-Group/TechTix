@@ -97,19 +97,9 @@ const Register: FC = () => {
         <FormProvider {...form}>
           {currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && (
             <div className="space-y-2.5 text-left w-full mb-2">
-              {currentStep.category && (
-                <p className="text-m font-bold tracking-widest text-[#04b1a4] uppercase font-inter">
-                  {currentStep.category}
-                </p>
-              )}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#F99508]! font-sora tracking-tight leading-tight">
-                {currentStep.title}
-              </h1>
-              {currentStep.description && (
-                <p className="text-sm sm:text-base text-neutral-400 font-inter">
-                  {currentStep.description}
-                </p>
-              )}
+              {currentStep.category && <p className="text-m font-bold tracking-widest text-[#04b1a4] uppercase font-inter">{currentStep.category}</p>}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#F99508]! font-sora tracking-tight leading-tight">{currentStep.title}</h1>
+              {currentStep.description && <p className="text-sm sm:text-base text-neutral-400 font-inter">{currentStep.description}</p>}
             </div>
           )}
 
