@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Check, ChevronLeft } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { cn } from '@/utils/classes';
 
 export interface Step {
@@ -15,20 +15,11 @@ interface StepperProps<T extends Step> {
   onStepClick?: (step: T) => void;
   orientation?: 'horizontal' | 'vertical';
   hideTitle?: boolean;
-  onBackToLanding?: () => void;
 }
 
 const STEP_CIRCLE_SIZE = '1.5rem';
 
-const Stepper = <T extends Step>({
-  steps,
-  currentStep,
-  stepsToExclude,
-  onStepClick,
-  orientation = 'horizontal',
-  hideTitle = false,
-  onBackToLanding
-}: StepperProps<T>) => {
+const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepClick, orientation = 'horizontal', hideTitle = false }: StepperProps<T>) => {
   const visibleSteps = steps.filter((step) => step.title && !stepsToExclude?.some((excludeStep) => excludeStep.id === step.id));
   const showTitle = orientation === 'vertical' && !hideTitle;
   const currentStepIndex = visibleSteps.indexOf(currentStep);
@@ -40,19 +31,8 @@ const Stepper = <T extends Step>({
     const progressPercentage = Math.min(100, Math.max(0, (currentStepNumber / totalSteps) * 100));
 
     return (
-      <div className="flex items-center justify-between w-full gap-3">
-        {onBackToLanding && (
-          <button
-            type="button"
-            onClick={onBackToLanding}
-            className="flex items-center justify-center size-12 -ms-2 rounded-full text-pycon-orange hover:bg-black/5 active:scale-95 transition-all cursor-pointer shrink-0"
-            aria-label="Back to landing page"
-          >
-            <ChevronLeft className="size-10 sm:size-11 stroke-[2.5]" />
-          </button>
-        )}
-
-        <div className="ms-auto flex items-center gap-3.5 sm:gap-4 rounded-full border border-neutral-200 bg-white px-4 sm:px-5 py-2 shadow-xs shrink-0">
+      <div className="flex items-center justify-end w-full">
+        <div className="flex items-center gap-3.5 sm:gap-4 rounded-full border border-neutral-200 bg-white px-4 sm:px-5 py-2 shadow-xs shrink-0">
           <span className="text-pycon-orange font-bold text-xs sm:text-sm whitespace-nowrap">
             Step {currentStepNumber} of {totalSteps}
           </span>

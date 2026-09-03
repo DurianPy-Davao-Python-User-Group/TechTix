@@ -91,21 +91,15 @@ const Register: FC = () => {
   return (
     <section
       className={cn(
-        'flex flex-col grow items-center px-4 h-full w-full text-pycon-custard font-nunito max-w-6xl mx-auto min-h-[1700px]',
-        currentStep.id === 'Success' && 'grow-0 min-h-0'
+        'flex flex-col grow items-center px-4 h-full w-full text-pycon-custard font-nunito max-w-6xl mx-auto',
+        currentStep.id === 'Success' && 'grow-0'
       )}
     >
       <div className="w-full h-full flex flex-col space-y-4 grow">
         <FormProvider {...form}>
           {showStepper && !shouldBeVertical && (
             <div className="w-full my-2">
-              <Stepper
-                orientation="horizontal"
-                steps={STEPS}
-                currentStep={currentStep}
-                stepsToExclude={[STEP_SUCCESS]}
-                onBackToLanding={() => setCurrentStep(STEP_EVENT_DETAILS)}
-              />
+              <Stepper orientation="horizontal" steps={STEPS} currentStep={currentStep} stepsToExclude={[STEP_SUCCESS]} />
             </div>
           )}
 
