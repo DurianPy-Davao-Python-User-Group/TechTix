@@ -4,6 +4,8 @@ export type RegisterStepId = 'EventDetails' | 'BasicInfo' | 'TicketSelection' | 
 
 export interface RegisterStep extends Step {
   id: RegisterStepId;
+  category?: string;
+  description?: string;
 }
 
 export const STEP_EVENT_DETAILS: RegisterStep = {
@@ -32,7 +34,9 @@ export const STEP_PAYMENT: RegisterStep = {
 
 export const STEP_SUMMARY: RegisterStep = {
   id: 'Summary',
-  title: 'Summary'
+  title: 'Confirm Details',
+  description: 'Review your information before submitting.',
+  category: 'REGISTRATION'
 };
 
 export const STEP_SUCCESS: RegisterStep = {
