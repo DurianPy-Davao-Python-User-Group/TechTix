@@ -37,15 +37,12 @@ const PaymentAndVerificationStep = ({ event: { eventId, price, platformFee, spri
     getTransactionFee();
   }, [getTransactionFee]);
 
-  // Update form total whenever calculated total changes
   useEffect(() => {
     setValue('total', total);
   }, [total, setValue]);
 
-  // Recalculate transaction fee when discount changes
   useEffect(() => {
     const [paymentChannel, paymentMethod] = getValues(['paymentChannel', 'paymentMethod']);
-
     if (paymentChannel && paymentMethod) {
       getTransactionFee();
     }
@@ -64,116 +61,145 @@ const PaymentAndVerificationStep = ({ event: { eventId, price, platformFee, spri
   };
 
   return (
-    <>
-      <FormItem name="validIdObjectKey">
-        {({ field: { name, value, onChange } }) => (
-          <div className="space-y-4">
-            <FormLabel>Valid ID *</FormLabel>
-            <FormDescription className="text-pycon-custard-light">Valid ID is required upon entry to venue</FormDescription>
-            <FileUpload pyconStyles name={name} eventId={eventId} uploadType={EVENT_UPLOAD_TYPE.VALID_ID} value={value} onChange={onChange} />
-            <FormError />
-          </div>
-        )}
-      </FormItem>
-
-      <hr className="border-pycon-custard-light" />
-
-      <FormItem name="discountCode">
-        {({ field }) => (
-          <div className="flex flex-col gap-1">
-            <FormLabel optional optionalClass="text-pycon-custard-light">
-              Discount Coupon
-            </FormLabel>
-            <div className="flex sm:flex-row flex-col gap-2 w-full items-center">
-              <Input pyconStyles type="text" placeholder="Enter Discount Coupon Code" className="w-full sm:w-1/2" {...field} />
-              <Button
-                className="w-full sm:w-fit bg-pycon-custard-light cursor-pointer text-pycon-violet-dark disabled:bg-pycon-custard-light/70 disabled:cursor-not-allowed hover:bg-pycon"
-                disabled={!field.value}
-                onClick={validateDiscountCode}
-                loading={isValidatingDiscountCode}
+    <div className="space-y-5 pb-2 text-pycon-violet-dark sm:space-y-6">
+      <section className="rounded-[1.75rem] bg-pycon-custard-light p-4 shadow-[0_16px_40px_rgba(243,160,77,0.12)] sm:p-6 md:p-8">
+        <FormItem name="discountCode">
+          {({ field }) => (
+            <div className="space-y-3">
+              <FormLabel
+                optional
+                className="text-xs font-bold uppercase tracking-[0.16em] text-pycon-violet-dark"
+                optionalClass="text-xs font-bold uppercase tracking-[0.16em] text-pycon-violet-dark"
               >
-                Check Code
-              </Button>
+                Discount
+              </FormLabel>
+              <label className="block text-[15px] font-bold uppercase tracking-[0.5px] text-pycon-orange" htmlFor={field.name}>
+                Discount Code
+              </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <Input
+                  pyconStyles
+                  id={field.name}
+                  type="text"
+                  placeholder="Enter your code..."
+                  className="h-12 w-full rounded-xl border border-pycon-orange/15 bg-pycon-dirty-white px-5 text-pycon-violet-dark placeholder:text-pycon-violet-light sm:flex-1"
+                  {...field}
+                />
+                <Button
+                  className="h-12 w-full cursor-pointer rounded-xl bg-pycon-orange px-6 text-white disabled:cursor-not-allowed disabled:opacity-60 hover:bg-pycon-orange/90 sm:w-auto"
+                  disabled={!field.value}
+                  onClick={validateDiscountCode}
+                  loading={isValidatingDiscountCode}
+                >
+                  Check Code
+                </Button>
+              </div>
+              <FormError />
             </div>
-            <FormError />
-          </div>
+          )}
+        </FormItem>
+
+        <div className="my-7 border-t border-pycon-orange/15" />
+
+        <FormItem name="validIdObjectKey">
+          {({ field: { name, value, onChange } }) => (
+            <div className="space-y-3">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-pycon-violet-dark">Identity Verification</p>
+              <FormLabel className="text-[15px] font-bold uppercase tracking-[0.5px] text-pycon-orange">Upload ID *</FormLabel>
+              <FormDescription className="text-xs font-normal italic text-pycon-violet-light">required upon entry to venue</FormDescription>
+              <FileUpload pyconStyles name={name} eventId={eventId} uploadType={EVENT_UPLOAD_TYPE.VALID_ID} value={value} onChange={onChange} />
+              <FormError />
+            </div>
+          )}
+        </FormItem>
+        {total > 0 && (
+          <>
+            <div className="my-7 border-t border-pycon-orange/15" />
+            <div>
+              <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.16em] text-pycon-violet-dark!">Payment Method</h2>
+              <PaymentGateways getTransactionFee={getTransactionFee} />
+            </div>
+          </>
         )}
-      </FormItem>
 
-      <hr className="border-pycon-custard-light" />
+        {total === 0 && (
+          <>
+            <div className="my-7 border-t border-pycon-orange/15" />
+            <div className="rounded-xl border border-pycon-orange/20 bg-white/40 px-6 py-5 text-center">
+              <h4 className="font-nunito text-lg font-bold text-pycon-orange">Free Registration!</h4>
+              <p className="font-nunito text-sm text-pycon-violet-light">No payment required for your registration.</p>
+            </div>
+          </>
+        )}
 
-      {/* Only show payment gateways if payment is required */}
-      {total > 0 && (
-        <>
-          <PaymentGateways getTransactionFee={getTransactionFee} />
-          <hr className="border-pycon-custard-light" />
-        </>
-      )}
-
-      {/* For free tickets, show a message instead */}
-      {total === 0 && (
-        <>
-          <div className="text-center py-4">
-            <h4 className="font-nunito text-pycon-custard font-bold text-lg">🎉 Free Registration!</h4>
-            <p className="font-nunito text-pycon-custard-light">No payment required for your registration.</p>
-          </div>
-          <hr className="border-pycon-custard-light" />
-        </>
-      )}
-      <div className="flex flex-col items-start gap-5">
-        <div className="flex flex-col gap-5 w-full">
-          <div className="grid grid-cols-2 gap-5">
-            <h4 className="font-nunito text-pycon-custard font-bold">Ticket Price:</h4>
-            <p className="font-nunito font-bold">{formatMoney(price, 'PHP')}</p>
+        <div className="my-7 border-t border-pycon-orange/15" />
+        <div>
+          <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.16em] text-pycon-violet-dark!">Price Breakdown</h2>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0 text-base sm:gap-x-4 sm:text-lg">
+            <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">Ticket Price</h4>
+            <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+              {formatMoney(price, 'PHP')}
+            </p>
 
             {discountPercentage ? (
               <>
-                <h4 className="font-nunito text-pycon-custard font-bold">Discount:</h4>
-                <p className="font-nunito font-bold">
-                  <span>{formatPercentage(discountPercentage)}</span>
+                <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">
+                  Discount ({formatPercentage(discountPercentage)})
+                </h4>
+                <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+                  - {formatMoney(price - discountedPrice, 'PHP')}
                 </p>
 
-                <h4 className="font-nunito text-pycon-custard font-bold">Discounted Price:</h4>
-                <p className="font-nunito font-bold">{formatMoney(discountedPrice, 'PHP')} </p>
+                <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">Discounted Price</h4>
+                <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+                  {formatMoney(discountedPrice, 'PHP')}
+                </p>
               </>
             ) : (
               <></>
             )}
 
-            <hr className="border-pycon-custard-light col-span-2" />
+            <div className="col-span-2 h-px bg-pycon-orange/20" />
 
             {sprintDay && sprintDayPrice && (
               <>
-                <h4 className="font-nunito text-pycon-custard font-bold">Sprint Day Fee:</h4>
-                <p className="font-nunito font-bold">{formatMoney(sprintDayPrice, 'PHP')}</p>
+                <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">Sprint Day Fee:</h4>
+                <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+                  {formatMoney(sprintDayPrice, 'PHP')}
+                </p>
               </>
             )}
 
-            <h4 className="font-nunito text-pycon-custard font-bold">Subtotal:</h4>
-            <p className="font-nunito font-bold">{formatMoney((discountPercentage ? discountedPrice : price) + currentSprintPrice, 'PHP')}</p>
+            <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">Subtotal</h4>
+            <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+              {formatMoney((discountPercentage ? discountedPrice : price) + currentSprintPrice, 'PHP')}
+            </p>
 
-            {/* Only show transaction fee for paid tickets */}
             {total > 0 && (
               <>
-                <h4 className="font-nunito text-pycon-custard font-bold">Transaction Fee:</h4>
-                <p className="font-nunito font-bold">{getTransactionFeeContent()}</p>
+                <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">Transaction Fee</h4>
+                <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+                  {getTransactionFeeContent()}
+                </p>
               </>
             )}
 
             {platformFee && (
               <>
-                <h4 className="font-nunito text-pycon-custard font-bold">Platform Fee:</h4>
-                <p className="font-nunito font-bold">{formatMoney(price * platformFee, 'PHP')}</p>
+                <h4 className="border-b border-pycon-orange/20 py-3 font-nunito text-base font-semibold text-pycon-violet-dark!">Platform Fee</h4>
+                <p className="border-b border-pycon-orange/20 py-3 text-right font-nunito text-base font-semibold text-pycon-violet-dark">
+                  {formatMoney(price * platformFee, 'PHP')}
+                </p>
               </>
             )}
 
-            <hr className="border-pycon-custard-light col-span-2" />
-            <h4 className="font-nunito text-pycon-custard font-bold">Total:</h4>
-            <p className="font-nunito font-bold">{formatMoney(total, 'PHP')}</p>
+            <div className="col-span-2 h-px bg-pycon-orange/20" />
+            <h4 className="py-3 font-nunito text-lg font-extrabold uppercase text-pycon-orange!">Total</h4>
+            <p className="py-3 text-right font-nunito text-xl font-extrabold text-pycon-orange">{formatMoney(total, 'PHP')}</p>
           </div>
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 };
 
