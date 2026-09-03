@@ -1,23 +1,26 @@
+import React from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import Checkbox from '@/components/Checkbox';
 import { FormItem, FormError } from '@/components/Form';
 import Label from '@/components/Label';
-import Separator from '@/components/Separator';
 import { Event } from '@/model/events';
 import { formatMoney, formatPercentage } from '@/utils/functions';
 import { RegisterFormValues } from '../../hooks/useRegisterForm';
+import { SummaryCard, SummaryRow } from './SummaryCard';
 
 const PYCON_CODE_OF_CONDUCT = import.meta.env.VITE_PYCON_CODE_OF_CONDUCT || 'https://pycon-davao.durianpy.org/code-of-conduct';
 
 interface SummaryProps {
   event: Event;
 }
+
 const SummaryStep = ({ event }: SummaryProps) => {
   const { control } = useFormContext<RegisterFormValues>();
   const [
     email,
     firstName,
     lastName,
+    nickname,
     pronouns,
     contactNumber,
     organization,
@@ -31,19 +34,18 @@ const SummaryStep = ({ event }: SummaryProps) => {
     transactionFee,
     discountedPrice,
     total,
-    // availTShirt,
-    // shirtType,
-    // shirtSize,
     communityInvolvement,
     futureVolunteer,
     dietaryRestrictions,
-    accessibilityNeeds
+    accessibilityNeeds,
+    validIdObjectKey
   ] = useWatch({
     control,
     name: [
       'email',
       'firstName',
       'lastName',
+      'nickname',
       'pronouns',
       'contactNumber',
       'organization',
@@ -57,200 +59,129 @@ const SummaryStep = ({ event }: SummaryProps) => {
       'transactionFee',
       'discountedPrice',
       'total',
-      // 'availTShirt',
-      // 'shirtType',
-      // 'shirtSize',
       'communityInvolvement',
       'futureVolunteer',
       'dietaryRestrictions',
-      'accessibilityNeeds'
+      'accessibilityNeeds',
+      'validIdObjectKey'
     ]
   });
 
   const ticketType = event.ticketTypes?.find((ticket) => ticket.id === ticketTypeId);
-  const { hasMultipleTicketTypes } = event;
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || '-';
+
+  const formatSocials = () => {
+    const socials: string[] = [];
+    if (facebookLink) socials.push(`[FB] ${facebookLink}`);
+    if (linkedInLink) socials.push(`[in] ${linkedInLink}`);
+    return socials.length > 0 ? socials.join(' · ') : 'None';
+  };
+
+  const getUploadedIdDisplay = () => {
+    if (!validIdObjectKey) return 'None';
+    const parts = validIdObjectKey.split('/');
+    return parts[parts.length - 1] || 'Uploaded';
+  };
 
   return (
-    <div className="space-y-2 mb-4">
-      <p className="w-full text-center">Please review the information below before submitting.</p>
-      <Separator className="bg-pycon-custard-light" />
-      <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-5">
-          <span className="font-bold">First name</span>
-          <span className="break-words" title={firstName}>
-            {firstName}
-          </span>
+    <div className="flex flex-col gap-12 mb-6 w-full max-w-3xl text-left">
+      {/* 1. Basic Information Card */}
+      <SummaryCard title="BASIC INFORMATION">
+        <SummaryRow label="NAME" value={fullName} isAlt={true} />
+        <SummaryRow label="NICKNAME" value={nickname || '-'} isAlt={false} />
+        <SummaryRow label="PRONOUNS" value={pronouns || 'Prefer not to say'} isAlt={true} />
+        <SummaryRow label="EMAIL ADDRESS" value={email || '-'} isAlt={false} />
+        <SummaryRow label="CONTACT NUMBER" value={contactNumber || '-'} isAlt={true} />
+        <SummaryRow label="AFFILIATION" value={organization || '-'} isAlt={false} />
+        <SummaryRow label="ROLE IN TECH" value={jobTitle || '-'} isAlt={true} />
+        <SummaryRow label="SOCIALS" value={formatSocials()} isAlt={false} />
+      </SummaryCard>
 
-          <span className="font-bold">Last name</span>
-          <span className="break-words" title={lastName}>
-            {lastName}
-          </span>
+      {/* 2. Ticket Selection Card */}
+      <SummaryCard title="TICKET SELECTION">
+        <SummaryRow label="PACKAGE" value={ticketType?.name || (event.paidEvent ? 'Standard' : 'Free Registration')} isAlt={true} />
+        <SummaryRow label="SPRINT DAY" value={sprintDay ? 'Yes' : 'No'} isAlt={false} />
 
-          <span className="font-bold">Pronouns</span>
-          <span className="break-words" title={pronouns || 'Prefer not to say'}>
-            {pronouns || 'Prefer not to say'}
-          </span>
+        {event.paidEvent && event.status !== 'preregistration' && (
+          <>
+            <SummaryRow label="PRICE" value={formatMoney(event.price, 'PHP')} isAlt={true} />
 
-          <span className="font-bold">Email</span>
-          <span className="break-words" title={email}>
-            {email}
-          </span>
+            {discountPercentage && validCode && discountedPrice ? (
+              <>
+                <SummaryRow label="DISCOUNT CODE" value={validCode} isAlt={false} />
+                <SummaryRow label="DISCOUNT" value={formatPercentage(discountPercentage)} isAlt={true} />
+                <SummaryRow label="DISCOUNTED PRICE" value={formatMoney(discountedPrice ?? event.price, 'PHP')} isAlt={false} />
+              </>
+            ) : null}
 
-          <span className="font-bold">Phone number</span>
-          <span className="break-words" title={contactNumber}>
-            {contactNumber}
-          </span>
+            {sprintDay && event.sprintDayPrice ? <SummaryRow label="SPRINT DAY FEE" value={formatMoney(event.sprintDayPrice, 'PHP')} isAlt={true} /> : null}
 
-          <span className="font-bold">Dietary Restrictions</span>
-          <span className="break-words" title={dietaryRestrictions || 'None'}>
-            {dietaryRestrictions || 'None'}
-          </span>
+            <SummaryRow label="TRANSACTION FEE" value={transactionFee ? formatMoney(transactionFee, 'PHP') : 'None'} isAlt={false} />
+            <SummaryRow
+              label="TOTAL"
+              value={<span className="font-extrabold text-neutral-900">{formatMoney(total ?? event.price, 'PHP')}</span>}
+              isAlt={true}
+            />
+          </>
+        )}
+      </SummaryCard>
 
-          <span className="font-bold">Accessibility Needs</span>
-          <span className="break-words" title={accessibilityNeeds || 'None'}>
-            {accessibilityNeeds || 'None'}
-          </span>
+      {/* 3. Miscellaneous Card */}
+      <SummaryCard title="MISCELLANEOUS">
+        <SummaryRow label="TECH COMMUNITY MEMBER?" value={communityInvolvement ? 'Yes' : 'No'} isAlt={true} />
+        <SummaryRow label="VOLUNTEER IN FUTURE?" value={futureVolunteer ? 'Yes' : 'No'} isAlt={false} />
+        <SummaryRow label="DIETARY RESTRICTIONS" value={dietaryRestrictions || 'None'} isAlt={true} />
+        <SummaryRow label="ACCESSIBILITY NEEDS" value={accessibilityNeeds || 'None'} isAlt={false} />
+      </SummaryCard>
 
-          <span className="font-bold">Facebook Link</span>
-          <span className="break-words" title={facebookLink}>
-            {facebookLink}
-          </span>
+      {/* 4. Promotions & Verification Card */}
+      <SummaryCard title="PROMOTIONS & VERIFICATION">
+        <SummaryRow label="REFERRAL CODE" value={validCode || 'None'} isAlt={true} />
+        <SummaryRow label="DISCOUNT CODE" value={validCode || 'None'} isAlt={false} />
+        <SummaryRow label="UPLOADED ID" value={getUploadedIdDisplay()} isAlt={true} />
+      </SummaryCard>
 
-          <span className="font-bold">Linkedin Link</span>
-          <span className="break-words" title={linkedInLink || 'None'}>
-            {linkedInLink || 'None'}
-          </span>
+      {/* 5. Consent Section */}
+      <div className="flex flex-col mt-2">
+        <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-neutral-400 text-left mb-5">CONSENT</p>
 
-          <span className="font-bold">Organization</span>
-          <span className="break-words" title={organization}>
-            {organization}
-          </span>
+        <div className="flex flex-col">
+          <FormItem name="agreeToDataUse">
+            {({ field }) => (
+              <div className="flex flex-col">
+                <div className="flex items-center space-x-3">
+                  <Checkbox pyconStyles id="agreeToDataUse" checked={field.value} onCheckedChange={field.onChange} />
+                  <Label htmlFor="agreeToDataUse" className="text-xs sm:text-sm font-medium cursor-pointer text-neutral-800">
+                    I consent for photography, data use, and communication
+                  </Label>
+                </div>
+                <FormError />
+              </div>
+            )}
+          </FormItem>
 
-          <span className="font-bold">Title</span>
-          <span className="break-words" title={jobTitle}>
-            {jobTitle}
-          </span>
-
-          <Separator className="bg-pycon-custard-light col-span-2" />
-
-          {hasMultipleTicketTypes && (
-            <>
-              <span className="font-bold">Ticket Type</span>
-              <span className="break-words" title={ticketType?.name}>
-                {ticketType?.name}
-              </span>
-            </>
-          )}
-
-          <span className="font-bold">Will join sprint day?</span>
-          <span className="break-words" title={sprintDay ? 'Yes' : 'No'}>
-            {sprintDay ? 'Yes' : 'No'}
-          </span>
-
-          {/* <span className="font-bold">Will avail tshirt?</span>
-          <span className="break-words" title={availTShirt ? 'Yes' : 'No'}>
-            {availTShirt ? 'Yes' : 'No'}
-          </span>
-
-          {availTShirt && (
-            <>
-              <span className="font-bold">Tshirt Type</span>
-              <span className="break-words" title={shirtType}>
-                {shirtType}
-              </span>
-
-              <span className="font-bold">Tshirt Size</span>
-              <span className="break-words" title={shirtSize}>
-                {shirtSize}
-              </span>
-            </>
-          )} */}
-
-          <span className="font-bold">Are you a member of any local tech community?</span>
-          <span className="break-words" title={communityInvolvement ? 'Yes' : 'No'}>
-            {communityInvolvement ? 'Yes' : 'No'}
-          </span>
-
-          <span className="font-bold">Would you like to volunteer in the future?</span>
-          <span className="break-words" title={futureVolunteer ? 'Yes' : 'No'}>
-            {futureVolunteer ? 'Yes' : 'No'}
-          </span>
-          {event.paidEvent && event.status !== 'preregistration' && <hr className="border-pycon-custard-light col-span-2" />}
-          {event.paidEvent && event.status !== 'preregistration' && (
-            <>
-              <span className="font-bold">Price:</span>
-              <p>{formatMoney(event.price, 'PHP')}</p>
-
-              {discountPercentage && validCode && discountedPrice ? (
-                <>
-                  <span className="font-bold">Discount Code: </span>
-                  <span className="break-words" title={validCode}>
-                    {validCode}
-                  </span>
-
-                  <span className="font-bold">Discount</span>
-                  <span className="break-words" title={discountPercentage ? `${formatPercentage(discountPercentage)}` : 'None'}>
-                    {discountPercentage ? <span>{formatPercentage(discountPercentage)}</span> : 'None'}
-                  </span>
-
-                  <span className="font-bold">Discounted Price</span>
-                  <span className="break-words" title={formatMoney(discountedPrice ?? event.price, 'PHP')}>
-                    {formatMoney(discountedPrice ?? event.price, 'PHP')}
-                  </span>
-                </>
-              ) : (
-                <></>
-              )}
-
-              {sprintDay && event.sprintDayPrice && (
-                <>
-                  <span className="font-bold">Sprint Day Fee:</span>
-                  <p>{formatMoney(event.sprintDayPrice, 'PHP')}</p>
-                </>
-              )}
-
-              <span className="font-bold">Transaction Fee</span>
-              <span className="break-words">{transactionFee ? <span className="break-words">{formatMoney(transactionFee, 'PHP')}</span> : 'None'}</span>
-
-              <span className="font-bold">Total</span>
-              <span className="break-words">{formatMoney(total ?? event.price, 'PHP')}</span>
-            </>
-          )}
+          <FormItem name="agreeToCodeOfConduct">
+            {({ field }) => (
+              <div className="flex flex-col">
+                <div className="flex items-center space-x-3">
+                  <Checkbox pyconStyles id="agreeToCodeOfConduct" checked={field.value} onCheckedChange={field.onChange} />
+                  <Label htmlFor="agreeToCodeOfConduct" className="text-xs sm:text-sm font-medium cursor-pointer text-neutral-800">
+                    I have read and agree to the{' '}
+                    <a
+                      href={PYCON_CODE_OF_CONDUCT}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#04b1a4] underline hover:text-[#038e83] transition-colors font-semibold"
+                    >
+                      code of conduct
+                    </a>
+                  </Label>
+                </div>
+                <FormError />
+              </div>
+            )}
+          </FormItem>
         </div>
-      </div>
-
-      <div className="flex flex-col mt-8">
-        <FormItem name="agreeToDataUse">
-          {({ field }) => (
-            <div className="">
-              <div className="flex items-center space-x-2">
-                <Checkbox pyconStyles id="agreeToDataUse" checked={field.value} onCheckedChange={field.onChange} />
-                <Label htmlFor="agreeToDataUse" className="text-base font-medium">
-                  I consent for photography, data use, and communication *
-                </Label>
-              </div>
-              <FormError />
-            </div>
-          )}
-        </FormItem>
-
-        <FormItem name="agreeToCodeOfConduct">
-          {({ field }) => (
-            <div className="">
-              <div className="flex items-center space-x-2">
-                <Checkbox pyconStyles id="agreeToCodeOfConduct" checked={field.value} onCheckedChange={field.onChange} />
-                <Label htmlFor="agreeToCodeOfConduct" className="text-base font-medium">
-                  I agree to follow the{' '}
-                  <a href={PYCON_CODE_OF_CONDUCT} target="_blank" className="text-pycon-orange underline">
-                    Code of Conduct
-                  </a>
-                  . *
-                </Label>
-              </div>
-              <FormError />
-            </div>
-          )}
-        </FormItem>
       </div>
     </div>
   );
