@@ -45,18 +45,18 @@ const Stepper = <T extends Step>({
           <button
             type="button"
             onClick={onBackToLanding}
-            className="flex items-center justify-center size-11 -ms-1 rounded-full text-pycon-orange hover:bg-black/5 active:scale-95 transition-all cursor-pointer shrink-0"
+            className="flex items-center justify-center size-12 -ms-2 rounded-full text-pycon-orange hover:bg-black/5 active:scale-95 transition-all cursor-pointer shrink-0"
             aria-label="Back to landing page"
           >
-            <ChevronLeft className="size-9 stroke-[2.5]" />
+            <ChevronLeft className="size-10 sm:size-11 stroke-[2.5]" />
           </button>
         )}
 
-        <div className="ms-auto flex items-center gap-3.5 sm:gap-4 rounded-full border border-neutral-200 bg-white px-5 sm:px-6 py-2.5 shadow-xs shrink-0">
-          <span className="text-pycon-orange font-bold text-sm sm:text-base whitespace-nowrap">
+        <div className="ms-auto flex items-center gap-3.5 sm:gap-4 rounded-full border border-neutral-200 bg-white px-4 sm:px-5 py-2 shadow-xs shrink-0">
+          <span className="text-pycon-orange font-bold text-xs sm:text-sm whitespace-nowrap">
             Step {currentStepNumber} of {totalSteps}
           </span>
-          <div className="w-16 sm:w-20 h-2 bg-pycon-orange/30 rounded-full overflow-hidden shrink-0">
+          <div className="w-14 sm:w-16 h-2 bg-pycon-orange/30 rounded-full overflow-hidden shrink-0">
             <div className="h-full bg-pycon-orange rounded-full transition-all duration-300 ease-out" style={{ width: `${progressPercentage}%` }} />
           </div>
         </div>
