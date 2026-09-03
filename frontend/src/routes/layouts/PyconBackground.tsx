@@ -1,19 +1,39 @@
-import { FC, PropsWithChildren, useEffect } from 'react';
-import background1 from '@/assets/pycon/background-1.png';
-import background2 from '@/assets/pycon/background-2.png';
+import { FC, useEffect } from 'react';
+import leaf from '@/assets/pycon/pycon_2026_leaf.svg';
+import mtApo from '@/assets/pycon/pycon_2026_mt_apo.svg';
+import tealSnake from '@/assets/pycon/pycon_2026_teal_snake.svg';
 
 const PyconBackground: FC = () => {
   useEffect(() => {
     const root = document.getElementById('root');
     if (root) {
       root.classList.add('relative');
+      root.classList.add('overflow-x-clip');
     }
   }, []);
 
   return (
-    <div className="h-full">
-      <img src={background2} className="absolute bottom-0 left-0 w-full h-auto lg:-bottom-60 xl:-bottom-[30%] -z-19 object-contain opacity-60" alt="" />
-      <img src={background1} className="absolute bottom-0 left-0 w-full h-auto lg:-bottom-60 xl:-bottom-[30%] -z-20 object-contain opacity-60" alt="" />
+    <div aria-hidden="true" className="pointer-events-none select-none">
+      {/* Mt. Apo - at the very bottom (acts as a footer) */}
+      <img
+        src={mtApo}
+        alt=""
+        className="absolute bottom-0 left-0 w-full h-auto max-h-[420px] object-cover object-bottom -z-20 pointer-events-none select-none"
+      />
+
+      {/* Teal Snake - at the bottom left expanding to left center */}
+      <img
+        src={tealSnake}
+        alt=""
+        className="absolute bottom-0 left-0 w-[240px] sm:w-[320px] md:w-[420px] lg:w-[500px] xl:w-[580px] h-auto object-contain object-left-bottom -z-10 pointer-events-none select-none opacity-50 md:opacity-80 lg:opacity-100"
+      />
+
+      {/* Leaf - at the right center */}
+      <img
+        src={leaf}
+        alt=""
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-[100px] sm:w-[140px] md:w-[180px] lg:w-[220px] xl:w-[260px] h-auto object-contain object-right -z-10 pointer-events-none select-none opacity-60 md:opacity-90 lg:opacity-100"
+      />
     </div>
   );
 };
