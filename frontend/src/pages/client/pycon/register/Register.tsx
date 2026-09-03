@@ -96,17 +96,21 @@ const Register: FC = () => {
       <div className="w-full h-full flex flex-col space-y-4 grow">
         <FormProvider {...form}>
           {currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && (
-            <>
-              <h1 className="text-xl">{currentStep.title}</h1>
-              {showStepper && !shouldBeVertical && (
-                <div className="w-full my-2">
-                  <Stepper orientation="horizontal" steps={STEPS} currentStep={currentStep} stepsToExclude={[STEP_SUCCESS]} />
-                </div>
+            <div className="space-y-2.5 text-left w-full mb-2">
+              {currentStep.category && (
+                <p className="text-m font-bold tracking-widest text-[#04b1a4] uppercase font-inter">
+                  {currentStep.category}
+                </p>
               )}
-              {currentStep.id === 'Miscellaneous' && (
-                <p className="text-[#072E4766] !font-inter font-normal text-sm"> A few more things to help us make the event better for you. </p>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#F99508]! font-sora tracking-tight leading-tight">
+                {currentStep.title}
+              </h1>
+              {currentStep.description && (
+                <p className="text-sm sm:text-base text-neutral-400 font-inter">
+                  {currentStep.description}
+                </p>
               )}
-            </>
+            </div>
           )}
 
           <div className="flex flex-col md:flex-row w-full h-full grow">
