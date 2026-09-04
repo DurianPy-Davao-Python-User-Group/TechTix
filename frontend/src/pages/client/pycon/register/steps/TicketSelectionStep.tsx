@@ -1,360 +1,374 @@
 import { FC, useEffect } from 'react';
-import { Check, Star, Zap, Calendar, Users, Coffee } from 'lucide-react';
-import { useFormContext } from 'react-hook-form';
-import Button from '@/components/Button';
-import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/Card';
-import { FormItem, FormLabel, FormError } from '@/components/Form';
+import checkmarkIcon from '@/assets/Checkmark.svg';
+import { FormError, FormItem, FormLabel } from '@/components/Form';
+import Label from '@/components/Label';
+import { RadioGroup, RadioGroupItem } from '@/components/RadioGroup';
 import { Event } from '@/model/events';
 import { cn } from '@/utils/classes';
 import { formatMoney, formatPercentage } from '@/utils/functions';
-import { RegisterFormValues } from '../../hooks/useRegisterForm';
 
 interface Props {
   event: Event;
   updateEventPrice: (newPrice: number) => void;
 }
 
-// const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'] as const;
+type EventTicketType = NonNullable<Event['ticketTypes']>[number];
 
-const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
-  // const shirtSizeLink = import.meta.env.VITE_COMMDAY_SHIRT_SIZE_LINK;
+const CODER_BENEFITS = [
+  'Lunch',
+  'Snack',
+  'Kit — Lanyard + ID',
+  'Special Merch',
+  'Stickers',
+  'Workshops',
+  'Talks',
+  'Panel Discussions',
+  'Open Spaces'
+];
 
-  const { control } = useFormContext<RegisterFormValues>();
-  // const [availTShirt] = useWatch({ control, name: ['availTShirt'] });
+const KASOSYO_BENEFITS = [
+  'Lunch',
+  'Snack',
+  'Kit — Lanyard + ID',
+  'Special Merch',
+  'Stickers',
+  'Special Metalic Pin',
+  'Workshops',
+  'Talks',
+  'Panel Discussions',
+  'Open Spaces',
+  'Kasosyo Night'
+];
 
-  return (
-    <>
-      <FormItem name="ticketType">
-        {({ field }) => (
-          <div className="flex flex-col gap-6">
-            <div className="text-center md:text-left">
-              <FormLabel className="font-nunito font-bold text-4xl text-pycon-orange mb-2 block">Ticket Types</FormLabel>
-              <p className="text-pycon-custard-light text-lg font-medium">Choose your conference experience</p>
-            </div>
-            <div className="grid gap-6 max-w-2xl">
-              {event.ticketTypes
-                ?.sort((a, b) => parseInt(a.tier) - parseInt(b.tier))
-                .map((ticketType) => {
-                  if (ticketType.id === 'coder') {
-                    return (
-                      <TicketType
-                        key={ticketType.id}
-                        value={field.value}
-                        ticketType={ticketType}
-                        subtitle="Regular"
-                        benefits={['All Talks & Workshops', 'Lunch & Snacks', 'Python Logo Keyboard Switch Keychain', 'Stickers & Lanyard']}
-                        updateEventPrice={updateEventPrice}
-                        onChange={field.onChange}
-                      />
-                    );
-                  } else if (ticketType.id === 'kasosyo') {
-                    return (
-                      <TicketType
-                        key={ticketType.id}
-                        star
-                        value={field.value}
-                        ticketType={ticketType}
-                        subtitle="Premium Experience"
-                        backgroundClass="bg-pycon-red"
-                        benefits={['Everything in Coder', 'Exclusive Kasosyo Night', 'Special Metallic Pin', 'Premium DurianPy Perks']}
-                        updateEventPrice={updateEventPrice}
-                        onChange={field.onChange}
-                      />
-                    );
-                  }
-                })}
-            </div>
-            <FormError />
-          </div>
-        )}
-      </FormItem>
+const KASOSYO_ACCENT_COLOR = '#38A69D';
+const ORANGE_ACCENT_COLOR = '#F99508';
 
-      <FormItem name="sprintDay">
-        {({ field }) => (
-          <SprintDaySection
-            isSelected={!!field.value}
-            sprintDayPrice={event.sprintDayPrice ?? 0}
-            onChange={(selected) => field.onChange(selected)}
-            maximumSprintDaySlots={event.maximumSprintDaySlots}
-            sprintDayRegistrationCount={event.sprintDayRegistrationCount}
-          />
-        )}
-      </FormItem>
-
-      {/* {availTShirt && (
-        <div className="flex flex-col md:flex-row w-full gap-4">
-          <FormItem name="shirtType">
-            {({ field }) => (
-              <div className="flex flex-col gap-1 grow md:basis-1/2">
-                <FormLabel>Shirt Type</FormLabel>
-                <p className="text-pycon-custard-light text-sm">
-                  To check shirt type, please refer to the{' '}
-                  <a href={shirtSizeLink} className="text-pycon-orange underline" target="_blank">
-                    link here
-                  </a>
-                  .
-                </p>
-
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-wrap gap-4 py-3">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem pyconStyles value="unisex" id={`shirtType-unisex`} />
-                    <Label htmlFor={`shirtType-unisex`}>Unisex</Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem pyconStyles value="female" id={`shirtType-`} />
-                    <Label htmlFor={`shirtType-female`}>Female</Label>
-                  </div>
-                </RadioGroup>
-                <FormError />
-              </div>
-            )}
-          </FormItem>
-
-          <FormItem name="shirtSize">
-            {({ field }) => (
-              <div className="flex flex-col gap-1 grow md:basis-1/2">
-                <FormLabel>Shirt Size (For Pro and VIP Tickets Only)</FormLabel>
-                <p className="text-pycon-custard-light text-sm">
-                  To check shirt size, please refer to the{' '}
-                  <a href={shirtSizeLink} className="text-pycon-orange underline" target="_blank">
-                    link here
-                  </a>
-                  .
-                </p>
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-wrap gap-4 py-3">
-                  {shirtSizeOptions.map((size) => (
-                    <div key={size} className="flex items-center space-x-2">
-                      <RadioGroupItem pyconStyles value={size} id={`size-${size}`} />
-                      <Label htmlFor={`size-${size}`}>{size}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-                <FormError />
-              </div>
-            )}
-          </FormItem>
-        </div>
-      )} */}
-    </>
-  );
+const getTicketSoldOutState = (ticketType?: EventTicketType) => {
+  if (!ticketType?.maximumQuantity) return false;
+  return (ticketType.currentSales ?? 0) >= ticketType.maximumQuantity;
 };
 
-interface TicketTypeProps {
-  ticketType: NonNullable<Event['ticketTypes']>[number];
-  benefits: string[];
-  value: string;
-  star?: boolean;
-  subtitle: 'Regular' | 'Premium Experience';
-  backgroundClass?: string;
-  onChange: (value: string) => void;
-  updateEventPrice: (newPrice: number) => void;
-}
+const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
+  const coderTicket = event.ticketTypes?.find((t) => t.id === 'coder');
+  const kasosyoTicket = event.ticketTypes?.find((t) => t.id === 'kasosyo');
 
-const TicketType: FC<TicketTypeProps> = ({ ticketType, benefits, subtitle, value, backgroundClass, star, updateEventPrice, onChange }) => {
-  const isSelected = value === ticketType.id;
-  const isKasosyo = ticketType.id === 'kasosyo';
-  const isSoldOut = ticketType.maximumQuantity === ticketType.currentSales;
+  const sprintDayPrice = event.sprintDayPrice ?? 200;
+  const sprintIsSoldOut =
+    event.maximumSprintDaySlots != null && event.sprintDayRegistrationCount >= event.maximumSprintDaySlots;
 
   return (
     <div
-      key={ticketType.name}
       className={cn(
-        'font-nunito cursor-pointer transition-[transform,color,box-shadow,scale] duration-200 text-pycon-dirty-white rounded-2xl shadow-lg',
-        'hover:shadow-xl hover:scale-[1.02] hover:brightness-110',
-        isKasosyo ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-200/50' : 'bg-gradient-to-br from-orange-400 to-orange-500 shadow-orange-200/50',
-        isSelected && 'ring-2 ring-white/10 shadow-lg',
-        isSoldOut && 'grayscale-100 cursor-not-allowed shadow-none hover:scale-none hover:brightness-100 hover:shadow-none select-none',
-        backgroundClass
+        'mx-auto flex w-full max-w-[90%] flex-col gap-4 px-6 md:gap-6',
+        'rounded-3xl border border-[#F995081F] bg-white py-6 shadow-[0px_6px_40px_0px_#F9950812]',
+        'md:rounded-none md:border-0 md:bg-transparent md:py-0 md:shadow-none'
       )}
-      onClick={() => {
-        if (isSoldOut) {
-          return;
-        }
-
-        onChange(ticketType.id);
-        updateEventPrice(ticketType.price);
-      }}
     >
-      <CardHeader className="pb-4">
-        <CardTitle className={cn('flex flex-wrap font-black font-nunito text-2xl items-center gap-x-4 mb-3')}>
-          {star && <Star fill="currentColor" className={cn(!isSoldOut && 'animate-pulse')} />}
-          {ticketType.name.toUpperCase()}
-          <span className={cn('font-medium text-base opacity-90')}>{`( ${subtitle} )`}</span>
-        </CardTitle>
-        <div className={cn('text-pycon-custard-light font-nunito font-bold text-2xl', isSelected && 'text-white drop-shadow-md')}>
-          {formatMoney(ticketType.price, 'PHP')}
+
+      <FormItem name="ticketType">
+        {({ field }) => (
+          <section className="flex flex-col gap-3 md:gap-4">
+            <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">
+              Ticket Type
+            </FormLabel>
+
+            <div className="flex w-full flex-col gap-4">
+              <TicketCard
+                title="Coder"
+                subtitle="Regular"
+                ticketId={coderTicket?.id}
+                price={coderTicket?.price ?? 0}
+                originalPrice={coderTicket?.originalPrice}
+                benefits={CODER_BENEFITS}
+                backgroundClass="bg-[#5DA144]"
+                selectedBorderColor={ORANGE_ACCENT_COLOR}
+                isSelected={!!coderTicket && field.value === coderTicket.id}
+                isSoldOut={getTicketSoldOutState(coderTicket)}
+                onSelect={() => {
+                  if (!coderTicket) return;
+                  field.onChange(coderTicket.id);
+                  updateEventPrice(coderTicket.price);
+                }}
+              />
+
+              <TicketCard
+                title="Kasosyo"
+                subtitle="Patron"
+                ticketId={kasosyoTicket?.id}
+                price={kasosyoTicket?.price ?? 0}
+                originalPrice={kasosyoTicket?.originalPrice}
+                benefits={KASOSYO_BENEFITS}
+                star
+                bestValue
+                backgroundClass="bg-[#38A69D]"
+                selectedBorderColor={ORANGE_ACCENT_COLOR}
+                isSelected={!!kasosyoTicket && field.value === kasosyoTicket.id}
+                isSoldOut={getTicketSoldOutState(kasosyoTicket)}
+                onSelect={() => {
+                  if (!kasosyoTicket) return;
+                  field.onChange(kasosyoTicket.id);
+                  updateEventPrice(kasosyoTicket.price);
+                }}
+              />
+
+              <FormItem name="sprintDay">
+                {({ field: sprintDayField }) => (
+                  <TicketCard
+                    title="Extra"
+                    subtitle="Sprint Day"
+                    ticketId="sprintDay"
+                    price={sprintDayPrice}
+                    benefits={['Sprint Day']}
+                    backgroundClass="bg-[#F99508]"
+                    selectedBorderColor={KASOSYO_ACCENT_COLOR}
+                    isSelected={sprintDayField.value === true}
+                    isSoldOut={sprintIsSoldOut}
+                    onSelect={() => {
+                      if (sprintIsSoldOut) return;
+                      sprintDayField.onChange(!sprintDayField.value);
+                    }}
+                  />
+                )}
+              </FormItem>
+            </div>
+
+            <FormError />
+          </section>
+        )}
+      </FormItem>
+
+
+      <div className="border-t border-[#F995081F] pt-4 md:pt-6">
+        <FormItem name="sprintDay">
+          {({ field }) => (
+            <SprintDaySection
+              value={field.value}
+              sprintDayPrice={sprintDayPrice}
+              maximumSprintDaySlots={event.maximumSprintDaySlots}
+              sprintDayRegistrationCount={event.sprintDayRegistrationCount}
+              onChange={field.onChange}
+            />
+          )}
+        </FormItem>
+      </div>
+    </div>
+  );
+};
+
+interface TicketCardProps {
+  title: string;
+  subtitle: string;
+  ticketId?: string;
+  price: number;
+  originalPrice?: number | null;
+  benefits: string[];
+  backgroundClass: string;
+  selectedBorderColor: string;
+  star?: boolean;
+  bestValue?: boolean;
+  isSelected?: boolean;
+  isSoldOut?: boolean;
+  onSelect?: () => void;
+}
+
+const TicketCard: FC<TicketCardProps> = ({
+  title,
+  subtitle,
+  ticketId,
+  price,
+  originalPrice,
+  benefits,
+  backgroundClass,
+  selectedBorderColor,
+  star = false,
+  bestValue = false,
+  isSelected = false,
+  isSoldOut = false,
+  onSelect
+}) => {
+  const isUnavailable = !ticketId || isSoldOut;
+  const canSelect = !!onSelect && !isUnavailable;
+  const hasDiscount = originalPrice != null && price < originalPrice;
+
+  const handleSelect = () => {
+    if (!canSelect) return;
+    onSelect?.();
+  };
+
+  return (
+    <div
+      role={canSelect ? 'radio' : undefined}
+      aria-checked={canSelect ? isSelected : undefined}
+      aria-disabled={isUnavailable || undefined}
+      tabIndex={canSelect ? 0 : undefined}
+      onClick={handleSelect}
+      onKeyDown={(e) => {
+        if (!canSelect || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault();
+        handleSelect();
+      }}
+      style={isSelected ? { borderColor: selectedBorderColor } : undefined}
+      className={cn(
+        'flex w-full flex-col rounded-[22px] border-[3px] border-transparent p-5 text-white',
+        'font-inter transition-[border-color,box-shadow] duration-200',
+        backgroundClass,
+        canSelect && 'cursor-pointer hover:brightness-105',
+        isUnavailable && 'cursor-not-allowed opacity-60 grayscale'
+      )}
+    >
+
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 sm:justify-start">
+        <span className="inline-flex items-baseline gap-x-2">
+          {star && <span className="text-lg leading-none">★</span>}
+          <span className="font-inter text-2xl font-black uppercase leading-tight tracking-wide">{title}</span>
+        </span>
+
+        <span className="font-inter text-sm font-medium leading-tight opacity-75">
+          ({subtitle}) — {formatMoney(price, 'PHP')}
+        </span>
+      </div>
+
+
+      {hasDiscount && (
+        <div className="mt-1 font-inter text-sm font-medium">
+          <span className="text-gray-300 line-through">{formatMoney(originalPrice!, 'PHP')}</span>{' '}
+          <span className="text-green-300">{formatPercentage(1 - price / originalPrice!)} off</span>
+        </div>
+      )}
+
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5">
+        {benefits.map((benefit) => (
+          <TicketBenefit key={benefit} benefit={benefit} />
+        ))}
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 items-end">
+        <div>
+          {isSelected && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D1B4E] px-4 py-1.5 font-inter text-xs font-extrabold uppercase tracking-wide text-white">
+              <img src={checkmarkIcon} alt="" aria-hidden="true" className="h-3 w-3" />
+              Selected
+            </span>
+          )}
         </div>
 
-        {ticketType.originalPrice && ticketType.price < ticketType.originalPrice && (
-          <CardDescription>
-            <span className="line-through text-gray-500 font-semibold">{formatMoney(ticketType.originalPrice, 'PHP')}</span>
-            <span className="ml-2 text-green-400 font-semibold">{formatPercentage(1 - ticketType.price / ticketType.originalPrice)} off</span>
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 font-semibold py-6">
-        {benefits.map((benefit, index) => (
-          <span key={benefit} className="inline-flex gap-x-3 items-center transition-all duration-200" style={{ animationDelay: `${index * 100}ms` }}>
-            <Check className={cn('text-pycon-white transition-transform duration-200', isSelected && 'scale-110 drop-shadow-sm')} size={20} />
-            <span className={cn('text-base', isSelected && 'text-white/95')}>{benefit}</span>
-          </span>
-        ))}
-      </CardContent>
-
-      <CardFooter className="flex justify-between items-center pt-6">
-        <Button
-          className={cn(
-            'cursor-pointer px-10 py-4 font-bold transition-all duration-300 text-lg min-w-[140px]',
-            isSelected
-              ? 'bg-white text-pycon-violet-dark border-3 border-white shadow-2xl shadow-white/30 hover:bg-white/95 hover:scale-110 ring-4 ring-white/40'
-              : 'bg-pycon-violet-dark/80 hover:bg-pycon-violet-light hover:shadow-xl hover:scale-105 text-white shadow-lg border border-transparent'
+        <div className="justify-self-end">
+          {bestValue && (
+            <span className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/20 px-5 py-2 font-inter text-xs font-extrabold uppercase tracking-wide">
+              Best Value
+            </span>
           )}
-          onClick={(e) => {
-            if (isSoldOut) {
-              return;
-            }
+        </div>
+      </div>
+    </div>
+  );
+};
 
-            e.stopPropagation();
-            onChange(ticketType.id);
-            updateEventPrice(ticketType.price);
-          }}
-          disabled={ticketType.maximumQuantity <= (ticketType.currentSales ?? 0)}
-        >
-          {isSelected ? <Check className="mr-3 h-5 w-5" /> : null}
-          {isSelected ? 'Selected' : 'Select'}
-        </Button>
-      </CardFooter>
+interface TicketBenefitProps {
+  benefit: string;
+}
+
+const TicketBenefit: FC<TicketBenefitProps> = ({ benefit }) => {
+  return (
+    <div className="flex min-w-0 items-start gap-1.5">
+      <img src={checkmarkIcon} alt="" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      <span className="font-inter text-sm font-medium leading-snug">{benefit}</span>
     </div>
   );
 };
 
 interface SprintDaySectionProps {
-  isSelected: boolean;
+  value: boolean | undefined;
   sprintDayPrice: number;
   maximumSprintDaySlots?: number | null;
   sprintDayRegistrationCount: number;
   onChange: (selected: boolean) => void;
 }
 
-const SprintDaySection: FC<SprintDaySectionProps> = ({ maximumSprintDaySlots, sprintDayRegistrationCount, isSelected, sprintDayPrice, onChange }) => {
-  const sprintIsSoldOut = maximumSprintDaySlots === sprintDayRegistrationCount;
+const SprintDaySection: FC<SprintDaySectionProps> = ({
+  value,
+  sprintDayPrice,
+  maximumSprintDaySlots,
+  sprintDayRegistrationCount,
+  onChange
+}) => {
+  const sprintIsSoldOut = maximumSprintDaySlots != null && sprintDayRegistrationCount >= maximumSprintDaySlots;
 
   useEffect(() => {
-    if (sprintIsSoldOut) {
+    if (sprintIsSoldOut && value === true) {
       onChange(false);
     }
-  }, [sprintIsSoldOut]);
+  }, [value, onChange, sprintIsSoldOut]);
+
+
+  const radioValue = value === undefined ? undefined : value ? 'yes' : 'no';
+
+  const displayPrice = `₱ ${new Intl.NumberFormat('en-PH', { maximumFractionDigits: 2 }).format(sprintDayPrice)}`;
 
   return (
-    <div className="flex flex-col gap-6 mt-12">
-      <div className="text-center md:text-left">
-        <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
-          <Zap className="text-pycon-orange h-8 w-8" />
-          <h3 className="font-nunito font-bold text-3xl text-pycon-orange">Add Sprint Day</h3>
-        </div>
-        <p className="text-pycon-custard-light text-lg font-medium">Enhance your conference experience with hands-on coding</p>
-      </div>
+    <section className="flex flex-col gap-3 md:gap-4">
+      <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">Add-Ons</FormLabel>
 
       <div
         className={cn(
-          'border-2 rounded-2xl p-8 cursor-pointer transition-[transform,color,box-shadow,scale] duration-200 font-nunito',
-          'hover:shadow-lg hover:scale-[1.02]',
-          isSelected
-            ? 'border-pycon-orange bg-gradient-to-br from-orange-50 to-orange-100 shadow-lg shadow-orange-200/50'
-            : 'border-gray-200 bg-white hover:border-pycon-orange/50',
-          sprintIsSoldOut && 'cursor-not-allowed hover:shadow-none hover:scale-100 hover:border-gray-300 bg-gray-200'
+          'relative flex w-full flex-col gap-4 rounded-2xl bg-[#FFF9F2] p-5',
+          sprintIsSoldOut && 'opacity-60'
         )}
-        onClick={() => {
-          if (sprintIsSoldOut) {
-            return;
-          }
-
-          onChange(!isSelected);
-        }}
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 ">
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-4 flex-wrap ">
-              <Calendar className="text-pycon-violet-dark h-7 w-7" />
-              <h4 className="font-bold text-2xl text-pycon-violet-dark me-auto">Join Sprint Day</h4>
-              <div className="">
-                <span
-                  className={cn(
-                    'px-4 py-2 rounded-full text-base font-bold',
-                    isSelected ? 'bg-pycon-orange text-white shadow-lg' : 'bg-gray-100 text-gray-600',
-                    sprintIsSoldOut && 'bg-gray-300 text-gray-500 shadow-none'
-                  )}
-                >
-                  {sprintIsSoldOut ? 'Sold Out!' : formatMoney(sprintDayPrice, 'PHP')}
-                </span>
-              </div>
-            </div>
-
-            <p className={cn('mb-6 text-base md:text-lg font-medium', isSelected ? 'text-gray-700' : 'text-gray-600')}>
-              Join our collaborative coding session and work on open-source projects with fellow developers!
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
-              <div className="flex items-center gap-3">
-                <Users className="text-pycon-violet-dark h-5 w-5" />
-                <span className="text-gray-700 font-medium">Collaborative coding</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Coffee className="text-pycon-violet-dark h-5 w-5" />
-                <span className="text-gray-700 font-medium">Refreshments included</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Zap className="text-pycon-violet-dark h-5 w-5" />
-                <span className="text-gray-700 font-medium">Open source projects</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Check className="text-pycon-violet-dark h-5 w-5" />
-                <span className="text-gray-700 font-medium">Networking opportunity</span>
-              </div>
-            </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+          <div>
+            <p className="font-inter text-base font-bold text-[#072E47]">Join Sprint Day</p>
+            <p className="font-inter text-sm italic text-[#072E4799]">Sprint Day is on October 18, 2026 (2nd Day).</p>
           </div>
 
-          <div className="flex flex-col items-center gap-3 md:ml-8">
-            {sprintIsSoldOut ? (
-              <div className=" rounded-lg p-4 text-center">
-                <p className="text-gray-500 font-bold">Sprint Day is Full</p>
-              </div>
-            ) : (
-              <Button
-                className={cn(
-                  'w-full md:w-auto px-10 py-4 font-bold transition-all duration-300 text-lg min-w-[180px]',
-                  isSelected
-                    ? 'bg-pycon-orange text-white border-2 border-pycon-orange shadow-2xl shadow-orange-200/50 hover:bg-pycon-orange/90 hover:scale-110 ring-4 ring-orange-200/60'
-                    : 'bg-gray-100 hover:bg-pycon-orange hover:text-white text-gray-700 border-2 border-gray-300 hover:border-pycon-orange hover:shadow-xl hover:scale-105 shadow-lg',
-                  sprintIsSoldOut &&
-                    'grayscale-100 cursor-not-allowed shadow-none hover:scale-none hover:brightness-100 hover:shadow-none select-none bg-gray-300 border-gray-300 text-gray-500 hover:bg-gray-300 hover:text-gray-500 hover:border-gray-300'
-                )}
-                onClick={(e) => {
-                  if (sprintIsSoldOut) {
-                    return;
-                  }
-                  e.stopPropagation();
-                  onChange(!isSelected);
-                }}
-                disabled={sprintIsSoldOut}
-              >
-                {isSelected ? (
-                  <>
-                    <Check className="mr-3 h-5 w-5" />
-                    Added
-                  </>
-                ) : (
-                  'Add to Registration'
-                )}
-              </Button>
-            )}
-          </div>
+          <span className="w-full rounded-full bg-[#F995081A] px-4 py-2 text-center font-inter text-sm font-extrabold text-[#F99508] sm:hidden">
+            {displayPrice}
+          </span>
+
+
+          <span className="hidden shrink-0 rounded-full bg-[#F995081A] px-3 py-1.5 font-inter text-sm font-extrabold text-[#F99508] sm:inline-flex">
+            {displayPrice}
+          </span>
         </div>
+
+        <RadioGroup
+          value={radioValue}
+          onValueChange={(val) => {
+            if (sprintIsSoldOut) return;
+            onChange(val === 'yes');
+          }}
+          className="flex flex-wrap items-center gap-x-6 gap-y-3"
+        >
+          <div className="flex items-center gap-2.5">
+            <RadioGroupItem
+              pyconStyles
+              value="yes"
+              id="sprintDay-yes"
+              disabled={sprintIsSoldOut}
+              className="h-5 w-5 border-2 border-[#7681B666] text-[#04B1A4] data-[state=checked]:border-[#04B1A4]"
+            />
+            <Label htmlFor="sprintDay-yes" className="font-inter text-sm font-medium text-[#072E47]">
+              Yes, I&apos;ll join
+            </Label>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <RadioGroupItem
+              pyconStyles
+              value="no"
+              id="sprintDay-no"
+              disabled={sprintIsSoldOut}
+              className="h-5 w-5 border-2 border-[#7681B666] text-[#04B1A4] data-[state=checked]:border-[#04B1A4]"
+            />
+            <Label htmlFor="sprintDay-no" className="font-inter text-sm font-medium text-[#072E47]">
+              No thanks
+            </Label>
+          </div>
+        </RadioGroup>
       </div>
 
       <FormError />
-    </div>
+    </section>
   );
 };
 
