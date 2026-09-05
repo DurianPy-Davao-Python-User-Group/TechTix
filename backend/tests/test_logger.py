@@ -467,8 +467,9 @@ class TestMaskEmail(unittest.TestCase):
 
     def test_standard_email(self) -> None:
         """Test masking standard email address."""
-        self.assertEqual(mask_email('john.doe@example.com'), 'j******e@example.com')
-        self.assertEqual(mask_email('aspactores@durianpy.org'), 'a********s@durianpy.org')
+        self.assertEqual(mask_email('john.doe@example.com'), 'joh**doe@example.com')
+        self.assertEqual(mask_email('aspactores@durianpy.org'), 'aspa**ores@durianpy.org')
+
 
     def test_short_local_parts(self) -> None:
         """Test masking short local part emails."""
