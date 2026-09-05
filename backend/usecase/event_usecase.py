@@ -17,6 +17,7 @@ from repository.ticket_type_repository import TicketTypeRepository
 from starlette.responses import JSONResponse
 from usecase.email_usecase import EmailUsecase
 from usecase.file_s3_usecase import FileS3Usecase
+from utils.logger import log_execution, logger
 from utils.utils import Utils
 
 
@@ -30,6 +31,7 @@ class EventUsecase:
         self.__faqs_repository = FAQsRepository()
         self.__ticket_type_repository = TicketTypeRepository()
 
+    @log_execution
     def create_event(self, event_in: EventIn) -> Union[JSONResponse, EventOut]:
         """Create a new event
 
@@ -71,10 +73,12 @@ class EventUsecase:
         if email_status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Event created: {event.name} (event_id={event.eventId}, admin_id={event.adminId})')
         event_data = self.__convert_data_entry_to_dict(event)
         event_out = EventOut(**event_data)
         return self.collect_pre_signed_url(event_out)
 
+    @log_execution
     def update_event(self, event_id: str, event_in: EventIn) -> Union[JSONResponse, EventOut]:
         """Update an existing event.
 
@@ -104,6 +108,12 @@ class EventUsecase:
         status, update_event, message = self.__events_repository.update_event(event_entry=event, event_in=event_in)
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
+
+        logger.info(f'Event updated: {update_event.name} (event_id={event_id}, status={update_event.status})')
+        if original_status != update_event.status:
+            logger.info(
+                f'Event status changed for {update_event.name} (event_id={event_id}) from {original_status} to {update_event.status}'
+            )
 
         if event_in.ticketTypes:
             _, ticket_types_entries, _ = self.__ticket_type_repository.query_ticket_types(event_id=event_id)
@@ -174,6 +184,7 @@ class EventUsecase:
 
         return self.collect_pre_signed_url(event_out)
 
+    @log_execution
     def get_event(self, event_id: str) -> Union[JSONResponse, EventOut, EventAdminOut]:
         """Get an event by its ID
 
@@ -203,6 +214,7 @@ class EventUsecase:
 
         return self.collect_pre_signed_url(event_out)
 
+    @log_execution
     def get_events(self, admin_id: str = None) -> Union[JSONResponse, List[EventOut]]:
         """Get all events or all events for a specific admin
 
@@ -227,6 +239,7 @@ class EventUsecase:
         event_model = EventAdminOut if current_user else EventOut
         return [self.collect_pre_signed_url(event_model(**event_data)) for event_data in events_data]
 
+    @log_execution
     def delete_event(self, event_id: str) -> Union[None, JSONResponse]:
         """Delete an event by its ID
 
@@ -245,6 +258,8 @@ class EventUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Event deleted: {event.name} (event_id={event_id})')
+
         _, faqs, _ = self.__faqs_repository.query_faq_entry(event_id)
         if faqs:
             status, message = self.__faqs_repository.delete_faqs(faqs_entry=faqs)
@@ -253,6 +268,7 @@ class EventUsecase:
 
         return None
 
+    @log_execution
     def update_event_after_s3_upload(self, object_key) -> Union[JSONResponse, EventOut]:
         """Update an event after an S3 upload
 
@@ -280,10 +296,12 @@ class EventUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Event updated after S3 upload: event_id={event_id}, upload_type={upload_type}')
         event_data = self.__convert_data_entry_to_dict(update_event)
         event_out = EventOut(**event_data)
         return self.collect_pre_signed_url(event_out)
 
+    @log_execution
     def collect_pre_signed_url(self, event: EventOut):
         """Collect pre-signed URLs for an event.
 

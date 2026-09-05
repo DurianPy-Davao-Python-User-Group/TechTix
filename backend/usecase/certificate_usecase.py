@@ -12,7 +12,7 @@ from repository.events_repository import EventsRepository
 from repository.registrations_repository import RegistrationsRepository
 from starlette.responses import JSONResponse
 from usecase.file_s3_usecase import FileS3Usecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class CertificateUsecase:
@@ -23,6 +23,7 @@ class CertificateUsecase:
         self.__sqs_client = boto3_client('sqs', region_name=os.getenv('REGION', 'ap-southeast-1'))
         self.__sqs_url = os.getenv('CERTIFICATE_QUEUE')
 
+    @log_execution
     def generate_certificates(self, event_id: str, registration_id: str = None) -> Tuple[HTTPStatus, str]:
         """Generate certificates for an event
 
@@ -56,8 +57,9 @@ class CertificateUsecase:
             )
 
             message_id = response.get('MessageId')
-            message = f'Queue message success: {message_id}'
-            logger.info(message)
+            logger.info(
+                f'Certificate generation queued for event_id={event_id}, registration_id={registration_id}'
+            )
 
         except Exception as e:
             message = f'Failed to send email: {str(e)}'
@@ -67,6 +69,7 @@ class CertificateUsecase:
         else:
             return HTTPStatus.OK, message
 
+    @log_execution
     def claim_certificate(self, event_id: str, certificate_in: CertificateIn) -> Union[JSONResponse, CertificateOut]:
         """Claim a certificate
 
@@ -80,6 +83,7 @@ class CertificateUsecase:
         :rtype: Union[JSONResponse, CertificateOut]
 
         """
+        masked_email = mask_email(certificate_in.email)
         status, event, message = self.__events_repository.query_events(event_id)
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
@@ -133,6 +137,11 @@ class CertificateUsecase:
         #     object_key=registration.certificatePdfObjectKey
         # )
         # img_download_url = pdf_download_url_response.downloadLink if pdf_download_url_response else None
+
+        logger.info(
+            f'Certificate claimed for event_id={event_id}, email={masked_email}, '
+            f'registration_id={registration.registrationId}, is_first_claim={is_first_claim}'
+        )
 
         return CertificateOut(
             isFirstClaim=is_first_claim,

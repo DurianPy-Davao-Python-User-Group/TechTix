@@ -11,7 +11,7 @@ from model.events.events_constants import EventUploadField, EventUploadType
 from model.file_uploads.file_upload import FileDownloadOut, FileUploadOut
 from model.file_uploads.file_upload_constants import ClientMethods
 from starlette.responses import JSONResponse
-from utils.logger import logger
+from utils.logger import log_execution, logger
 
 
 class FileS3Usecase:
@@ -24,6 +24,7 @@ class FileS3Usecase:
         self.__bucket = os.getenv('S3_BUCKET')
         self.__presigned_url_expiration_time = 30
 
+    @log_execution
     def create_presigned_url(self, object_key) -> FileUploadOut:
         """Create a presigned url for uploading files to s3
 
@@ -54,12 +55,14 @@ class FileS3Usecase:
             )
 
             url_data = {'uploadLink': presigned_url, 'objectKey': unique_object_key}
+            logger.info(f'Presigned upload URL created for object_key: {unique_object_key}')
 
             return FileUploadOut(**url_data)
         except ClientError as e:
             logger.error('Error creating presigned url: %s', e)
             return JSONResponse(status_code=500, content={'message': 'Error creating presigned url'})
 
+    @log_execution
     def create_download_url(self, object_key) -> FileDownloadOut:
         """Create a presigned url for downloading files from s3
 
@@ -85,6 +88,7 @@ class FileS3Usecase:
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'message': 'Error fetching download url'}
             )
 
+    @log_execution
     def upload_file(self, file_name: str, object_name: str = None, verbose: bool = True) -> bool:
         # If S3 object_name was not specified, use file_name
         if object_name is None:
@@ -92,8 +96,7 @@ class FileS3Usecase:
 
         try:
             self.__s3_client.upload_file(file_name, self.__bucket, object_name)
-            if verbose:
-                logger.info(f'Stored file in S3: {self.__bucket}/{object_name}')
+            logger.info(f'File uploaded to S3: {self.__bucket}/{object_name}')
         except Exception as e:
             message = f'Failed to upload file ({file_name}) to S3, Reason: {type(e).__name__} - {str(e)}'
             logger.error(message)

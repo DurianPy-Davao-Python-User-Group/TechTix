@@ -17,7 +17,7 @@ from repository.preregistrations_repository import PreRegistrationsRepository
 from starlette.responses import JSONResponse
 from usecase.email_usecase import EmailUsecase
 from usecase.file_s3_usecase import FileS3Usecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class PreRegistrationUsecase:
@@ -36,6 +36,7 @@ class PreRegistrationUsecase:
         self.__email_usecase = EmailUsecase()
         self.__file_s3_usecase = FileS3Usecase()
 
+    @log_execution
     def create_preregistration(self, preregistration_in: PreRegistrationIn) -> Union[JSONResponse, PreRegistrationOut]:
         """Creates a new pre-registration entry.
 
@@ -69,7 +70,7 @@ class PreRegistrationUsecase:
         if status == HTTPStatus.OK and preregistrations:
             return JSONResponse(
                 status_code=HTTPStatus.CONFLICT,
-                content={'message': f'Pre-registration with email {email} already exists'},
+                content={'message': f'Pre-registration with email {mask_email(email)} already exists'},
             )
 
         preregistration_id = ulid.ulid()
@@ -84,6 +85,10 @@ class PreRegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(
+            f'Pre-registration created successfully: event_id={event_id}, preregistration_id={preregistration_id}, email={mask_email(preregistration_in.email)}'
+        )
+
         preregistration_data = self.__convert_data_entry_to_dict(preregistration)
 
         if not preregistration.preRegistrationEmailSent:
@@ -92,6 +97,7 @@ class PreRegistrationUsecase:
         preregistration_out = PreRegistrationOut(**preregistration_data)
         return preregistration_out
 
+    @log_execution
     def update_preregistration(
         self,
         event_id: str,
@@ -134,11 +140,13 @@ class PreRegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Pre-registration updated: event_id={event_id}, preregistration_id={preregistration_id}')
         preregistration_data = self.__convert_data_entry_to_dict(update_preregistration)
         preregistration_out = PreRegistrationOut(**preregistration_data)
 
         return preregistration_out
 
+    @log_execution
     def get_preregistration(self, event_id: str, preregistration_id: str) -> Union[JSONResponse, PreRegistrationOut]:
         """Retrieves a specific pre-registration entry by its ID.
 
@@ -169,6 +177,7 @@ class PreRegistrationUsecase:
         preregistration_data = self.__convert_data_entry_to_dict(preregistration)
         return PreRegistrationOut(**preregistration_data)
 
+    @log_execution
     def get_preregistration_by_email(self, event_id: str, email: str) -> PreRegistrationOut:
         """Retrieves a specific pre-registration entry by its email.
 
@@ -195,6 +204,7 @@ class PreRegistrationUsecase:
 
         return PreRegistrationOut(**preregistration_data)
 
+    @log_execution
     def get_preregistrations(self, event_id: str = None) -> Union[JSONResponse, List[PreRegistrationOut]]:
         """Retrieves a list of pre-registration preregistration_entries.
 
@@ -222,6 +232,7 @@ class PreRegistrationUsecase:
             for preregistration in preregistrations
         ]
 
+    @log_execution
     def delete_preregistration(self, event_id: str, preregistration_id: str) -> Union[None, JSONResponse]:
         """Deletes a specific preregistration entry by its ID.
 
@@ -255,8 +266,10 @@ class PreRegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Pre-registration deleted: event_id={event_id}, preregistration_id={preregistration_id}')
         return None
 
+    @log_execution
     def get_preregistration_csv(self, event_id: str) -> FileDownloadOut:
         """Returns the FileDownloadOut of the CSV for the specified event
 
