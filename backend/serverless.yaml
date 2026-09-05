@@ -6,6 +6,19 @@ custom:
   projectName: ${self:custom.organization}-events
   serviceName: events
   stage: ${opt:stage, self:provider.stage}
+  corsOrigin:
+    prod: '*.durianpy.org'
+    default: '*'
+  corsOriginValue: ${self:custom.corsOrigin.${self:custom.stage}, self:custom.corsOrigin.default}
+  s3CorsAllowedOrigins:
+    prod:
+      - '*.durianpy.org'
+      - 'https://*.durianpy.org'
+      - 'https://durianpy.org'
+    default:
+      - '*'
+  apiGatewayRateLimit: 30
+  apiGatewayBurstLimit: 30
   pitr:
     prod: true
   pitrEnabled: ${self:custom.pitr.${self:custom.stage}, false}
@@ -52,6 +65,10 @@ provider:
         Action: execute-api:Invoke
         Principal: "*"
         Resource: execute-api:/*/*/*
+    usagePlan:
+      throttle:
+        rateLimit: ${self:custom.apiGatewayRateLimit}
+        burstLimit: ${self:custom.apiGatewayBurstLimit}
   environment:
     REGION: ${self:provider.region}
     STAGE: ${self:custom.stage}
@@ -65,6 +82,7 @@ provider:
     PAYMENT_QUEUE: ${self:custom.paymentQueue}
     CERTIFICATE_QUEUE: ${self:custom.certificateQueue}
     S3_BUCKET: ${self:custom.bucket}
+    SECRET_TOKEN: ${ssm:/techtix/events-api-secret-token-${self:custom.stage}}
     # KONFHUB_API_KEY: ${self:custom.konfHubApiKey}
     USER_POOL_ID: !ImportValue UserPoolId-${self:custom.stage}
     USER_POOL_CLIENT_ID: !ImportValue AppClientId-${self:custom.stage}

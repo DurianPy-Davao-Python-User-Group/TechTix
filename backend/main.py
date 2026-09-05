@@ -9,6 +9,7 @@ from mangum import Mangum
 
 STAGE = os.environ.get('STAGE')
 root_path = f'/{STAGE}' if STAGE else '/'
+CORS_ORIGIN = '*.durianpy.org' if STAGE == 'prod' else '*'
 
 app = FastAPI(
     root_path=root_path,
@@ -39,7 +40,7 @@ api_controller(app)
 mangum_handler = Mangum(app, lifespan='off')
 
 
-@cors_headers
+@cors_headers(origin=CORS_ORIGIN)
 @lambdawarmer.warmer
 def handler(event, context):
     return mangum_handler(event, context)
