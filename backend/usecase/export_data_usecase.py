@@ -12,7 +12,7 @@ from openpyxl.drawing.image import Image
 from PIL import Image as PilImage
 from repository.registrations_repository import RegistrationsRepository
 from usecase.pycon_registration_usecase import PyconRegistrationUsecase
-from utils.logger import logger
+from utils.logger import log_execution, logger
 
 
 class ExportDataUsecase:
@@ -23,6 +23,7 @@ class ExportDataUsecase:
         self.__EXCEL_COLUMN_WIDTH_FACTOR = 0.15
         self.__EXCEL_ROW_HEIGHT_FACTOR = 0.75
 
+    @log_execution
     async def export_registrations_to_excel(self, event_id: str, file_name: str):
         """
         Exports an event's registration list to an Excel file, embedding ID images where available.
@@ -39,7 +40,10 @@ class ExportDataUsecase:
             df, column_mapping = self._create_dataframe(registrations_data)
             output_path = await self._write_excel_with_images_async(df, file_name, column_mapping)
 
-            logger.info(f'Successfully exported data to {output_path}')
+            logger.info(
+                f'Exported {len(registrations_data)} registrations to Excel for event_id={event_id} '
+                f'(file: {Path(output_path).name})'
+            )
             return JSONResponse(
                 status_code=HTTPStatus.OK, content={'message': f'Data exported to {Path(output_path).name}'}
             )

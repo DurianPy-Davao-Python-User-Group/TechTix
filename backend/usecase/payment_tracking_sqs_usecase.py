@@ -3,7 +3,7 @@ import os
 
 import boto3
 from usecase.payment_tracking_usecase import PaymentTrackingUsecase
-from utils.logger import logger
+from utils.logger import log_execution, logger
 
 
 class PaymentTrackingSQSUsecase:
@@ -12,6 +12,7 @@ class PaymentTrackingSQSUsecase:
         self.PAYMENT_QUEUE = os.environ.get('PAYMENT_QUEUE')
         self.payment_tracking_usecase = PaymentTrackingUsecase()
 
+    @log_execution
     def process_payment_message(self, event: dict) -> None:
         """
         Processes payment messages received from an AWS SQS event and updates the transactionStatus of a payment_transaction.

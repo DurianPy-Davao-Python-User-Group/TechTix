@@ -13,7 +13,7 @@ from model.preregistrations.preregistration import PreRegistration, PreRegistrat
 from model.preregistrations.preregistrations_constants import AcceptanceStatus
 from model.registrations.registration import Registration
 from repository.preregistrations_repository import PreRegistrationsRepository
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class EmailUsecase:
@@ -44,7 +44,7 @@ class EmailUsecase:
 
         # Check if event has konfhub and exclude it from the Email Service
         if self.__event_email and event.konfhubId and event.konfhubApiKey:
-            logger.info(f'Skipping sending email to {self.__event_email} because it is a special email')
+            logger.info(f'Skipping sending email to {mask_email(self.__event_email)} because it is a special email')
             return
 
         timestamp = datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -59,9 +59,9 @@ class EmailUsecase:
             MessageGroupId=f'durianpy-event-{event_id}',
         )
         message_id = response.get('MessageId')
-        message = f'Queue message success: {message_id}'
-        logger.info(message)
+        logger.info(f'Queued {len(payload)} email(s) for event {event_id} (MessageId: {message_id})')
 
+    @log_execution
     def send_batch_email(self, email_in_list: List[EmailIn], event: Event) -> Tuple[HTTPStatus, str]:
         """Send an email to the queue
 
@@ -87,6 +87,7 @@ class EmailUsecase:
         else:
             return HTTPStatus.OK, message
 
+    @log_execution
     def send_email(self, email_in: EmailIn, event: Event) -> Tuple[HTTPStatus, str]:
         """Send an email to the queue
 
@@ -102,6 +103,7 @@ class EmailUsecase:
         """
         return self.send_batch_email(email_in_list=[email_in], event=event)
 
+    @log_execution
     def send_event_creation_email(self, event: Event) -> Tuple[HTTPStatus, str]:
         """Send an email to the queue. If the preregistration is accepted, send an acceptance email. If the preregistration is rejected, send a rejection email.
 
@@ -112,6 +114,9 @@ class EmailUsecase:
         :rtype: Tuple[HTTPStatus, str]
 
         """
+        logger.info(
+            f'Sending event creation email for event {event.name} (event_id={event.eventId}) to {mask_email(event.email)}'
+        )
         subject = f'Event {event.name} has been created'
         body = [f'Event {event.name} has been created. Please check the event page for more details.']
         salutation = 'Dear DurianPy ,'
@@ -137,6 +142,7 @@ class EmailUsecase:
         )
         return self.send_email(email_in=email_in, event=event)
 
+    @log_execution
     def send_registration_creation_email(self, registration: Registration, event: Event) -> Tuple[HTTPStatus, str]:
         """Send an email to the queue.
 
@@ -177,9 +183,14 @@ class EmailUsecase:
             eventId=event.eventId,
             isDurianPy=is_durianpy,
         )
-        logger.info(f'Sending registration confirmation email to {registration.email}')
+        masked_email = mask_email(registration.email)
+        logger.info(
+            f'Sending registration confirmation email to {masked_email} for event {event.name} '
+            f'(registration_id={registration.registrationId})'
+        )
         return self.send_email(email_in=email_in, event=event)
 
+    @log_execution
     def send_accept_reject_status_email(
         self, preregistrations: List[PreRegistration], event: Event
     ) -> Tuple[HTTPStatus, str]:
@@ -198,15 +209,16 @@ class EmailUsecase:
             if preregistration.acceptanceEmailSent:
                 continue
 
+            masked_email = mask_email(preregistration.email)
             should_send_acceptance = (
                 preregistration.acceptanceStatus and preregistration.acceptanceStatus == AcceptanceStatus.ACCEPTED.value
             )
             if should_send_acceptance:
                 email = self.send_preregistration_acceptance_email(preregistration=preregistration, event=event)
-                logger.info(f'Acceptance email sent to {preregistration.email} for event {event.eventId}')
+                logger.info(f'Acceptance email queued for {masked_email} for event {event.eventId}')
             else:
                 email = self.send_preregistration_rejection_email(preregistration=preregistration, event=event)
-                logger.info(f'Rejection email sent to {preregistration.email} for event {event.eventId}')
+                logger.info(f'Rejection email queued for {masked_email} for event {event.eventId}')
 
             emails.append(email)
 
@@ -216,6 +228,7 @@ class EmailUsecase:
 
         return self.send_batch_email(email_in_list=emails, event=event)
 
+    @log_execution
     def send_preregistration_creation_email(
         self, preregistration: PreRegistration, event: Event
     ) -> Tuple[HTTPStatus, str]:
@@ -257,9 +270,14 @@ class EmailUsecase:
             eventId=event.eventId,
             isDurianPy=is_durianpy,
         )
-        logger.info(f'Sending pre-registration email to {preregistration.email}')
+        masked_email = mask_email(preregistration.email)
+        logger.info(
+            f'Sending pre-registration email to {masked_email} for event {event.name} '
+            f'(preregistration_id={preregistration.preregistrationId})'
+        )
         return self.send_email(email_in=email_in, event=event)
 
+    @log_execution
     def send_preregistration_acceptance_email(self, preregistration: PreRegistration, event: Event) -> EmailIn:
         """Send an acceptance email to the queue.
 
@@ -297,9 +315,11 @@ class EmailUsecase:
             eventId=event.eventId,
             isDurianPy=is_durianpy,
         )
-        logger.info(f'Sending pre-registration acceptance email to {preregistration.email}')
+        masked_email = mask_email(preregistration.email)
+        logger.info(f'Sending pre-registration acceptance email to {masked_email}')
         return email_in
 
+    @log_execution
     def send_preregistration_rejection_email(self, preregistration: PreRegistration, event: Event) -> EmailIn:
         """Send a rejection email to the queue.
 
@@ -340,9 +360,11 @@ class EmailUsecase:
             eventId=event.eventId,
             isDurianPy=is_durianpy,
         )
-        logger.info(f'Sending pre-registration rejection email to {preregistration.email}')
+        masked_email = mask_email(preregistration.email)
+        logger.info(f'Sending pre-registration rejection email to {masked_email}')
         return email_in
 
+    @log_execution
     def send_event_completion_email(
         self,
         event: Event,
@@ -361,6 +383,9 @@ class EmailUsecase:
         :type participants: list
 
         """
+        logger.info(
+            f'Sending event completion email for event {event.name} to {len(participants)} participant(s)'
+        )
         self.__event_email = event.email
         event_name = event.name
         event_id = event.eventId

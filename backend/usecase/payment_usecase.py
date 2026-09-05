@@ -20,7 +20,7 @@ from repository.payment_transaction_repository import PaymentTransactionReposito
 from starlette.responses import JSONResponse
 from usecase.email_usecase import EmailUsecase
 from usecase.pycon_registration_usecase import PyconRegistrationUsecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class PaymentUsecase:
@@ -30,6 +30,7 @@ class PaymentUsecase:
         self.pycon_registration_usecase = PyconRegistrationUsecase()
         self.email_usecase = EmailUsecase()
 
+    @log_execution
     def create_payment_transaction(self, payment_transaction: PaymentTransactionIn) -> PaymentTransactionOut:
         """
         Create a new payment transaction
@@ -40,17 +41,16 @@ class PaymentUsecase:
         Returns:
             PaymentTransactionOut -- The created payment transaction
         """
-        logger.info(f'Creating payment transaction for {payment_transaction.eventId}')
-        logger.info(f'Payment transaction data: {payment_transaction}')
         status, payment_transaction, message = self.payment_repo.store_payment_transaction(payment_transaction)
         if status != HTTPStatus.OK:
             logger.error(f'[{payment_transaction.eventId}] {message}')
             return JSONResponse(status_code=status, content={'message': message})
 
-        logger.info(f'Payment transaction created for {payment_transaction.eventId}')
+        logger.info(f'Payment transaction created: transaction_id={payment_transaction.rangeKey}, event_id={payment_transaction.eventId}')
         payment_transaction_dict = self.__convert_data_entry_to_dict(payment_transaction)
         return PaymentTransactionOut(**payment_transaction_dict)
 
+    @log_execution
     def update_payment_transaction(
         self, payment_transaction_id: str, payment_transaction_in: PaymentTransactionIn
     ) -> PaymentTransactionOut:
@@ -64,7 +64,6 @@ class PaymentUsecase:
         Returns:
             PaymentTransactionOut -- The updated payment transaction
         """
-        logger.info(f'Updating payment transaction for {payment_transaction_id}')
         status, existing_payment_transaction, message = self.payment_repo.query_payment_transaction_by_id_only(
             payment_transaction_id=payment_transaction_id
         )
@@ -80,10 +79,11 @@ class PaymentUsecase:
             logger.error(f'[{payment_transaction_id}] {message}')
             return JSONResponse(status_code=status, content={'message': message})
 
-        logger.info(f'Payment transaction updated for {payment_transaction_id}')
+        logger.info(f'Payment transaction updated: transaction_id={payment_transaction_id}, status={payment_transaction_in.transactionStatus}')
         payment_transaction_dict = self.__convert_data_entry_to_dict(updated_payment_transaction)
         return PaymentTransactionOut(**payment_transaction_dict)
 
+    @log_execution
     def query_pending_payment_transactions(self) -> list[PaymentTransactionOut]:
         """
         Query all pending payment transactions
@@ -114,6 +114,7 @@ class PaymentUsecase:
 
         return payment_transaction_list
 
+    @log_execution
     def payment_callback(self, payment_transaction_id: str, event_id: str):
         """
         Update the payment transaction status to SUCCESS and redirect to the success page
@@ -183,7 +184,7 @@ class PaymentUsecase:
                 content={'message': 'Redirecting to error page'},
             )
 
-        logger.info(f'Payment transaction updated for {payment_transaction_id}')
+        logger.info(f'Payment successful: transaction_id={payment_transaction_id}, event_id={event_id}')
 
         redirect_url = (
             f'{frontend_base_url}/{event_id}/register?step=Success&paymentTransactionId={payment_transaction_id}'
@@ -313,7 +314,7 @@ class PaymentUsecase:
             )
 
             self.email_usecase.send_email(email_in=email_in, event=event_detail)
-            logger.info(f'[{payment_transaction_id}] Payment failed email sent to {email}')
+            logger.info(f'Payment failed email sent for transaction_id={payment_transaction_id} to {mask_email(email)}')
 
         except Exception as e:
             logger.error(f'[{payment_transaction_id}] Failed to send payment failed email: {e}')

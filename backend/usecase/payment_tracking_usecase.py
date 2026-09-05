@@ -12,7 +12,7 @@ from repository.events_repository import EventsRepository
 from repository.payment_transaction_repository import PaymentTransactionRepository
 from repository.registrations_repository import RegistrationsRepository
 from usecase.email_usecase import EmailUsecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class PaymentTrackingUsecase:
@@ -23,13 +23,14 @@ class PaymentTrackingUsecase:
         self.payment_transaction_repository = PaymentTransactionRepository()
         self.registration_repository = RegistrationsRepository()
 
+    @log_execution
     def process_payment_event(self, message_body: dict) -> None:
         """
         Processes a payment event message, updates the payment transaction status,
         and stores the registration details.
         """
         try:
-            logger.info(f'Processing payment event message: {message_body}')
+            logger.info('Processing payment event message')
             self._update_timestamps(message_body)
             payment_tracking_body = PaymentTrackingBody(**message_body)
 
@@ -66,7 +67,7 @@ class PaymentTrackingUsecase:
 
             if status == HTTPStatus.OK and registration_details:
                 logger.info(
-                    f'Skipping duplicate email for {registration_data.email} - user already has existing registration'
+                    f'Skipping duplicate email for {mask_email(registration_data.email)} - user already has existing registration'
                 )
                 return
 
@@ -76,6 +77,10 @@ class PaymentTrackingUsecase:
                 )
                 if not recorded_registration_data:
                     logger.error(f'Failed to save registration for entryId {entry_id}')
+                else:
+                    logger.info(
+                        f'Registration created via payment tracking for entry_id={entry_id}, event_id={event_id}, email={mask_email(registration_data.email)}'
+                    )
 
             elif transaction_status == TransactionStatus.FAILED:
                 status, registrations, msg = self.registration_repository.query_registrations_with_email(
@@ -83,7 +88,7 @@ class PaymentTrackingUsecase:
                 )
                 if status == HTTPStatus.OK and registrations:
                     logger.info(
-                        f'Skipping failed payment email for {registration_data.email} - user already has existing registration'
+                        f'Skipping failed payment email for {mask_email(registration_data.email)} - user already has existing registration'
                     )
                     return
 
@@ -96,7 +101,7 @@ class PaymentTrackingUsecase:
                 status=transaction_status,
                 event_detail=event_detail,
             )
-            logger.info(f'Successfully processed registration for {registration_data.email}')
+            logger.info(f'Successfully processed registration for {mask_email(registration_data.email)}')
 
         except Exception as e:
             logger.error(f'Failed to process successful payment for entryId {registration_details.entryId}: {e}')
@@ -252,7 +257,7 @@ class PaymentTrackingUsecase:
             logger.error(f'No email template found for status: {status}')
             return
 
-        logger.info(f'Preparing to send email for event {event_detail.eventId} with status {status} to {email}.')
+        logger.info(f'Preparing to send email for event {event_detail.eventId} with status {status} to {mask_email(email)}.')
 
         email_in = EmailIn(
             to=[email],
@@ -265,4 +270,4 @@ class PaymentTrackingUsecase:
             isDurianPy=is_pycon_event,
         )
         self.email_usecase.send_email(email_in=email_in, event=event_detail)
-        logger.info(f'Email notification sent for event {event_detail.eventId} with status {status}.')
+        logger.info(f'Email notification sent for event {event_detail.eventId} with status {status} to {mask_email(email)}.')
