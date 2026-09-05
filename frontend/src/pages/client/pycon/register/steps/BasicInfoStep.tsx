@@ -71,7 +71,7 @@ const BasicInfoStep = () => {
             {({ field }) => (
               <div className="flex flex-col gap-2 w-full">
                 <FormLabel className="font-inter font-semibold text-base md:text-[17.5px] text-pycon-orange tracking-[0.025em]">Contact Number *</FormLabel>
-                <Input pyconStyles type="text" placeholder="+63 912 345 6789" {...field} />
+                <Input pyconStyles type="text" placeholder="09XXXXXXXXX" {...field} />
                 <FormError />
               </div>
             )}
