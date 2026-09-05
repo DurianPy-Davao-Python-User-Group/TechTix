@@ -98,6 +98,11 @@ const Register: FC = () => {
           {currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && (
             <>
               <h1 className="text-xl">{currentStep.title}</h1>
+              {showStepper && !shouldBeVertical && (
+                <div className="w-full my-2">
+                  <Stepper orientation="horizontal" steps={STEPS} currentStep={currentStep} stepsToExclude={[STEP_SUCCESS]} />
+                </div>
+              )}
               {currentStep.id === 'Miscellaneous' && (
                 <p className="text-[#072E4766] !font-inter font-normal text-sm"> A few more things to help us make the event better for you. </p>
               )}
@@ -106,11 +111,16 @@ const Register: FC = () => {
 
           <div className="flex flex-col md:flex-row w-full h-full grow">
             {showStepper && shouldBeVertical && (
-              <div className="my-8 h-[700px]">
+              <div className="my-8 h-[650px] w-[210px] md:w-[225px] lg:w-[240px] shrink-0">
                 <Stepper orientation="vertical" steps={STEPS} currentStep={currentStep} stepsToExclude={[STEP_SUCCESS]} />
               </div>
             )}
-            <div className={cn('space-y-4 grow', currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && shouldBeVertical && 'ms-[20vw] p-8')}>
+            <div
+              className={cn(
+                'space-y-4 grow min-w-0',
+                currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && shouldBeVertical && 'ps-6 md:ps-8 lg:ps-10 py-4 sm:py-6'
+              )}
+            >
               {currentStep.id === 'EventDetails' && <EventDetails event={eventInfo} />}
               {currentStep.id === 'BasicInfo' && <BasicInfoStep />}
               {currentStep.id === 'TicketSelection' && <TicketSelectionStep event={eventInfo} updateEventPrice={updateEventPrice} />}
