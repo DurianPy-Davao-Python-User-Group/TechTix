@@ -117,101 +117,101 @@ class TestLogger(unittest.TestCase):
 
     def test_set_level(self) -> None:
         """Test setLevel with LogLevel enum, string, and integer."""
-        l = Logger()
-        l.setLevel(LogLevel.DEBUG)
-        self.assertEqual(l.level, logging.DEBUG)
+        logger_instance = Logger()
+        logger_instance.setLevel(LogLevel.DEBUG)
+        self.assertEqual(logger_instance.level, logging.DEBUG)
 
-        l.setLevel('WARNING')
-        self.assertEqual(l.level, logging.WARNING)
+        logger_instance.setLevel('WARNING')
+        self.assertEqual(logger_instance.level, logging.WARNING)
 
-        l.setLevel(logging.ERROR)
-        self.assertEqual(l.level, logging.ERROR)
+        logger_instance.setLevel(logging.ERROR)
+        self.assertEqual(logger_instance.level, logging.ERROR)
 
     def test_delegation_to_inner_logger(self) -> None:
         """Test method and attribute delegation to logging.Logger."""
-        l = Logger()
-        with patch.object(l._Logger__logger, 'info') as mock_info:
-            l.info('Test info message')
+        logger_instance = Logger()
+        with patch.object(logger_instance._Logger__logger, 'info') as mock_info:
+            logger_instance.info('Test info message')
             mock_info.assert_called_once_with('Test info message')
 
-        with patch.object(l._Logger__logger, 'error') as mock_error:
-            l.error('Test error message')
+        with patch.object(logger_instance._Logger__logger, 'error') as mock_error:
+            logger_instance.error('Test error message')
             mock_error.assert_called_once_with('Test error message')
 
-        with patch.object(l._Logger__logger, 'warning') as mock_warn:
-            l.warning('Test warn message')
+        with patch.object(logger_instance._Logger__logger, 'warning') as mock_warn:
+            logger_instance.warning('Test warn message')
             mock_warn.assert_called_once_with('Test warn message')
 
-        with patch.object(l._Logger__logger, 'debug') as mock_debug:
-            l.debug('Test debug message')
+        with patch.object(logger_instance._Logger__logger, 'debug') as mock_debug:
+            logger_instance.debug('Test debug message')
             mock_debug.assert_called_once_with('Test debug message')
 
     def test_user_tagging_across_log_levels_with_env_user(self) -> None:
         """Test that debug, info, warning, error, critical, and exception include [userid=] from CURRENT_USER."""
-        l = Logger()
+        logger_instance = Logger()
         with patch.dict(os.environ, {'CURRENT_USER': 'test-auth-user'}):
-            with patch.object(l._Logger__logger, 'debug') as mock_debug:
-                l.debug('Checking cache hit')
+            with patch.object(logger_instance._Logger__logger, 'debug') as mock_debug:
+                logger_instance.debug('Checking cache hit')
                 mock_debug.assert_called_once_with('[userid=test-auth-user] Checking cache hit')
 
-            with patch.object(l._Logger__logger, 'error') as mock_error:
-                l.error('Database query failed')
+            with patch.object(logger_instance._Logger__logger, 'error') as mock_error:
+                logger_instance.error('Database query failed')
                 mock_error.assert_called_once_with('[userid=test-auth-user] Database query failed')
 
-            with patch.object(l._Logger__logger, 'info') as mock_info:
-                l.info('User initiated checkout')
+            with patch.object(logger_instance._Logger__logger, 'info') as mock_info:
+                logger_instance.info('User initiated checkout')
                 mock_info.assert_called_once_with('[userid=test-auth-user] User initiated checkout')
 
-            with patch.object(l._Logger__logger, 'warning') as mock_warn:
-                l.warning('Rate limit approaching')
+            with patch.object(logger_instance._Logger__logger, 'warning') as mock_warn:
+                logger_instance.warning('Rate limit approaching')
                 mock_warn.assert_called_once_with('[userid=test-auth-user] Rate limit approaching')
 
-            with patch.object(l._Logger__logger, 'critical') as mock_crit:
-                l.critical('Fatal crash')
+            with patch.object(logger_instance._Logger__logger, 'critical') as mock_crit:
+                logger_instance.critical('Fatal crash')
                 mock_crit.assert_called_once_with('[userid=test-auth-user] Fatal crash')
 
-            with patch.object(l._Logger__logger, 'exception') as mock_exc:
-                l.exception('Unhandled exception')
+            with patch.object(logger_instance._Logger__logger, 'exception') as mock_exc:
+                logger_instance.exception('Unhandled exception')
                 mock_exc.assert_called_once_with('[userid=test-auth-user] Unhandled exception')
 
     def test_user_tagging_across_log_levels_with_explicit_user_id(self) -> None:
         """Test that passing explicit user_id attaches [userid=] even if CURRENT_USER differs."""
-        l = Logger()
+        logger_instance = Logger()
         with patch.dict(os.environ, {'CURRENT_USER': 'env-user'}):
-            with patch.object(l._Logger__logger, 'debug') as mock_debug:
-                l.debug('Debug task', user_id='explicit-uid')
+            with patch.object(logger_instance._Logger__logger, 'debug') as mock_debug:
+                logger_instance.debug('Debug task', user_id='explicit-uid')
                 mock_debug.assert_called_once_with('[userid=explicit-uid] Debug task')
 
-            with patch.object(l._Logger__logger, 'error') as mock_error:
-                l.error('Payment gateway error', user_id='explicit-uid')
+            with patch.object(logger_instance._Logger__logger, 'error') as mock_error:
+                logger_instance.error('Payment gateway error', user_id='explicit-uid')
                 mock_error.assert_called_once_with('[userid=explicit-uid] Payment gateway error')
 
     def test_user_tagging_avoids_duplicate_tags(self) -> None:
         """Test that messages already containing [userid=] are not double-tagged."""
-        l = Logger()
+        logger_instance = Logger()
         with patch.dict(os.environ, {'CURRENT_USER': 'env-user'}):
-            with patch.object(l._Logger__logger, 'debug') as mock_debug:
-                l.debug('[userid=existing-user] Already tagged message')
+            with patch.object(logger_instance._Logger__logger, 'debug') as mock_debug:
+                logger_instance.debug('[userid=existing-user] Already tagged message')
                 mock_debug.assert_called_once_with('[userid=existing-user] Already tagged message')
 
-            with patch.object(l._Logger__logger, 'error') as mock_error:
-                l.error('[userid=existing-user] Already tagged error')
+            with patch.object(logger_instance._Logger__logger, 'error') as mock_error:
+                logger_instance.error('[userid=existing-user] Already tagged error')
                 mock_error.assert_called_once_with('[userid=existing-user] Already tagged error')
 
     def test_getattr_raises_for_invalid_attribute(self) -> None:
         """Test that accessing invalid attributes raises AttributeError."""
-        l = Logger()
+        logger_instance = Logger()
         with self.assertRaises(AttributeError):
-            _ = l.non_existent_attribute_xyz
+            _ = logger_instance.non_existent_attribute_xyz
 
     def test_aws_lambda_environment(self) -> None:
         """Test logger configuration when AWS_EXECUTION_ENV is set."""
         with patch.dict(os.environ, {'AWS_EXECUTION_ENV': 'AWS_Lambda_python3.11'}):
             Logger._reset()
             # Remove any existing handlers from previous test on root/custom loggers
-            l = Logger(name='lambda_test_logger')
-            self.assertFalse(l.propagate)
-            self.assertTrue(len(l.handlers) > 0)
+            logger_instance = Logger(name='lambda_test_logger')
+            self.assertFalse(logger_instance.propagate)
+            self.assertTrue(len(logger_instance.handlers) > 0)
             record = logging.LogRecord(
                 name='lambda_test_logger',
                 level=logging.INFO,
@@ -221,7 +221,7 @@ class TestLogger(unittest.TestCase):
                 args=(),
                 exc_info=None,
             )
-            formatted = l.handlers[0].formatter.format(record)
+            formatted = logger_instance.handlers[0].formatter.format(record)
             self.assertEqual(formatted, '[INFO] Lambda execution')
 
     def test_static_methods_available_on_class(self) -> None:
@@ -486,25 +486,25 @@ class TestInfoLogging(unittest.TestCase):
 
     def test_unauthenticated_info(self) -> None:
         """Test logging info without user."""
-        l = Logger()
+        logger_instance = Logger()
         with patch.dict(os.environ, {}, clear=True):
-            with patch.object(l._Logger__logger, 'info') as mock_info:
-                l.info('User registration created')
+            with patch.object(logger_instance._Logger__logger, 'info') as mock_info:
+                logger_instance.info('User registration created')
                 mock_info.assert_called_once_with('User registration created')
 
     def test_info_with_explicit_user_id(self) -> None:
         """Test info logging with explicitly passed user_id."""
-        l = Logger()
-        with patch.object(l._Logger__logger, 'info') as mock_info:
-            l.info('Payment successful: ₱1500', user_id='usr-paid-001')
+        logger_instance = Logger()
+        with patch.object(logger_instance._Logger__logger, 'info') as mock_info:
+            logger_instance.info('Payment successful: ₱1500', user_id='usr-paid-001')
             mock_info.assert_called_once_with('[userid=usr-paid-001] Payment successful: ₱1500')
 
     def test_info_with_env_current_user(self) -> None:
         """Test info logging falling back to CURRENT_USER env var."""
-        l = Logger()
+        logger_instance = Logger()
         with patch.dict(os.environ, {'CURRENT_USER': 'cognito-sub-12345'}):
-            with patch.object(l._Logger__logger, 'info') as mock_info:
-                l.info('Event status changed to OPEN')
+            with patch.object(logger_instance._Logger__logger, 'info') as mock_info:
+                logger_instance.info('Event status changed to OPEN')
                 mock_info.assert_called_once_with('[userid=cognito-sub-12345] Event status changed to OPEN')
 
 
