@@ -31,10 +31,9 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
       <EventFooterPortal>
         <Button
           onClick={onNextStep}
-          icon="ChevronRight"
+          icon="ArrowRight"
           iconPlacement="right"
-          iconClassname="stroke-pycon-violet!"
-          className="cursor-pointer gap-x-2 bg-pycon-custard-light text-pycon-violet! rounded-full hover:bg-pycon-custard py-6 sm:px-10 my-8"
+          className="cursor-pointer gap-x-2 bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl py-6 sm:px-10 my-8 shadow-xs"
         >
           Register
         </Button>
@@ -47,18 +46,15 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
       <>
         <Button
           onClick={onPrevStep}
-          icon="ChevronLeft"
-          strokeWidth={3}
-          className="bg-transparent border border-pycon-custard-light text-pycon-custard-light font-medium rounded-full py-6 sm:px-6 hover:bg-pycon-custard-light cursor-pointer hover:text-pycon-violet"
+          className="cursor-pointer bg-transparent border-2 border-[#F99508] text-[#F99508] font-sora font-bold rounded-2xl py-6 sm:px-6 hover:bg-[#F9950812] transition-colors"
         >
           Back
         </Button>
         <Button
           onClick={onNextStep}
-          icon="ChevronRight"
-          strokeWidth={3}
+          icon="ArrowRight"
           iconPlacement="right"
-          className="bg-pycon-custard-light hover:bg-pycon-custard cursor-pointer  text-pycon-violet rounded-full py-6 sm:px-6"
+          className="cursor-pointer bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors"
         >
           Next
         </Button>
@@ -75,8 +71,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
       <>
         <Button
           onClick={onPrevStep}
-          icon="ChevronLeft"
-          className="bg-transparent border border-pycon-custard-light text-pycon-custard-light font-medium rounded-full py-6 sm:px-6 hover:bg-pycon-custard-light cursor-pointer hover:text-pycon-violet"
+          className="cursor-pointer bg-transparent border-2 border-[#F99508] text-[#F99508] font-sora font-bold rounded-2xl py-6 sm:px-6 hover:bg-[#F9950812] transition-colors"
         >
           Back
         </Button>
@@ -84,9 +79,9 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
           onClick={onSummaryStep}
           disabled={paymentButtonDisabled}
           loading={isFeesLoading}
-          icon="ChevronRight"
+          icon="ArrowRight"
           iconPlacement="right"
-          className="bg-pycon-custard-light hover:bg-pycon-custard cursor-pointer  text-pycon-violet rounded-full py-6 sm:px-6"
+          className="cursor-pointer bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors disabled:opacity-50"
         >
           Next
         </Button>
@@ -100,8 +95,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
         <Button
           onClick={onPrevStep}
           disabled={isFormSubmitting}
-          icon="ChevronLeft"
-          className="bg-transparent border border-pycon-custard-light text-pycon-custard-light font-medium rounded-full py-6 sm:px-6 hover:bg-pycon-custard-light cursor-pointer hover:text-pycon-violet"
+          className="cursor-pointer bg-transparent border-2 border-[#F99508] text-[#F99508] font-sora font-bold rounded-2xl py-6 sm:px-6 hover:bg-[#F9950812] transition-colors disabled:opacity-50"
         >
           Back
         </Button>
@@ -110,9 +104,9 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
             onClick={onSubmitForm}
             disabled={paymentButtonDisabled}
             loading={isFormSubmitting}
-            icon="ChevronRight"
+            icon="ArrowRight"
             iconPlacement="right"
-            className="py-6 sm:px-6"
+            className="cursor-pointer bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors disabled:opacity-50"
           >
             Proceed to Payment
           </Button>
@@ -120,9 +114,9 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
           <Button
             onClick={onSubmitForm}
             loading={isFormSubmitting}
-            icon="ChevronRight"
+            icon="ArrowRight"
             iconPlacement="right"
-            className="bg-pycon-custard-light hover:bg-pycon-custard cursor-pointer  text-pycon-violet rounded-full py-6 sm:px-6"
+            className="cursor-pointer bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors disabled:opacity-50"
           >
             Submit
           </Button>
@@ -137,7 +131,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
         <Button
           icon="RotateCw"
           onClick={retryRegister}
-          className="cursor-pointer gap-x-2 bg-pycon-custard-light text-pycon-violet! hover:bg-pycon-custard rounded-full w-full max-w-sm py-4"
+          className="cursor-pointer gap-x-2 bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl w-full max-w-sm py-4 shadow-xs"
         >
           Retry submitting registration
         </Button>
@@ -146,7 +140,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
 
     return (
       <Button
-        className="cursor-pointer bg-pycon-custard-light text-pycon-violet! hover:bg-pycon-custard rounded-full w-full max-w-sm py-4"
+        className="cursor-pointer bg-[#04B1A4] hover:bg-[#039F93] text-white font-sora font-bold rounded-2xl w-full max-w-sm py-4 shadow-xs"
         onClick={onViewRegistrationDetails}
       >
         Check registration details

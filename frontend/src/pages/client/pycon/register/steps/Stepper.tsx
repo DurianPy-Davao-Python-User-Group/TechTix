@@ -46,7 +46,7 @@ const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepCli
 
   // Desktop vertical stepper view
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full">
+    <div className="flex flex-col items-start justify-center w-full h-full ps-2">
       {visibleSteps.map((step, index) => {
         const isDone = currentStepIndex > index;
         const isCurrent = currentStepIndex === index;
@@ -80,7 +80,7 @@ const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepCli
               {showTitle && (
                 <div
                   className={cn(
-                    'absolute left-full ms-6 flex items-center whitespace-nowrap text-sm transition-colors',
+                    'absolute left-full ms-4 flex items-center whitespace-nowrap text-sm transition-colors',
                     isDone && 'text-pycon-teal font-semibold',
                     isCurrent && 'text-pycon-orange font-bold',
                     !isDone && !isCurrent && 'text-pycon-dark-blue/50 font-medium',
@@ -93,7 +93,7 @@ const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepCli
               )}
             </div>
 
-            {!isLastStep && <div className={cn('transition-colors', connectorBackground, 'w-1 flex-1')} />}
+            {!isLastStep && <div className={cn('transition-colors', connectorBackground, 'w-1 flex-1 ms-[10px]')} />}
           </Fragment>
         );
       })}

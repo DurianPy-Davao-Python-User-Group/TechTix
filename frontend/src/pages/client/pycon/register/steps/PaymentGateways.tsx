@@ -32,7 +32,7 @@ const PaymentOption: FC<PaymentOptionProps> = ({ paymentTitle, imgSrc, paymentCh
             <img src={imgSrc} className={cn('w-full h-full', paymentChannelCode === 'PAYMAYA' && 'py-2 pt-3')} alt={paymentTitle} />
           </div>
         )}
-        <p className="font-nunito text-base font-semibold text-pycon-violet-dark">{paymentTitle}</p>
+        <p className="font-inter text-base font-bold text-[#072E47]">{paymentTitle}</p>
         <RadioGroupItem pyconStyles className="ml-auto border! border-pycon-orange!" value={paymentChannelCode} />
       </div>
     </div>
@@ -64,9 +64,9 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
 
   return (
     <>
-      <h4 className="font-nunito text-[13px] font-bold uppercase tracking-[0.5px] text-pycon-violet-dark!">Select a payment method:</h4>
+      <h4 className="font-inter text-xs font-bold uppercase tracking-[0.15em] text-[#072E4799]">Select a payment method:</h4>
       <RadioGroup value={currentPaymentChannel ?? undefined} className="block space-y-2">
-        <p className="mt-2 font-nunito text-[13px] font-bold uppercase tracking-[0.5px] text-pycon-orange">eWallets:</p>
+        <p className="mt-2 font-inter text-sm font-bold uppercase tracking-[0.5px] text-pycon-orange">eWallets:</p>
         <div className="flex flex-wrap gap-y-2">
           <PaymentOption
             paymentTitle="Gcash"
@@ -84,7 +84,7 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
           />
         </div>
 
-        <p className="font-nunito text-[13px] font-bold uppercase tracking-[0.5px] text-pycon-orange">Direct Debit:</p>
+        <p className="font-inter text-sm font-bold uppercase tracking-[0.5px] text-pycon-orange">Direct Debit:</p>
         <div className="flex flex-wrap gap-y-2">
           <PaymentOption
             paymentTitle="BPI"
