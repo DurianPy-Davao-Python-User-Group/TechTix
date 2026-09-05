@@ -21,6 +21,7 @@ import SummaryStep from './steps/SummaryStep';
 import TicketSelectionStep from './steps/TicketSelectionStep';
 import { useRegisterPage } from './useRegisterPage';
 import { useSuccess } from './useSuccess';
+import PyconBackground from '@/routes/layouts/PyconBackground';
 
 const Register: FC = () => {
   const { eventId } = useParams();
@@ -89,10 +90,7 @@ const Register: FC = () => {
 
   return (
     <section
-      className={cn(
-        'flex flex-col grow  px-4 h-full w-full text-pycon-custard font-nunito max-w-6xl mx-auto',
-        currentStep.id === 'Success' && 'grow-0'
-      )}
+      className={cn('flex flex-col grow  px-4 h-full w-full text-pycon-custard font-nunito max-w-6xl mx-auto', currentStep.id === 'Success' && 'grow-0')}
     >
       {currentStep.id === 'Miscellaneous' && <h5 className="!font-inter uppercase opacity-60 font-bold tracking-widest"> Registration </h5>}
       <div className="w-full h-full flex flex-col space-y-4 grow">
@@ -141,6 +139,8 @@ const Register: FC = () => {
           {showFAQs && <FAQs />}
         </FormProvider>
       </div>
+
+      <PyconBackground />
     </section>
   );
 };

@@ -1,11 +1,10 @@
-import type { Content } from '@tiptap/react';
 import { describe, expect, it } from 'vitest';
 import { sanitizeRichContent, sanitizeRichHtmlContent } from './RichTextContent';
+import type { Content } from '@tiptap/react';
 
 describe('RichTextContent XSS protections', () => {
   it('sanitizes malicious HTML strings', () => {
-    const maliciousHtml =
-      '<p>Safe text</p><img src="x" onerror="alert(1)" /><script>alert("xss")</script><a href="javascript:alert(1)">click</a>';
+    const maliciousHtml = '<p>Safe text</p><img src="x" onerror="alert(1)" /><script>alert("xss")</script><a href="javascript:alert(1)">click</a>';
 
     const sanitizedHtml = sanitizeRichHtmlContent(maliciousHtml).toLowerCase();
 

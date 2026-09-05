@@ -27,12 +27,34 @@ const MiscellaneousStep: FC<Props> = () => {
                 Are you a member of any local tech community?
                 <span className="text-pycon-orange">&nbsp;*</span>
               </Label>
-              <RadioGroup onValueChange={(value) => field.onChange(Boolean(value))} value={field.value} className="flex flex-wrap gap-4 py-3 mt-auto">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem pyconStyles id="communityInvolvement-yes" checked={!!field.value} value={'true'} />
-                  <Label htmlFor="communityInvolvement-yes">Yes</Label>
-                  <RadioGroupItem pyconStyles id="communityInvolvement-no" checked={!field.value} value="" />
-                  <Label htmlFor="communityInvolvement-no">No</Label>
+              <RadioGroup
+                onValueChange={(val) => field.onChange(val === 'true')}
+                value={typeof field.value === 'boolean' ? String(field.value) : undefined}
+                className="flex flex-wrap gap-4 py-3 mt-auto"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem
+                      pyconStyles
+                      id="communityInvolvement-yes"
+                      value="true"
+                      className="border-pycon-dark-blue/30 bg-transparent cursor-pointer"
+                    />
+                    <Label htmlFor="communityInvolvement-yes" className="cursor-pointer font-medium text-pycon-dark-blue">
+                      Yes
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem
+                      pyconStyles
+                      id="communityInvolvement-no"
+                      value="false"
+                      className="border-pycon-dark-blue/30 bg-transparent cursor-pointer"
+                    />
+                    <Label htmlFor="communityInvolvement-no" className="cursor-pointer font-medium text-pycon-dark-blue">
+                      No
+                    </Label>
+                  </div>
                 </div>
               </RadioGroup>
               <FormError />
@@ -46,12 +68,24 @@ const MiscellaneousStep: FC<Props> = () => {
               <Label htmlFor="futureVolunteer-yes">
                 Would you like to volunteer in the future?<span className="text-pycon-orange">&nbsp;*</span>
               </Label>
-              <RadioGroup onValueChange={(value) => field.onChange(Boolean(value))} value={field.value} className="flex flex-wrap gap-4 py-3 mt-auto">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem pyconStyles id="futureVolunteer-yes" checked={!!field.value} value={'true'} />
-                  <Label htmlFor={`futureVolunteer-yes`}>Yes</Label>
-                  <RadioGroupItem pyconStyles id="futureVolunteer-no" checked={!field.value} value="" />
-                  <Label htmlFor={`futureVolunteer-no`}>No</Label>
+              <RadioGroup
+                onValueChange={(val) => field.onChange(val === 'true')}
+                value={typeof field.value === 'boolean' ? String(field.value) : undefined}
+                className="flex flex-wrap gap-4 py-3 mt-auto"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem pyconStyles id="futureVolunteer-yes" value="true" className="border-pycon-dark-blue/30 bg-transparent cursor-pointer" />
+                    <Label htmlFor="futureVolunteer-yes" className="cursor-pointer font-medium text-pycon-dark-blue">
+                      Yes
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem pyconStyles id="futureVolunteer-no" value="false" className="border-pycon-dark-blue/30 bg-transparent cursor-pointer" />
+                    <Label htmlFor="futureVolunteer-no" className="cursor-pointer font-medium text-pycon-dark-blue">
+                      No
+                    </Label>
+                  </div>
                 </div>
               </RadioGroup>
               <FormError />
@@ -59,13 +93,15 @@ const MiscellaneousStep: FC<Props> = () => {
           )}
         </FormItem>
       </div>
-      
+
       <div className="flex flex-col w-full mt-10 gap-4">
-        <p className="font-inter font-bold uppercase text-pycon-dark-blue/40 text-sm">Preferences <span className="lowercase font-light">(optional)</span></p>
+        <p className="font-inter font-bold uppercase text-pycon-dark-blue/40 text-sm">
+          Preferences <span className="lowercase font-light">(optional)</span>
+        </p>
         <FormItem name="dietaryRestrictions">
           {({ field }) => (
             <div className="flex flex-col gap-1 grow basis-1/2">
-              <FormLabel optional optionalClass="sr-only" className="text-pycon-orange uppercase" >
+              <FormLabel optional optionalClass="sr-only" className="text-pycon-orange uppercase">
                 Dietary Restrictions
               </FormLabel>
               <Input pyconStyles placeholder="e.g. vegetarian, nut allergy..." type="text" {...field} />
