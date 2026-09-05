@@ -39,7 +39,7 @@ const PaymentOption: FC<PaymentOptionProps> = ({ paymentTitle, imgSrc, paymentCh
           )}
           <p className="text-muted-foreground">{paymentTitle}</p>
         </div>
-        <RadioGroupItem className="ml-auto" value={paymentChannelCode} checked={selected} />
+        <RadioGroupItem className="ml-auto" value={paymentChannelCode} />
       </Button>
     </div>
   );
@@ -71,7 +71,7 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
   return (
     <>
       <h4>Select a payment method:</h4>
-      <RadioGroup className="block space-y-2">
+      <RadioGroup value={currentPaymentChannel ?? undefined} className="block space-y-2">
         <p>eWallets:</p>
         <div className="flex flex-wrap gap-y-2">
           <PaymentOption
