@@ -1,6 +1,9 @@
 """Logging module providing singleton Logger, decorator, and mask_string utility."""
 
+from __future__ import annotations
+
 import datetime
+
 import functools
 import inspect
 import logging
@@ -511,9 +514,9 @@ def mask_string(
 
 def mask_email(email: Optional[str]) -> str:
     """
-    Mask sensitive email address while keeping domain and first/last local characters visible.
+    Mask sensitive email address while keeping domain and only masking the middle 2 characters of the local part.
 
-    Example: 'user@example.com' -> 'u**r@example.com'
+    Example: 'john.doe@example.com' -> 'joh**doe@example.com'
 
     :param email: Email string to mask.
     :type email: Optional[str]
@@ -528,8 +531,20 @@ def mask_email(email: Optional[str]) -> str:
         return mask_string(str_email)
 
     local_part, domain = str_email.rsplit('@', 1)
-    masked_local = mask_string(local_part, visible_prefix=1, visible_suffix=1, mask_char='*')
+    n = len(local_part)
+    if n <= 1:
+        masked_local = '*' * n
+    elif n == 2:
+        masked_local = '**'
+    elif n == 3:
+        masked_local = f'{local_part[0]}*{local_part[-1]}'
+    else:
+        start = (n - 2) // 2
+        end = start + 2
+        masked_local = f'{local_part[:start]}**{local_part[end:]}'
+
     return f'{masked_local}@{domain}'
+
 
 
 logger = Logger()
