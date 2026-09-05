@@ -1,4 +1,4 @@
-from aws.cognito_settings import AccessUser, is_admin_user
+from dependencies.verify_service_access import verify_service_access
 from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from model.common import Message
@@ -11,6 +11,7 @@ payment_router = APIRouter()
 @payment_router.post(
     '',
     response_model=PaymentTransactionOut,
+    dependencies=[Depends(verify_service_access)],
     responses={
         400: {'model': Message, 'description': 'Bad request'},
         500: {'model': Message, 'description': 'Internal server error'},
@@ -20,6 +21,7 @@ payment_router = APIRouter()
 @payment_router.post(
     '/',
     response_model=PaymentTransactionOut,
+    dependencies=[Depends(verify_service_access)],
     response_model_exclude_none=True,
     response_model_exclude_unset=True,
     include_in_schema=False,
@@ -43,19 +45,17 @@ def create_payment_transaction(
 @payment_router.get(
     '/pending',
     response_model=list[PaymentTransactionOut],
+    dependencies=[Depends(verify_service_access)],
     responses={
         404: {'model': Message, 'description': 'Bad request'},
         500: {'model': Message, 'description': 'Internal server error'},
     },
     summary='Get pending payment transactions',
 )
-def get_pending_payment_transactions(
-    current_user: AccessUser = Depends(is_admin_user),
-):
+def get_pending_payment_transactions():
     """
     Get Payment Transaction with pending Status
     """
-    _ = current_user
     payment_uc = PaymentUsecase()
     return payment_uc.query_pending_payment_transactions()
 
@@ -63,6 +63,7 @@ def get_pending_payment_transactions(
 @payment_router.put(
     '/{paymentTransactionId}',
     response_model=PaymentTransactionOut,
+    dependencies=[Depends(verify_service_access)],
     responses={
         400: {'model': Message, 'description': 'Bad request'},
         500: {'model': Message, 'description': 'Internal server error'},
@@ -74,12 +75,10 @@ def update_payment_transaction(
         ..., description='The ID of the payment transaction', alias='paymentTransactionId'
     ),
     payment_transaction: PaymentTransactionIn = Body(..., description='The payment transaction data'),
-    current_user: AccessUser = Depends(is_admin_user),
 ):
     """
     Update payment transaction
     """
-    _ = current_user
     payment_uc = PaymentUsecase()
     return payment_uc.update_payment_transaction(payment_transaction_id, payment_transaction)
 

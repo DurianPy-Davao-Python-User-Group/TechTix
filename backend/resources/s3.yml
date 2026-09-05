@@ -9,7 +9,7 @@ Resources:
         CorsRules:
           - AllowedHeaders: ["*"]
             AllowedMethods: [GET, PUT, HEAD]
-            AllowedOrigins: ["*"]
+            AllowedOrigins: ${self:custom.s3CorsAllowedOrigins.${self:custom.stage}, self:custom.s3CorsAllowedOrigins.default}
             Id: ${self:custom.bucket}-name
             MaxAge: "3600"
       PublicAccessBlockConfiguration:
