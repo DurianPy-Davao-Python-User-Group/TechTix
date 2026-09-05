@@ -20,7 +20,7 @@ from starlette.responses import JSONResponse
 from usecase.discount_usecase import DiscountUsecase
 from usecase.email_usecase import EmailUsecase
 from usecase.file_s3_usecase import FileS3Usecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class PyconRegistrationUsecase:
@@ -43,6 +43,7 @@ class PyconRegistrationUsecase:
         self.__ticket_type_repository = TicketTypeRepository()
         self.__payment_transaction_repository = PaymentTransactionRepository()
 
+    @log_execution
     def create_pycon_registration(
         self, registration_in: PyconRegistrationIn
     ) -> Union[JSONResponse, PyconRegistrationOut]:
@@ -55,7 +56,7 @@ class PyconRegistrationUsecase:
         :rtype: Union[JSONResponse, PyconRegistrationOut]
 
         """
-        logger.info(f'Saving PyCon registration: {registration_in}')
+        logger.info(f'Saving PyCon registration for email={mask_email(registration_in.email)}, event_id={registration_in.eventId}')
         status, event, message = self.__events_repository.query_events(event_id=registration_in.eventId)
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
@@ -182,6 +183,10 @@ class PyconRegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(
+            f'PyCon registration created successfully: event_id={event_id}, registration_id={registration_id}, email={mask_email(registration_in.email)}'
+        )
+
         status, __, message = self.__events_repository.append_event_registration_count(
             event_entry=event, registration_sprint_day=registration_in.sprintDay
         )
@@ -203,6 +208,7 @@ class PyconRegistrationUsecase:
         registration_out = PyconRegistrationOut(**registration_data)
         return self.collect_pre_signed_url_pycon(registration_out)
 
+    @log_execution
     def update_pycon_registration(
         self, event_id: str, registration_id: str, registration_in: PyconRegistrationPatch
     ) -> Union[JSONResponse, PyconRegistrationOut]:
@@ -245,10 +251,12 @@ class PyconRegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'PyCon registration updated: event_id={event_id}, registration_id={registration_id}')
         registration_data = self.__convert_data_entry_to_dict(update_registration)
         registration_out = PyconRegistrationOut(**registration_data)
         return self.collect_pre_signed_url_pycon(registration_out)
 
+    @log_execution
     def get_pycon_registration(self, event_id: str, registration_id: str) -> Union[JSONResponse, PyconRegistrationOut]:
         """Retrieves a specific PyCon registration entry by its ID.
 
@@ -281,6 +289,7 @@ class PyconRegistrationUsecase:
         registration_out = PyconRegistrationOut(**registration_data)
         return self.collect_pre_signed_url_pycon(registration_out)
 
+    @log_execution
     def get_pycon_registration_by_email(self, event_id: str, email: str) -> Union[JSONResponse, PyconRegistrationOut]:
         """Retrieves a specific PyCon registration entry by its email.
 
@@ -308,6 +317,7 @@ class PyconRegistrationUsecase:
 
         return self.collect_pre_signed_url_pycon(registration_out)
 
+    @log_execution
     def get_pycon_registrations(
         self, event_id: str = None, is_deleted: bool = False
     ) -> Union[JSONResponse, List[PyconRegistrationOut]]:
@@ -337,6 +347,7 @@ class PyconRegistrationUsecase:
             for registration in registrations
         ]
 
+    @log_execution
     def get_pycon_registration_csv(self, event_id: str) -> FileDownloadOut:
         """Returns the FileDownloadOut of the CSV for the specified PyCon event
 
@@ -378,6 +389,7 @@ class PyconRegistrationUsecase:
             logger.error(f'Error generating the PyCon CSV for {event_id}: {e}')
             return
 
+    @log_execution
     def delete_pycon_registration(self, event_id: str, registration_id: str) -> Union[None, JSONResponse]:
         """Deletes a specific PyCon registration entry by its ID.
 
@@ -409,8 +421,10 @@ class PyconRegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'PyCon registration deleted: event_id={event_id}, registration_id={registration_id}')
         return None
 
+    @log_execution
     def collect_pre_signed_url_pycon(self, registration: PyconRegistrationOut) -> PyconRegistrationOut:
         """Collects the pre-signed URL for the valid ID image for PyCon registrations.
 
@@ -427,6 +441,7 @@ class PyconRegistrationUsecase:
 
         return registration
 
+    @log_execution
     def resend_confirmation_email(self, event_id: str, email: str):
         """Resends the registration confirmation email for a specific PyCon registration entry.
 
@@ -450,7 +465,7 @@ class PyconRegistrationUsecase:
 
         if status == HTTPStatus.OK and registrations and registrations[0].transactionId:
             registration = registrations[0]
-            logger.info(f'Resending confirmation email to {email} for event {event_id}')
+            logger.info(f'Resending confirmation email for event {event_id} to {mask_email(email)}')
             self.__email_usecase.send_registration_creation_email(registration=registration, event=event)
             return JSONResponse(status_code=HTTPStatus.OK, content={'message': f'Confirmation email sent to {email}'})
 

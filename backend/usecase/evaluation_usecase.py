@@ -12,6 +12,7 @@ from repository.evaluations_repository import EvaluationRepository
 from repository.events_repository import EventsRepository
 from repository.registrations_repository import RegistrationsRepository
 from starlette.responses import JSONResponse
+from utils.logger import log_execution, logger
 
 
 class EvaluationUsecase:
@@ -20,6 +21,7 @@ class EvaluationUsecase:
         self.__registrations_repository = RegistrationsRepository()
         self.__events_repository = EventsRepository()
 
+    @log_execution
     def create_evaluation(self, evaluation_list_in: EvaluationListIn) -> Union[JSONResponse, List[EvaluationOut]]:
         """Create evaluations for a registration
 
@@ -59,8 +61,14 @@ class EvaluationUsecase:
             registration_in=RegistrationPatch(certificateClaimed=True),
         )
 
+        logger.info(
+            f'Evaluation submitted for event_id={event_id}, registration_id={registration_id}, '
+            f'questions_count={len(evaluation_list)}'
+        )
+
         return [EvaluationOut(**self.__convert_data_entry_to_dict(evaluation)) for evaluation in evaluation_list]
 
+    @log_execution
     def update_evaluation(
         self,
         event_id: str,
@@ -110,9 +118,13 @@ class EvaluationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(
+            f'Evaluation updated for event_id={event_id}, registration_id={registration_id}, question={question}'
+        )
         evaluation_data = self.__convert_data_entry_to_dict(update_evaluation)
         return EvaluationOut(**evaluation_data)
 
+    @log_execution
     def get_evaluation(self, event_id: str, registration_id: str, question: str) -> Union[JSONResponse, EvaluationOut]:
         """Get an evaluation
 
@@ -142,6 +154,7 @@ class EvaluationUsecase:
         evaluations_data = self.__convert_data_entry_to_dict(evaluation)
         return EvaluationOut(**evaluations_data)
 
+    @log_execution
     def get_evaluations(
         self, event_id: str = None, registration_id: str = None, question: str = None
     ) -> Union[JSONResponse, List[EvaluationListOut]]:
@@ -195,6 +208,7 @@ class EvaluationUsecase:
 
         return evaluations_return
 
+    @log_execution
     def get_evaluations_by_question(self, event_id: str, question: str) -> Union[JSONResponse, List[EvaluationOut]]:
         """Get evaluations for a question
 

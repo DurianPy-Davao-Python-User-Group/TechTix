@@ -27,7 +27,7 @@ from usecase.discount_usecase import DiscountUsecase
 from usecase.email_usecase import EmailUsecase
 from usecase.file_s3_usecase import FileS3Usecase
 from usecase.preregistration_usecase import PreRegistrationUsecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class RegistrationUsecase:
@@ -51,6 +51,7 @@ class RegistrationUsecase:
         self.__konfhub_gateway = KonfHubGateway()
         self.__payment_transaction_repository = PaymentTransactionRepository()
 
+    @log_execution
     def create_registration(self, registration_in: RegistrationIn) -> Union[JSONResponse, RegistrationOut]:
         """Creates a new registration entry.
 
@@ -103,7 +104,7 @@ class RegistrationUsecase:
             message,
         ) = self.__registrations_repository.query_registrations_with_email(event_id=event_id, email=email)
         if status == HTTPStatus.OK and registrations:
-            logger.info(f'Registration with email {email} already exists, returning existing registration')
+            logger.info(f'Registration with email {mask_email(email)} already exists, returning existing registration')
             registration = registrations[0]
             registration_data = self.__convert_data_entry_to_dict(registration)
             registration_out = RegistrationOut(**registration_data)
@@ -160,6 +161,10 @@ class RegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(
+            f'User registration created successfully: event_id={event_id}, registration_id={registration_id}, email={mask_email(registration_in.email)}'
+        )
+
         status, __, message = self.__events_repository.append_event_registration_count(event_entry=event)
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
@@ -185,6 +190,7 @@ class RegistrationUsecase:
         registration_out = RegistrationOut(**registration_data)
         return self.collect_pre_signed_url(registration_out)
 
+    @log_execution
     def create_registration_approval_flow(
         self, event: Event, registration_in: RegistrationIn
     ) -> Union[JSONResponse, RegistrationOut]:
@@ -227,6 +233,10 @@ class RegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(
+            f'Approval flow registration created successfully: event_id={event_id}, registration_id={registration_id}, email={mask_email(registration_in.email)}'
+        )
+
         status, __, message = self.__events_repository.append_event_registration_count(event_entry=event)
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
@@ -244,6 +254,7 @@ class RegistrationUsecase:
         registration_out = RegistrationOut(**registration_data)
         return self.collect_pre_signed_url(registration_out)
 
+    @log_execution
     def update_registration(
         self, event_id: str, registration_id: str, registration_in: RegistrationIn
     ) -> Union[JSONResponse, RegistrationOut]:
@@ -282,10 +293,12 @@ class RegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Registration updated: event_id={event_id}, registration_id={registration_id}')
         registration_data = self.__convert_data_entry_to_dict(update_registration)
         registration_out = RegistrationOut(**registration_data)
         return self.collect_pre_signed_url(registration_out)
 
+    @log_execution
     def get_registration(self, event_id: str, registration_id: str) -> Union[JSONResponse, RegistrationOut]:
         """Retrieves a specific registration entry by its ID.
 
@@ -318,6 +331,7 @@ class RegistrationUsecase:
         registration_out = RegistrationOut(**registration_data)
         return self.collect_pre_signed_url(registration_out)
 
+    @log_execution
     def get_registration_by_email(self, event_id: str, email: str) -> RegistrationOut:
         """Retrieves a specific registration entry by its email.
 
@@ -345,6 +359,7 @@ class RegistrationUsecase:
 
         return self.collect_pre_signed_url(registration_out)
 
+    @log_execution
     def get_registrations(
         self, event_id: str = None, is_deleted: bool = False
     ) -> Union[JSONResponse, List[RegistrationOut]]:
@@ -374,6 +389,7 @@ class RegistrationUsecase:
             for registration in registrations
         ]
 
+    @log_execution
     def get_registration_csv(self, event_id: str) -> FileDownloadOut:
         """Returns the FileDownloadOut of the CSV for the specified event
 
@@ -433,6 +449,7 @@ class RegistrationUsecase:
             logger.error(f'Error generating the CSV for {event_id}: {e}')
             return
 
+    @log_execution
     def delete_registration(self, event_id: str, registration_id: str) -> Union[None, JSONResponse]:
         """Deletes a specific registration entry by its ID.
 
@@ -464,8 +481,10 @@ class RegistrationUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(f'Registration deleted: event_id={event_id}, registration_id={registration_id}')
         return None
 
+    @log_execution
     def collect_pre_signed_url(self, registration: RegistrationOut) -> RegistrationOut:
         """Collects the pre-signed URL for the GCash payment image.
 
@@ -482,6 +501,7 @@ class RegistrationUsecase:
 
         return registration
 
+    @log_execution
     def collect_pre_signed_url_pycon(self, registration: RegistrationOut) -> RegistrationOut:
         """Collects the pre-signed URL for the valid ID image.
 
@@ -498,6 +518,7 @@ class RegistrationUsecase:
 
         return registration
 
+    @log_execution
     def register_konfhub(self, registration_in: RegistrationIn, event_id: str, event: Event):
         ticket_type_id = registration_in.ticketTypeId
         if not ticket_type_id:

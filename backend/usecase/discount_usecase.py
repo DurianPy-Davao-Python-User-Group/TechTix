@@ -13,6 +13,7 @@ from repository.discount_repository import DiscountsRepository
 from repository.events_repository import EventsRepository
 from repository.registrations_repository import RegistrationsRepository
 from starlette.responses import JSONResponse
+from utils.logger import log_execution, logger
 from utils.utils import Utils
 
 
@@ -22,6 +23,7 @@ class DiscountUsecase:
         self.__events_repository = EventsRepository()
         self.__registrations_repository = RegistrationsRepository()
 
+    @log_execution
     def get_discount(self, event_id: str, entry_id: str) -> DiscountOut:
         """Get a discount.
 
@@ -60,6 +62,7 @@ class DiscountUsecase:
 
         return discount_out
 
+    @log_execution
     def get_discount_list(self, event_id: str) -> List[DiscountOrganization]:
         """Get a list of discounts.
 
@@ -105,6 +108,7 @@ class DiscountUsecase:
             for organization_id, discount_out_list in discount_map.items()
         ]
 
+    @log_execution
     def claim_discount(self, event_id: str, entry_id: str, registration_id: str):
         """Claim a discount.
 
@@ -186,9 +190,13 @@ class DiscountUsecase:
             if status != HTTPStatus.OK:
                 return JSONResponse(status_code=status, content={'message': message})
 
+        logger.info(
+            f'Discount claimed: code={entry_id}, event_id={event_id}, registration_id={registration_id}'
+        )
         discount_data = self.__convert_data_entry_to_dict(discount)
         return DiscountOut(**discount_data)
 
+    @log_execution
     def create_discounts(self, discount_in: DiscountIn) -> Union[JSONResponse, List[DiscountOut]]:
         """Create discounts.
 
@@ -245,6 +253,10 @@ class DiscountUsecase:
                 discount_out = DiscountOut(**discount_data)
                 discount_list.append(discount_out)
 
+        logger.info(
+            f'Discounts created: count={len(discount_list)}, organization={discount_in.organizationName}, '
+            f'event_id={discount_in.eventId}, is_reusable={discount_in.isReusable}'
+        )
         return discount_list
 
     def __generate_discount_code(self, length=8):

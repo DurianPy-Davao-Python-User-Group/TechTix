@@ -8,7 +8,7 @@ from model.payments.payments import PaymentTransactionOut
 from repository.events_repository import EventsRepository
 from repository.registrations_repository import RegistrationsRepository
 from usecase.email_usecase import EmailUsecase
-from utils.logger import logger
+from utils.logger import log_execution, logger, mask_email
 
 
 class PyConRegistrationEmailNotification:
@@ -17,15 +17,17 @@ class PyConRegistrationEmailNotification:
         self.__registrations_repository = RegistrationsRepository()
         self.__events_repository = EventsRepository()
 
+    @log_execution
     def send_registration_success_email(self, email: str, event: Event, is_pycon_event: bool = True) -> None:
-        logger.info(f'Preparing to send registration success email to {email} for event {event.name}')
+        masked_email = mask_email(email)
+        logger.info(f'Preparing to send registration success email to {masked_email} for event {event.name}')
         _, registration, _ = self.__registrations_repository.query_registrations_with_email(
             email=email, event_id=event.eventId
         )
         registration_data = registration[0] if registration else None
 
         if not registration:
-            logger.error(f'No registration found for email: {email} and event_id: {event.eventId}')
+            logger.error(f'No registration found for email: {masked_email} and event_id: {event.eventId}')
             return
 
         body = [
@@ -61,11 +63,15 @@ class PyConRegistrationEmailNotification:
             isDurianPy=is_pycon_event,
         )
         self.__email_usecase.send_email(email_in=email_in, event=event)
-        logger.info(f'Sent registration success email to {email} for event {event.name}')
+        logger.info(
+            f'Registration success email sent to {masked_email} for event {event.name} (event_id={event.eventId})'
+        )
 
+    @log_execution
     def send_registration_failure_email(
         self, email: str, event: Event, payment_transaction: PaymentTransactionOut, is_pycon_event: bool = True
     ) -> None:
+        masked_email = mask_email(email)
         body = [
             f'There was an issue processing your payment for {event.name}. Please check your payment details or try again.',
             f'If the problem persists, please contact our support team at durianpy.davao@gmail.com and present your transaction ID: {payment_transaction.transactionId}.'
@@ -89,9 +95,14 @@ class PyConRegistrationEmailNotification:
         )
 
         self.__email_usecase.send_email(email_in=email_in, event=event)
-        logger.info(f'Sent registration failure email to {email} for event {event.name}')
+        logger.info(
+            f'Registration failure email sent to {masked_email} for event {event.name} '
+            f'(transaction_id={payment_transaction.transactionId})'
+        )
 
+    @log_execution
     def resend_confirmation_email(self, event_id: str, email: str) -> JSONResponse:
+        masked_email = mask_email(email)
         event_status, event_detail, event_message = self.__events_repository.query_events(event_id=event_id)
         if event_status != HTTPStatus.OK:
             return JSONResponse(status_code=event_status, content={'message': event_message})
@@ -105,15 +116,15 @@ class PyConRegistrationEmailNotification:
             return JSONResponse(status_code=HTTPStatus.NOT_FOUND, content={'message': message})
 
         logger.info(
-            f'Found registration for email {email} and event {event_detail.name}, resending confirmation email.'
+            f'Found registration for email {masked_email} and event {event_detail.name}, resending confirmation email.'
         )
 
         try:
             self.send_registration_success_email(email=email, event=event_detail, is_pycon_event=True)
-            logger.info(f'Resent confirmation email to {email} for event {event_id}')
+            logger.info(f'Resent confirmation email to {masked_email} for event {event_id}')
             return JSONResponse(status_code=HTTPStatus.OK, content={'message': f'Confirmation email sent to {email}'})
         except Exception as e:
-            logger.error(f'Failed to resend confirmation email to {email}: {e}')
+            logger.error(f'Failed to resend confirmation email to {masked_email}: {e}')
             return JSONResponse(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={'message': 'Failed to send email.'}
             )

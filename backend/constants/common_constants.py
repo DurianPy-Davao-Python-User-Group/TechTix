@@ -11,6 +11,17 @@ class EntryStatus(str, Enum):
     DELETED = 'DELETED'
 
 
+class LogLevel(str, Enum):
+    CRITICAL = 'CRITICAL'
+    FATAL = 'FATAL'
+    ERROR = 'ERROR'
+    WARNING = 'WARNING'
+    WARN = 'WARN'
+    INFO = 'INFO'
+    DEBUG = 'DEBUG'
+    NOTSET = 'NOTSET'
+
+
 class CommonConstants:
     # DB Constants
     CLS = 'cls'

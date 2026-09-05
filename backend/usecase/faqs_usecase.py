@@ -5,6 +5,7 @@ from model.faqs.faqs import FAQsIn, FAQsOut
 from repository.events_repository import EventsRepository
 from repository.faqs_repository import FAQsRepository
 from starlette.responses import JSONResponse
+from utils.logger import log_execution, logger
 
 
 class FAQsUsecase:
@@ -12,6 +13,7 @@ class FAQsUsecase:
         self.__faqs_repository = FAQsRepository()
         self.__events_repository = EventsRepository()
 
+    @log_execution
     def create_update_faqs(self, faqs_in: FAQsIn, event_id: str) -> Union[JSONResponse, FAQsOut]:
         """Create or update FAQs for an event
 
@@ -35,6 +37,7 @@ class FAQsUsecase:
             _,
         ) = self.__faqs_repository.query_faq_entry(event_id=event_id)
 
+        is_update = bool(faqs)
         if faqs:
             (
                 status,
@@ -51,8 +54,11 @@ class FAQsUsecase:
         if status != HTTPStatus.OK:
             return JSONResponse(status_code=status, content={'message': message})
 
+        action = 'updated' if is_update else 'created'
+        logger.info(f'FAQs {action} for event_id={event_id}')
         return FAQsOut(**self.__convert_data_entry_to_dict(faqs))
 
+    @log_execution
     def get_faqs(self, event_id: str) -> Union[JSONResponse, FAQsOut]:
         """Get the FAQs for an event
 
