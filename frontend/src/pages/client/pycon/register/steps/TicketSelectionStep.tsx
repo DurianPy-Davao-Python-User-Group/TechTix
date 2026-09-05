@@ -1,8 +1,7 @@
 import { FC, useEffect } from 'react';
+import { Calendar, Check, Coffee, Plus, Star, Users, Zap } from 'lucide-react';
 import checkmarkIcon from '@/assets/Checkmark.svg';
 import { FormError, FormItem, FormLabel } from '@/components/Form';
-import Label from '@/components/Label';
-import { RadioGroup, RadioGroupItem } from '@/components/RadioGroup';
 import { Event } from '@/model/events';
 import { cn } from '@/utils/classes';
 import { formatMoney, formatPercentage } from '@/utils/functions';
@@ -27,20 +26,11 @@ const CODER_BENEFITS = [
 ];
 
 const KASOSYO_BENEFITS = [
-  'Lunch',
-  'Snack',
-  'Kit — Lanyard + ID',
-  'Special Merch',
-  'Stickers',
-  'Special Metalic Pin',
-  'Workshops',
-  'Talks',
-  'Panel Discussions',
-  'Open Spaces',
-  'Kasosyo Night'
+  'Everything in Coder',
+  'Kasosyo Night',
+  'Special Metalic Pin'
 ];
 
-const KASOSYO_ACCENT_COLOR = '#38A69D';
 const ORANGE_ACCENT_COLOR = '#F99508';
 
 const getTicketSoldOutState = (ticketType?: EventTicketType) => {
@@ -59,12 +49,11 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
   return (
     <div
       className={cn(
-        'mx-auto flex w-full max-w-[90%] flex-col gap-4 px-6 md:gap-6',
-        'rounded-3xl border border-[#F995081F] bg-white py-6 shadow-[0px_6px_40px_0px_#F9950812]',
+        'mx-auto flex w-full max-w-full sm:max-w-[90%] flex-col gap-5 px-3 sm:px-6 md:gap-8',
+        'rounded-3xl border border-[#F995081F] bg-white py-5 sm:py-6 shadow-[0px_6px_40px_0px_#F9950812]',
         'md:rounded-none md:border-0 md:bg-transparent md:py-0 md:shadow-none'
       )}
     >
-
       <FormItem name="ticketType">
         {({ field }) => (
           <section className="flex flex-col gap-3 md:gap-4">
@@ -80,7 +69,7 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
                 price={coderTicket?.price ?? 0}
                 originalPrice={coderTicket?.originalPrice}
                 benefits={CODER_BENEFITS}
-                backgroundClass="bg-[#5DA144]"
+                backgroundClass="bg-gradient-to-br from-[#5DA144] to-[#4b8935]"
                 selectedBorderColor={ORANGE_ACCENT_COLOR}
                 isSelected={!!coderTicket && field.value === coderTicket.id}
                 isSoldOut={getTicketSoldOutState(coderTicket)}
@@ -100,7 +89,7 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
                 benefits={KASOSYO_BENEFITS}
                 star
                 bestValue
-                backgroundClass="bg-[#38A69D]"
+                backgroundClass="bg-gradient-to-br from-[#38A69D] to-[#25857d]"
                 selectedBorderColor={ORANGE_ACCENT_COLOR}
                 isSelected={!!kasosyoTicket && field.value === kasosyoTicket.id}
                 isSoldOut={getTicketSoldOutState(kasosyoTicket)}
@@ -110,26 +99,6 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
                   updateEventPrice(kasosyoTicket.price);
                 }}
               />
-
-              <FormItem name="sprintDay">
-                {({ field: sprintDayField }) => (
-                  <TicketCard
-                    title="Extra"
-                    subtitle="Sprint Day"
-                    ticketId="sprintDay"
-                    price={sprintDayPrice}
-                    benefits={['Sprint Day']}
-                    backgroundClass="bg-[#F99508]"
-                    selectedBorderColor={KASOSYO_ACCENT_COLOR}
-                    isSelected={sprintDayField.value === true}
-                    isSoldOut={sprintIsSoldOut}
-                    onSelect={() => {
-                      if (sprintIsSoldOut) return;
-                      sprintDayField.onChange(!sprintDayField.value);
-                    }}
-                  />
-                )}
-              </FormItem>
             </div>
 
             <FormError />
@@ -137,8 +106,7 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
         )}
       </FormItem>
 
-
-      <div className="border-t border-[#F995081F] pt-4 md:pt-6">
+      <div className="border-t border-[#F995081F] pt-6 md:pt-8">
         <FormItem name="sprintDay">
           {({ field }) => (
             <SprintDaySection
@@ -209,53 +177,66 @@ const TicketCard: FC<TicketCardProps> = ({
       }}
       style={isSelected ? { borderColor: selectedBorderColor } : undefined}
       className={cn(
-        'flex w-full flex-col rounded-[22px] border-[3px] border-transparent p-5 text-white',
-        'font-inter transition-[border-color,box-shadow] duration-200',
+        'group relative flex w-full flex-col rounded-[22px] border-[3px] p-4 sm:p-6 text-white',
+        'font-inter transition-all duration-300 ease-out',
         backgroundClass,
-        canSelect && 'cursor-pointer hover:brightness-105',
+        canSelect &&
+          'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-2xl hover:brightness-105 active:scale-[0.99] active:translate-y-0',
+        isSelected
+          ? 'border-[#F99508] shadow-2xl shadow-black/25 ring-4 ring-[#F99508]/30 -translate-y-0.5'
+          : 'border-transparent shadow-md hover:shadow-xl',
         isUnavailable && 'cursor-not-allowed opacity-60 grayscale'
       )}
     >
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <span className="inline-flex items-center gap-x-1.5">
+            {star && <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-current text-current animate-pulse shrink-0" />}
+            <span className="font-inter text-xl sm:text-2xl font-black uppercase leading-tight tracking-wide">{title}</span>
+          </span>
 
-      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 sm:justify-start">
-        <span className="inline-flex items-baseline gap-x-2">
-          {star && <span className="text-lg leading-none">★</span>}
-          <span className="font-inter text-2xl font-black uppercase leading-tight tracking-wide">{title}</span>
-        </span>
+          <span className="font-inter text-xs sm:text-sm font-medium leading-tight opacity-85">
+            ({subtitle})
+          </span>
+        </div>
 
-        <span className="font-inter text-sm font-medium leading-tight opacity-75">
-          ({subtitle}) — {formatMoney(price, 'PHP')}
-        </span>
+        <div className="flex flex-col items-start sm:items-end shrink-0 whitespace-nowrap text-left sm:text-right">
+          <span className="font-inter text-base sm:text-lg font-bold leading-tight">
+            {formatMoney(price, 'PHP')}
+          </span>
+          {hasDiscount && (
+            <div className="mt-0.5 font-inter text-xs font-medium whitespace-nowrap">
+              <span className="text-gray-300 line-through mr-1.5">{formatMoney(originalPrice!, 'PHP')}</span>
+              <span className="text-green-300 font-bold">{formatPercentage(1 - price / originalPrice!)} off</span>
+            </div>
+          )}
+        </div>
       </div>
 
-
-      {hasDiscount && (
-        <div className="mt-1 font-inter text-sm font-medium">
-          <span className="text-gray-300 line-through">{formatMoney(originalPrice!, 'PHP')}</span>{' '}
-          <span className="text-green-300">{formatPercentage(1 - price / originalPrice!)} off</span>
-        </div>
-      )}
-
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5">
+      <div className="mt-4 grid grid-cols-1 min-[360px]:grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-4">
         {benefits.map((benefit) => (
           <TicketBenefit key={benefit} benefit={benefit} />
         ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 items-end">
+      {bestValue && (
+        <div className="mt-3 flex justify-end">
+          <span className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/20 px-3 py-0.5 font-inter text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap backdrop-blur-xs shadow-xs">
+            Best Value
+          </span>
+        </div>
+      )}
+
+      <div className={cn('flex items-center justify-start', bestValue ? 'mt-2' : 'mt-4 sm:mt-5')}>
         <div>
-          {isSelected && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2D1B4E] px-4 py-1.5 font-inter text-xs font-extrabold uppercase tracking-wide text-white">
+          {isSelected ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#072E47] px-4 py-1.5 font-inter text-xs font-extrabold uppercase tracking-wide text-white shadow-md animate-in fade-in zoom-in-95 duration-200">
               <img src={checkmarkIcon} alt="" aria-hidden="true" className="h-3 w-3" />
               Selected
             </span>
-          )}
-        </div>
-
-        <div className="justify-self-end">
-          {bestValue && (
-            <span className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/20 px-5 py-2 font-inter text-xs font-extrabold uppercase tracking-wide">
-              Best Value
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5 font-inter text-xs font-semibold tracking-wide text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              Click to select
             </span>
           )}
         </div>
@@ -272,7 +253,7 @@ const TicketBenefit: FC<TicketBenefitProps> = ({ benefit }) => {
   return (
     <div className="flex min-w-0 items-start gap-1.5">
       <img src={checkmarkIcon} alt="" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-      <span className="font-inter text-sm font-medium leading-snug">{benefit}</span>
+      <span className="font-inter text-xs sm:text-sm font-medium leading-snug break-words">{benefit}</span>
     </div>
   );
 };
@@ -293,6 +274,7 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
   onChange
 }) => {
   const sprintIsSoldOut = maximumSprintDaySlots != null && sprintDayRegistrationCount >= maximumSprintDaySlots;
+  const isSelected = value === true;
 
   useEffect(() => {
     if (sprintIsSoldOut && value === true) {
@@ -300,71 +282,108 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
     }
   }, [value, onChange, sprintIsSoldOut]);
 
-
-  const radioValue = value === undefined ? undefined : value ? 'yes' : 'no';
-
   const displayPrice = `₱ ${new Intl.NumberFormat('en-PH', { maximumFractionDigits: 2 }).format(sprintDayPrice)}`;
 
   return (
     <section className="flex flex-col gap-3 md:gap-4">
-      <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">Add-Ons</FormLabel>
+      <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">
+        Add-Ons
+      </FormLabel>
+
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <Zap className="h-5 w-5 fill-[#F99508] text-[#F99508]" />
+          <h3 className="font-sora text-xl font-bold text-[#04B1A4] md:text-2xl">Add Sprint Day</h3>
+        </div>
+        <p className="font-inter text-sm text-[#072E4799]">
+          Enhance your conference experience with hands-on coding
+        </p>
+      </div>
 
       <div
+        role="checkbox"
+        aria-checked={isSelected}
+        aria-disabled={sprintIsSoldOut || undefined}
+        tabIndex={sprintIsSoldOut ? -1 : 0}
+        onClick={() => {
+          if (sprintIsSoldOut) return;
+          onChange(!isSelected);
+        }}
+        onKeyDown={(e) => {
+          if (sprintIsSoldOut || (e.key !== 'Enter' && e.key !== ' ')) return;
+          e.preventDefault();
+          onChange(!isSelected);
+        }}
         className={cn(
-          'relative flex w-full flex-col gap-4 rounded-2xl bg-[#FFF9F2] p-5',
-          sprintIsSoldOut && 'opacity-60'
+          'group relative flex w-full flex-col rounded-[22px] border-[3px] p-4 sm:p-6 font-inter bg-white transition-all duration-300 ease-out',
+          !sprintIsSoldOut &&
+            'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-xl active:scale-[0.99] active:translate-y-0',
+          isSelected
+            ? 'border-[#F99508] shadow-xl shadow-black/10 ring-4 ring-[#F99508]/20 -translate-y-0.5'
+            : 'border-[#072E4718] shadow-sm hover:border-[#F99508]/40 hover:shadow-md',
+          sprintIsSoldOut && 'cursor-not-allowed opacity-60 grayscale'
         )}
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-          <div>
-            <p className="font-inter text-base font-bold text-[#072E47]">Join Sprint Day</p>
-            <p className="font-inter text-sm italic text-[#072E4799]">Sprint Day is on October 18, 2026 (2nd Day).</p>
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-[#072E47] shrink-0" />
+            <h4 className="font-sora text-lg sm:text-xl font-bold text-[#04B1A4] md:text-2xl">Join Sprint Day</h4>
+            <span className="rounded-full bg-[#F99508] px-2.5 py-0.5 font-inter text-xs font-bold text-white shrink-0">
+              {displayPrice}
+            </span>
           </div>
 
-          <span className="w-full rounded-full bg-[#F995081A] px-4 py-2 text-center font-inter text-sm font-extrabold text-[#F99508] sm:hidden">
-            {displayPrice}
-          </span>
-
-
-          <span className="hidden shrink-0 rounded-full bg-[#F995081A] px-3 py-1.5 font-inter text-sm font-extrabold text-[#F99508] sm:inline-flex">
-            {displayPrice}
-          </span>
+          <p className="text-xs italic text-[#072E4799]">
+            Sprint Day is on October 18, 2026 (2nd Day).
+          </p>
         </div>
 
-        <RadioGroup
-          value={radioValue}
-          onValueChange={(val) => {
-            if (sprintIsSoldOut) return;
-            onChange(val === 'yes');
-          }}
-          className="flex flex-wrap items-center gap-x-6 gap-y-3"
-        >
-          <div className="flex items-center gap-2.5">
-            <RadioGroupItem
-              pyconStyles
-              value="yes"
-              id="sprintDay-yes"
-              disabled={sprintIsSoldOut}
-              className="h-5 w-5 border-2 border-[#7681B666] text-[#04B1A4] data-[state=checked]:border-[#04B1A4]"
-            />
-            <Label htmlFor="sprintDay-yes" className="font-inter text-sm font-medium text-[#072E47]">
-              Yes, I&apos;ll join
-            </Label>
+        <div className="mt-4 grid grid-cols-1 min-[360px]:grid-cols-2 gap-x-3 gap-y-2.5 sm:gap-x-4">
+          <div className="flex min-w-0 items-start gap-2">
+            <Users className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
+              Collaborative coding
+            </span>
           </div>
+          <div className="flex min-w-0 items-start gap-2">
+            <Coffee className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
+              Refreshments included
+            </span>
+          </div>
+          <div className="flex min-w-0 items-start gap-2">
+            <Zap className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
+              Open source projects
+            </span>
+          </div>
+          <div className="flex min-w-0 items-start gap-2">
+            <Check className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
+              Networking opportunity
+            </span>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2.5">
-            <RadioGroupItem
-              pyconStyles
-              value="no"
-              id="sprintDay-no"
-              disabled={sprintIsSoldOut}
-              className="h-5 w-5 border-2 border-[#7681B666] text-[#04B1A4] data-[state=checked]:border-[#04B1A4]"
-            />
-            <Label htmlFor="sprintDay-no" className="font-inter text-sm font-medium text-[#072E47]">
-              No thanks
-            </Label>
+        <div className="mt-6 flex items-center justify-between gap-4">
+          <div>
+            {isSelected ? (
+              <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#F99508] px-4 font-inter text-xs font-extrabold uppercase tracking-wide text-white shadow-xs transition-colors duration-150">
+                <Check className="h-3.5 w-3.5 stroke-[3]" />
+                Added
+              </span>
+            ) : sprintIsSoldOut ? (
+              <span className="inline-flex h-8 items-center rounded-full bg-gray-100 px-4 font-inter text-xs font-bold uppercase tracking-wide text-gray-400">
+                Sold Out
+              </span>
+            ) : (
+              <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#072E4725] bg-white px-4 font-inter text-xs font-bold uppercase tracking-wide text-[#072E47] transition-colors duration-150 group-hover:border-[#F99508] group-hover:text-[#F99508]">
+                <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                Add to registration
+              </span>
+            )}
           </div>
-        </RadioGroup>
+        </div>
       </div>
 
       <FormError />

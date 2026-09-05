@@ -35,22 +35,22 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ name, eventI
 
   if (pyconStyles) {
     return (
-      <div className="flex flex-col gap-y-4 max-w-xl font-nunito!">
-        <div className=" bg-pycon-dirty-white rounded-xl h-50">
+      <div className="flex flex-col gap-y-4 max-w-xl font-inter">
+        <div className="bg-pycon-dirty-white rounded-2xl border border-[#072E4714] h-50">
           {isUploading ? (
             <div className="w-full h-full flex items-center justify-center p-4">
-              <Loader2 className="animate-spin text-pycon-red" size={40} />
+              <Loader2 className="animate-spin text-pycon-teal" size={40} />
             </div>
           ) : (
             <>
               {value ? (
                 <div className="p-4">
-                  <ImageViewer eventId={eventId} objectKey={value} className="h-40 w-min object-cover mx-auto" alt="" />
+                  <ImageViewer eventId={eventId} objectKey={value} className="h-40 w-min object-cover mx-auto rounded-lg" alt="" />
                 </div>
               ) : (
                 <label className="cursor-pointer" role="button" htmlFor={`upload-custom-${uploadType}`} aria-disabled={isUploading}>
                   <div className="flex items-center justify-center w-full h-full">
-                    <Paperclip size={60} className="text-pycon-red opacity-70" />
+                    <Paperclip size={56} className="text-pycon-teal opacity-70 hover:opacity-100 transition-opacity" />
                   </div>
                 </label>
               )}
@@ -65,15 +65,15 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ name, eventI
             htmlFor={`upload-custom-${uploadType}`}
             aria-disabled={isUploading}
             className={cn(
-              'text-sm py-2 px-4 rounded-md bg-pycon-custard-light text-pycon-violet border border-border transition-colors cursor-pointer hover:bg-pycon-custard'
+              'text-sm py-2 px-4 rounded-xl bg-pycon-teal text-white font-inter font-semibold transition-colors cursor-pointer hover:bg-[#039F93] shadow-xs'
             )}
           >
             Choose a file
           </Label>
-          <Label className="text-sm line-clamp-1 max-w-40 break-all w-1/2">{label}</Label>
+          <Label className="text-sm font-inter text-pycon-dark-blue line-clamp-1 max-w-40 break-all w-1/2">{label}</Label>
           {value && (
-            <button className="ms-auto disabled:opacity-70 disabled:cursor-not-allowed hover:opacity-70 me-5 cursor-pointer" onClick={() => onChange('')}>
-              <X size={25} />
+            <button className="ms-auto disabled:opacity-70 disabled:cursor-not-allowed hover:opacity-70 me-5 cursor-pointer text-pycon-dark-blue hover:text-pycon-orange transition-colors" onClick={() => onChange('')}>
+              <X size={24} />
             </button>
           )}
         </div>
