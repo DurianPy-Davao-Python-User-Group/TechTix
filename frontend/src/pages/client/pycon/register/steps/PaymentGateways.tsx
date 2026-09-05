@@ -15,10 +15,12 @@ interface PaymentOptionProps {
 }
 const PaymentOption: FC<PaymentOptionProps> = ({ paymentTitle, imgSrc, paymentChannelCode, currentPaymentChannel, onClick }) => {
   const selected = currentPaymentChannel === paymentChannelCode;
+
   return (
     <div className="w-full px-0 md:w-1/2 md:px-2">
       <div
         role="button"
+        data-selected={selected}
         className={cn(
           'inline-flex min-h-14 w-full cursor-pointer items-center justify-normal rounded-xl border border-pycon-orange/15 bg-pycon-dirty-white p-3 outline-0 transition-[background-color,border-color,box-shadow] hover:bg-pycon-custard-light md:p-4',
           selected && 'border-pycon-orange bg-pycon-orange/10 shadow-[0_0_0_2px_rgba(243,160,77,0.2)]'
@@ -31,7 +33,7 @@ const PaymentOption: FC<PaymentOptionProps> = ({ paymentTitle, imgSrc, paymentCh
           </div>
         )}
         <p className="font-nunito text-base font-semibold text-pycon-violet-dark">{paymentTitle}</p>
-        <RadioGroupItem pyconStyles className="ml-auto border! border-pycon-orange!" value={paymentChannelCode} checked={selected} />
+        <RadioGroupItem pyconStyles className="ml-auto border! border-pycon-orange!" value={paymentChannelCode} />
       </div>
     </div>
   );
@@ -63,7 +65,7 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
   return (
     <>
       <h4 className="font-nunito text-[13px] font-bold uppercase tracking-[0.5px] text-pycon-violet-dark!">Select a payment method:</h4>
-      <RadioGroup className="block space-y-2">
+      <RadioGroup value={currentPaymentChannel ?? undefined} className="block space-y-2">
         <p className="mt-2 font-nunito text-[13px] font-bold uppercase tracking-[0.5px] text-pycon-orange">eWallets:</p>
         <div className="flex flex-wrap gap-y-2">
           <PaymentOption
