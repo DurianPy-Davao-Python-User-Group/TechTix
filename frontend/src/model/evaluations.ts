@@ -1,12 +1,5 @@
 type QuestionType =
-  | 'text_short'
-  | 'text_long'
-  | 'multiple_choice_dropdown'
-  | 'multiple_choice'
-  | 'multiple_choice_dropdown'
-  | 'multiple_answers'
-  | 'slider'
-  | 'radio_buttons';
+  'text_short' | 'text_long' | 'multiple_choice_dropdown' | 'multiple_choice' | 'multiple_choice_dropdown' | 'multiple_answers' | 'slider' | 'radio_buttons';
 
 export interface QuestionConfigItem {
   questionType: QuestionType;

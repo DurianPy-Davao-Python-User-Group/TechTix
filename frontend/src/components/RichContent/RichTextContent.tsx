@@ -1,10 +1,10 @@
+import DOMPurify from 'dompurify';
 import { cn } from '@/utils/classes';
 import './RichContent.css';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import { Content, EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import DOMPurify from 'dompurify';
 
 interface RichTextContentProps {
   content: Content;

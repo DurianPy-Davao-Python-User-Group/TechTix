@@ -94,7 +94,8 @@ export const mapCreateRegistrationDataForPayment = (registration: RegisterFormVa
 export const mapCreateRegistrationValues = (registration: RegisterFormValues, eventId: string, email?: string): CreateRegistration => ({
   ...mapCreateRegistrationDataForPayment(registration, eventId, email),
   amountPaid: roundUpToTwoDecimals(registration.total),
-  transactionId: registration.transactionId || `price-${registration.total}-${registration.discountCode || 'null'}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`
+  transactionId:
+    registration.transactionId || `price-${registration.total}-${registration.discountCode || 'null'}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`
 });
 
 export type UpdateRegistration = Omit<Registration, 'registrationId' | 'amountPaid' | 'transactionId' | 'discountCode' | 'createDate' | 'updateDate'>;
