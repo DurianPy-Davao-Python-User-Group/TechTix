@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_RUM_IDENTITY_POOL_ID?: string;
   readonly VITE_RUM_REGION?: string;
   readonly VITE_RUM_SESSION_SAMPLE_RATE?: string;
+  readonly VITE_RUM_REPLAY_SAMPLE_RATE?: string;
 }
 
 interface ImportMeta {

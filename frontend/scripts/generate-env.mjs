@@ -45,7 +45,8 @@ const optionalParameterNames = {
   VITE_RUM_APP_MONITOR_ID: `/techtix/rum-app-monitor-id-${STAGE}`,
   VITE_RUM_IDENTITY_POOL_ID: `/techtix/rum-identity-pool-id-${STAGE}`,
   VITE_RUM_REGION: `/techtix/rum-region-${STAGE}`,
-  VITE_RUM_SESSION_SAMPLE_RATE: `/techtix/rum-session-sample-rate-${STAGE}`
+  VITE_RUM_SESSION_SAMPLE_RATE: `/techtix/rum-session-sample-rate-${STAGE}`,
+  VITE_RUM_REPLAY_SAMPLE_RATE: `/techtix/rum-replay-sample-rate-${STAGE}`
 };
 
 async function fetchParams(names) {
