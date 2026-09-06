@@ -58,12 +58,8 @@ const traceHeaderUrls = (): RegExp[] =>
     });
 
 /**
- * Session replay, sampled on top of sessionSampleRate. Prod records a fraction
- * of already-sampled sessions; staging records all of them. A rate of 0 — or a
- * stage with no value published — loads no recorder at all.
- *
- * The plugin enforces maskAllInputs and maskTextSelector '*', so no attendee
- * names, emails or payment details are captured.
+ * Session replay, sampled on top of sessionSampleRate. A missing or zero rate
+ * loads no recorder. The plugin enforces masking of all text and inputs.
  */
 const replayPlugins = (Plugin: typeof import('aws-rum-web').RRWebPlugin) => {
   const rate = Number(import.meta.env.VITE_RUM_REPLAY_SAMPLE_RATE);
@@ -102,13 +98,9 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
 
     const config: AwsRumConfig = {
       identityPoolId,
-      // Mirrors the app monitor in durianpy-root-infra. The http plugin records
-      // failed requests only; recordAllRequests is left at its false default,
-      // so successful calls cost nothing.
-      //
-      // Replay is deliberately absent here and loaded via eventPluginsToLoad
-      // below, so its sample rate can differ per environment. Listing it in
-      // both places would register two recorders.
+      // Mirrors the app monitor in durianpy-root-infra. Replay is loaded below
+      // instead, so its rate can differ per stage; naming it in both places
+      // would register two recorders.
       telemetries: [
         'errors',
         'performance',
