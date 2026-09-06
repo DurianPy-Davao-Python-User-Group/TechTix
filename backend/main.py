@@ -12,7 +12,8 @@ enable_tracing()
 
 STAGE = os.environ.get('STAGE')
 root_path = f'/{STAGE}' if STAGE else '/'
-CORS_ORIGIN = '*.durianpy.org' if STAGE == 'prod' else '*'
+is_prod = STAGE == 'prod'
+CORS_ORIGIN = 'https://techtix.durianpy.org' if is_prod else '*'
 
 app = FastAPI(
     root_path=root_path,
@@ -21,6 +22,9 @@ app = FastAPI(
         'name': 'DurianPy - Davao Python User Group',
         'email': 'durianpy.davao@gmail.com',
     },
+    docs_url=None if is_prod else '/docs',
+    redoc_url=None if is_prod else '/redoc',
+    openapi_url=None if is_prod else '/openapi.json',
 )
 
 
