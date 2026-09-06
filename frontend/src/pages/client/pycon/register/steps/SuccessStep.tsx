@@ -61,9 +61,14 @@ const SuccessStep: FC<SuccessProps> = ({ event, isRegisterSuccessful, retryRegis
           </h1>
         </div>
 
-        <p className="text-sm sm:text-base text-pycon-dark-blue/80 font-inter leading-relaxed max-w-sm mx-auto">
-          Your response has been recorded. Check your email for updates and confirmation details.
-        </p>
+        <div className="space-y-2 text-center max-w-sm mx-auto">
+          <p className="text-sm sm:text-base text-pycon-dark-blue/80 font-inter leading-relaxed">
+            Your response has been recorded. Check your email for updates and confirmation details.
+          </p>
+          <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter leading-relaxed">
+            Emails may take up to 10 minutes to arrive. If you don&apos;t see it in your inbox, be sure to check your spam folder.
+          </p>
+        </div>
 
         <Button
           onClick={onBackToWebsite}
