@@ -28,6 +28,18 @@ class EmailUsecase:
         }
         self.__event_email = None
 
+    @staticmethod
+    def __is_durianpy_email(email: str | None) -> bool:
+        """Determine if an email should use the DurianPy email template.
+        By default, TechTix events use the DurianPy email template except for
+        partner communities (e.g. AWSUG Davao, GDG Davao).
+        """
+        non_durianpy_emails = {
+            SpecialEmails.AWSUG_DAVAO.value,
+            SpecialEmails.GDG_DAVAO.value,
+        }
+        return email not in non_durianpy_emails
+
     def __send_email_handler(self, email_in_list: List[EmailIn], event: Event) -> Tuple[HTTPStatus, str]:
         """Send an email to the queue
 
@@ -128,8 +140,7 @@ class EmailUsecase:
         if special_sender := self.__sender_name_map.get(event.email):
             regards.append(special_sender)
 
-        is_special_email = event.email in [email.value for email in SpecialEmails]
-        is_durianpy = not is_special_email
+        is_durianpy = self.__is_durianpy_email(event.email)
         email_in = EmailIn(
             to=[event.email],
             subject=subject,
@@ -156,8 +167,7 @@ class EmailUsecase:
         :rtype: Tuple[HTTPStatus, str]
 
         """
-        is_special_email = event.email in [email.value for email in SpecialEmails]
-        is_durianpy = not is_special_email
+        is_durianpy = self.__is_durianpy_email(event.email)
         self.__event_email = event.email
 
         subject = f'{event.name} Registration Confirmation'
@@ -245,8 +255,7 @@ class EmailUsecase:
 
         """
         self.__event_email = event.email
-        is_special_email = event.email in [email.value for email in SpecialEmails]
-        is_durianpy = not is_special_email
+        is_durianpy = self.__is_durianpy_email(event.email)
         subject = f'Welcome to {event.name} Pre-Registration!'
         body = [
             'We’ve received your pre-registration and are thrilled to have you on board. Your application is under review, and we’re just as excited as you are to get things moving!',
@@ -290,8 +299,7 @@ class EmailUsecase:
         :return: EmailIn
         """
         self.__event_email = event.email
-        is_special_email = event.email in [email.value for email in SpecialEmails]
-        is_durianpy = not is_special_email
+        is_durianpy = self.__is_durianpy_email(event.email)
         subject = f'You’re In! {event.name} Pre-Registration Accepted 🌟'
         salutation = f'Good day {preregistration.firstName},'
         body = [
@@ -333,8 +341,7 @@ class EmailUsecase:
 
         """
         self.__event_email = event.email
-        is_special_email = event.email in [email.value for email in SpecialEmails]
-        is_durianpy = not is_special_email
+        is_durianpy = self.__is_durianpy_email(event.email)
         subject = f'Regretful News Regarding Your Pre-Registration for {event.name}'
         body = [
             f'We hope this message finds you well. It is with genuine regret that we inform you that your pre-registration for the upcoming {event.name} has been declined.',
@@ -383,14 +390,11 @@ class EmailUsecase:
         :type participants: list
 
         """
-        logger.info(
-            f'Sending event completion email for event {event.name} to {len(participants)} participant(s)'
-        )
+        logger.info(f'Sending event completion email for event {event.name} to {len(participants)} participant(s)')
         self.__event_email = event.email
         event_name = event.name
         event_id = event.eventId
-        is_special_email = event.email in [email.value for email in SpecialEmails]
-        is_durianpy = not is_special_email
+        is_durianpy = self.__is_durianpy_email(event.email)
         subject = f'Thank you for joining {event_name}. Claim your certificate now!'
         salutation = 'Good day,'
         body = [
