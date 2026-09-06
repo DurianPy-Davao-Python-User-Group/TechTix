@@ -6,6 +6,7 @@ import {
   FieldError,
   FieldPath,
   FieldValues,
+  GlobalError,
   UseFormStateReturn,
   useFormContext,
   useFormState
@@ -25,7 +26,8 @@ interface FormItemContextProps {
     invalid: boolean;
     isDirty: boolean;
     isTouched: boolean;
-    error?: FieldError | undefined;
+    isValidating?: boolean;
+    error?: FieldError | GlobalError | undefined;
   };
 }
 

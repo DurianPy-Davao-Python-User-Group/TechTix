@@ -14,29 +14,37 @@ export const STEP_EVENT_DETAILS: RegisterStep = {
 
 export const STEP_BASIC_INFO: RegisterStep = {
   id: 'BasicInfo',
-  title: 'Personal Information'
+  title: 'Basic Information',
+  category: 'REGISTRATION',
+  description: 'Tell us a bit about yourself. Fields marked * are required.'
 };
 
 export const STEP_TICKET_SELECTION: RegisterStep = {
   id: 'TicketSelection',
-  title: 'Ticket Selection'
+  title: 'Ticket Selection',
+  category: 'REGISTRATION',
+  description: 'Choose the ticket tier that fits you best.'
 };
 
 export const STEP_MISCELLANEOUS: RegisterStep = {
   id: 'Miscellaneous',
-  title: 'Miscellaneous'
+  title: 'Miscellaneous',
+  category: 'REGISTRATION',
+  description: 'A few more things to help us make the event better for you.'
 };
 
 export const STEP_PAYMENT: RegisterStep = {
   id: 'Payment&Verification',
-  title: 'Promotions & Verification'
+  title: 'Promotions & Verification',
+  category: 'REGISTRATION',
+  description: 'Apply a discount code and verify your identity.'
 };
 
 export const STEP_SUMMARY: RegisterStep = {
   id: 'Summary',
   title: 'Confirm Details',
-  description: 'Review your information before submitting.',
-  category: 'REGISTRATION'
+  category: 'REGISTRATION',
+  description: 'Review your information before submitting.'
 };
 
 export const STEP_SUCCESS: RegisterStep = {

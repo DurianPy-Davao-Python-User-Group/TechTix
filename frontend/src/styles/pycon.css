@@ -9,6 +9,10 @@
 body[data-page='pycon'] {
   --background: var(--pycon-beige);
   --foreground: var(--pycon-dark-blue);
+  --card: 0, 0%, 100%;
+  --card-foreground: 204, 82%, 15%;
+  --popover: 0, 0%, 100%;
+  --popover-foreground: 204, 82%, 15%;
   --primary: var(--pycon-teal);
   --primary-foreground: #ffffff;
   --secondary: var(--pycon-orange);

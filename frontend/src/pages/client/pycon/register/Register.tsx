@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, Fragment, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { FormProvider } from 'react-hook-form';
 import ErrorPage from '@/components/ErrorPage';
@@ -88,18 +88,54 @@ const Register: FC = () => {
   const showStepper = currentStep.id !== 'EventDetails' && currentStep.id !== 'Success';
   const showFAQs = currentStep.id === 'EventDetails';
 
+  const onPrevStep = () => {
+    const currentIndex = STEPS.findIndex((step) => step.id === currentStep.id);
+    if (currentIndex > 0) {
+      setCurrentStep(STEPS[currentIndex - 1]);
+    }
+  };
+
   return (
     <section
-      className={cn('flex flex-col grow  px-4 h-full w-full text-pycon-custard font-nunito max-w-6xl mx-auto', currentStep.id === 'Success' && 'grow-0')}
+      className={cn('flex flex-col grow px-4 h-full w-full text-pycon-dark-blue font-inter max-w-6xl mx-auto', currentStep.id === 'Success' && 'grow-0')}
     >
-      {currentStep.id === 'Miscellaneous' && <h5 className="!font-inter uppercase opacity-60 font-bold tracking-widest"> Registration </h5>}
       <div className="w-full h-full flex flex-col space-y-4 grow">
         <FormProvider {...form}>
           {currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && (
-            <div className="space-y-2.5 text-left w-full mb-2">
-              {currentStep.category && <p className="text-m font-bold tracking-widest text-[#04b1a4] uppercase font-inter">{currentStep.category}</p>}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#F99508]! font-sora tracking-tight leading-tight">{currentStep.title}</h1>
-              {currentStep.description && <p className="text-sm sm:text-base text-neutral-400 font-inter">{currentStep.description}</p>}
+            <div className="space-y-2 text-left w-full mb-2">
+              {showStepper && !shouldBeVertical && (
+                <div className="w-full mb-3 sm:mb-4">
+                  <Stepper
+                    orientation="horizontal"
+                    steps={STEPS}
+                    currentStep={currentStep}
+                    stepsToExclude={[STEP_SUCCESS]}
+                    onPrevStep={onPrevStep}
+                  />
+                </div>
+              )}
+              {currentStep.category && (
+                <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">
+                  {currentStep.category}
+                </p>
+              )}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#04b1a4] md:text-[#F99508] font-sora tracking-tight leading-tight">
+                {currentStep.title}
+              </h1>
+              {currentStep.description && (
+                <p className="text-sm sm:text-base md:text-lg text-pycon-dark-blue/60 font-inter">
+                  {currentStep.description.includes('*') ? (
+                    currentStep.description.split('*').map((part, index, array) => (
+                      <Fragment key={index}>
+                        {part}
+                        {index < array.length - 1 && <span className="text-[#F99508] font-bold">*</span>}
+                      </Fragment>
+                    ))
+                  ) : (
+                    currentStep.description
+                  )}
+                </p>
+              )}
             </div>
           )}
 
@@ -123,22 +159,26 @@ const Register: FC = () => {
                 <PaymentAndVerificationStep event={eventInfo} isFeesLoading={isFeesLoading} setIsFeesLoading={setIsFeesLoading} />
               )}
               {currentStep.id === 'Summary' && <SummaryStep event={eventInfo} />}
-              {currentStep.id === 'Success' && <SuccessStep event={eventInfo} isRegisterSuccessful={isRegisterSuccessful} />}
+              {currentStep.id === 'Success' && (
+                <SuccessStep event={eventInfo} isRegisterSuccessful={isRegisterSuccessful} retryRegister={retryRegister} />
+              )}
             </div>
           </div>
 
-          {currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && <Separator className="my-4 bg-pycon-custard-light" />}
+          {currentStep.id !== 'EventDetails' && currentStep.id !== 'Success' && <Separator className="my-4 bg-pycon-teal" />}
 
-          <RegisterFooter
-            event={eventInfo}
-            steps={STEPS}
-            currentStep={currentStep}
-            fieldsToCheck={fieldsToCheck}
-            isRegisterSuccessful={isRegisterSuccessful}
-            retryRegister={retryRegister}
-            setCurrentStep={setCurrentStep}
-            isFeesLoading={isFeesLoading}
-          />
+          {currentStep.id !== 'Success' && (
+            <RegisterFooter
+              event={eventInfo}
+              steps={STEPS}
+              currentStep={currentStep}
+              fieldsToCheck={fieldsToCheck}
+              isRegisterSuccessful={isRegisterSuccessful}
+              retryRegister={retryRegister}
+              setCurrentStep={setCurrentStep}
+              isFeesLoading={isFeesLoading}
+            />
+          )}
 
           {showFAQs && <FAQs />}
         </FormProvider>

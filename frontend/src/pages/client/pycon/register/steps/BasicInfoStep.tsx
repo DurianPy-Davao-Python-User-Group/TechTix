@@ -6,13 +6,7 @@ import Input from '@/components/Input';
 const BasicInfoStep = () => {
   return (
     <div className="flex flex-col gap-8 w-full max-w-4xl text-pycon-dark-blue bg-pycon-white/50 border-[1.24px] border-pycon-white/60 rounded-[32px] sm:rounded-[53.19px] p-6 sm:p-10 shadow-sm md:bg-transparent md:border-0 md:rounded-none md:p-0 md:shadow-none">
-      <div className="flex flex-col gap-2">
-        <p className="font-inter font-extrabold text-xs md:text-sm uppercase tracking-[0.14em] text-pycon-teal/60">Registration</p>
-        <h2 className="text-3xl md:text-4xl font-inter font-extrabold text-pycon-orange">Basic Information</h2>
-        <p className="text-pycon-dark-blue/40 text-base md:text-lg font-inter font-normal">
-          Tell us a bit about yourself. Fields marked <span className="text-pycon-orange font-semibold">*</span> are required.
-        </p>
-      </div>
+
 
       <div className="flex flex-col gap-4">
         <h3 className="text-sm font-inter font-extrabold uppercase tracking-[0.12em] text-pycon-dark-blue/30">Name</h3>

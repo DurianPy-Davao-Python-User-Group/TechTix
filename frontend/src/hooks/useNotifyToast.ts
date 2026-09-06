@@ -13,7 +13,7 @@ interface ToastProps {
 export const useNotifyToast = () => {
   const { toast } = useToast();
 
-  const infoToast = ({ id = '', title = 'Info', description, icon = 'Info', iconClassname, duration = 5000 }: ToastProps) =>
+  const infoToast = ({ id = '', title = 'Info', description, icon = 'Info', iconClassname = 'text-pycon-teal', duration = 5000 }: ToastProps) =>
     toast({
       id,
       title,
@@ -23,7 +23,7 @@ export const useNotifyToast = () => {
       duration
     });
 
-  const successToast = ({ id = '', title = 'Success', description, icon = 'CircleCheckBig', iconClassname = 'text-green-400', duration = 5000 }: ToastProps) =>
+  const successToast = ({ id = '', title = 'Success', description, icon = 'CircleCheckBig', iconClassname = 'text-pycon-green', duration = 5000 }: ToastProps) =>
     toast({
       id,
       title,
