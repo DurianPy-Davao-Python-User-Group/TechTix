@@ -1,9 +1,12 @@
+from typing import Optional
+
 from dependencies.verify_service_access import verify_service_access
 from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from model.common import Message
 from model.payments.payments import PaymentTransactionIn, PaymentTransactionOut
 from usecase.payment_usecase import PaymentUsecase
+from utils.logger import logger
 
 payment_router = APIRouter()
 
@@ -90,9 +93,11 @@ def update_payment_transaction(
     responses={
         302: {'description': 'Redirect'},
         400: {'model': Message, 'description': 'Bad request'},
+        401: {'model': Message, 'description': 'Unauthorized'},
         500: {'model': Message, 'description': 'Internal server error'},
     },
     summary='Payment callback',
+    dependencies=[Depends(verify_service_access)],
 )
 async def payment_callback(
     payment_transaction_id: str = Query(
@@ -110,4 +115,7 @@ async def payment_callback(
     :rtype: JSONResponse
     """
     payment_uc = PaymentUsecase()
+    logger.info(
+        f'Received authenticated payment callback: paymentTransactionId={payment_transaction_id}, eventId={event_id}'
+    )
     return payment_uc.payment_callback(payment_transaction_id, event_id)
