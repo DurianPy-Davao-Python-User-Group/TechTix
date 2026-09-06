@@ -58,6 +58,22 @@ const traceHeaderUrls = (): RegExp[] =>
     });
 
 /**
+ * Session replay, sampled on top of sessionSampleRate. Prod records a fraction
+ * of already-sampled sessions; staging records all of them. A rate of 0 — or a
+ * stage with no value published — loads no recorder at all.
+ *
+ * The plugin enforces maskAllInputs and maskTextSelector '*', so no attendee
+ * names, emails or payment details are captured.
+ */
+const replayPlugins = (Plugin: typeof import('aws-rum-web').RRWebPlugin) => {
+  const rate = Number(import.meta.env.VITE_RUM_REPLAY_SAMPLE_RATE);
+  if (!Number.isFinite(rate) || rate <= 0) {
+    return [];
+  }
+  return [new Plugin({ additionalSampleRate: Math.min(rate, 1) })];
+};
+
+/**
  * Starts CloudWatch RUM. Config comes from SSM at build time via
  * scripts/generate-env.mjs; stages without an app monitor have no values, and
  * Vite then eliminates this body so the SDK never enters the bundle.
@@ -82,21 +98,20 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
   startBufferingErrors();
 
   try {
-    const { AwsRum: AwsRumClient } = await import('aws-rum-web');
+    const { AwsRum: AwsRumClient, RRWebPlugin } = await import('aws-rum-web');
 
     const config: AwsRumConfig = {
       identityPoolId,
-      // 'errors', 'performance' and 'http' mirror the app monitor in
-      // durianpy-root-infra. 'replay' is client-only — the RUM service has no
-      // telemetry value for it — and listing telemetries at all opts out of it
-      // by default, which is why session replay was previously absent.
+      // Mirrors the app monitor in durianpy-root-infra. The http plugin records
+      // failed requests only; recordAllRequests is left at its false default,
+      // so successful calls cost nothing.
       //
-      // The http plugin records failed requests only; recordAllRequests is left
-      // at its false default, so successful calls cost nothing.
+      // Replay is deliberately absent here and loaded via eventPluginsToLoad
+      // below, so its sample rate can differ per environment. Listing it in
+      // both places would register two recorders.
       telemetries: [
         'errors',
         'performance',
-        'replay',
         [
           'http',
           {
@@ -104,6 +119,7 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
           }
         ]
       ],
+      eventPluginsToLoad: replayPlugins(RRWebPlugin),
       allowCookies: true,
       // Emits an X-Ray trace per request in a sampled session. Combined with the
       // header above this joins the browser to the backend traces.
