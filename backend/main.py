@@ -6,6 +6,9 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from lambda_decorators import cors_headers
 from mangum import Mangum
+from utils.tracing import enable_tracing
+
+enable_tracing()
 
 STAGE = os.environ.get('STAGE')
 root_path = f'/{STAGE}' if STAGE else '/'

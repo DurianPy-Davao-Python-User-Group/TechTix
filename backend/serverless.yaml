@@ -33,6 +33,26 @@ custom:
   # konfHubApiKey: ${ssm:/konfhub/api-key-${self:custom.stage}}
   betterCredentials:
     enabled: true
+
+  # Published by durianpy-root-infra; default keeps `sls print` working before
+  # that stack is applied.
+  alarmTopicArn: ${ssm:/durianpy/observability/alarm-topic-arn, ''}
+  # dev is a scratch stage; alarms there would be cost with nobody listening.
+  alarmsEnabledByStage:
+    dev: "false"
+    staging: "true"
+    prod: "true"
+  alarmsEnabled: ${self:custom.alarmsEnabledByStage.${self:custom.stage}, "true"}
+  alarmThresholds:
+    serverErrorCount: 1
+    clientErrorRatePercent: 25
+    minimumRequests: 20
+    functionErrorCount: 1
+
+  serverlessIamRolesPerFunction:
+    # The plugin rebuilds each function role from scratch and drops the X-Ray
+    # grants, so tracing would fail silently without this.
+    defaultInherit: true
   emailQueue: !ImportValue EmailQueue-${self:custom.stage}
   certificateQueue: !ImportValue CertificateQueue-${self:custom.stage}
   basicAuthorizerARN: !ImportValue BasicAuthAuthorizerARN-${self:custom.stage}
@@ -69,6 +89,17 @@ provider:
       throttle:
         rateLimit: ${self:custom.apiGatewayRateLimit}
         burstLimit: ${self:custom.apiGatewayBurstLimit}
+  # Sampling rate is set centrally by the sampling rules in durianpy-root-infra.
+  tracing:
+    apiGateway: true
+    lambda: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTraceSegments
+        - xray:PutTelemetryRecords
+      # X-Ray write APIs have no resource-level permissions.
+      Resource: "*"
   environment:
     REGION: ${self:provider.region}
     STAGE: ${self:custom.stage}
@@ -97,6 +128,7 @@ resources:
   - ${file(resources/s3.yml)}
   - ${file(resources/sqs.yml)}
   - ${file(resources/frontend_role.yml)}
+  - ${file(resources/alarms.yml)}
   - Resources:
       ApiGatewayCloudWatchRole:
         Type: AWS::IAM::Role
