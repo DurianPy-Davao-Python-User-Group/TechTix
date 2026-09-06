@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Check } from 'lucide-react';
+import { Check, ChevronLeft } from 'lucide-react';
 import { cn } from '@/utils/classes';
 
 export interface Step {
@@ -15,14 +15,15 @@ interface StepperProps<T extends Step> {
   onStepClick?: (step: T) => void;
   orientation?: 'horizontal' | 'vertical';
   hideTitle?: boolean;
+  onPrevStep?: () => void;
 }
 
 const STEP_CIRCLE_SIZE = '1.5rem';
 
-const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepClick, orientation = 'horizontal', hideTitle = false }: StepperProps<T>) => {
+const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepClick, orientation = 'horizontal', hideTitle = false, onPrevStep }: StepperProps<T>) => {
   const visibleSteps = steps.filter((step) => step.title && !stepsToExclude?.some((excludeStep) => excludeStep.id === step.id));
   const showTitle = orientation === 'vertical' && !hideTitle;
-  const currentStepIndex = visibleSteps.indexOf(currentStep);
+  const currentStepIndex = visibleSteps.findIndex((step) => step.id === currentStep.id);
 
   // Mobile simplified stepper view
   if (orientation === 'horizontal') {
@@ -31,13 +32,25 @@ const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepCli
     const progressPercentage = Math.min(100, Math.max(0, (currentStepNumber / totalSteps) * 100));
 
     return (
-      <div className="flex items-center justify-end w-full">
-        <div className="flex items-center gap-3.5 sm:gap-4 rounded-full border border-neutral-200 bg-white px-4 sm:px-5 py-2 shadow-xs shrink-0">
-          <span className="text-pycon-orange font-bold text-xs sm:text-sm whitespace-nowrap">
+      <div className="flex items-center justify-between w-full">
+        {onPrevStep ? (
+          <button
+            type="button"
+            onClick={onPrevStep}
+            aria-label="Previous step"
+            className="cursor-pointer text-[#F99508] hover:text-[#e08405] active:scale-95 transition-all p-1 -ms-1 flex items-center justify-center"
+          >
+            <ChevronLeft className="size-7 sm:size-8" strokeWidth={3.5} />
+          </button>
+        ) : (
+          <div />
+        )}
+        <div className="flex items-center gap-3.5 rounded-full border border-[#F9950826] bg-white/75 backdrop-blur-xs px-3.5 sm:px-4 py-1.5 shadow-[0_2px_8px_rgba(249,149,8,0.06)] shrink-0">
+          <span className="text-[#F99508] font-bold text-xs sm:text-sm whitespace-nowrap font-inter">
             Step {currentStepNumber} of {totalSteps}
           </span>
-          <div className="w-14 sm:w-16 h-2 bg-pycon-orange/30 rounded-full overflow-hidden shrink-0">
-            <div className="h-full bg-pycon-orange rounded-full transition-all duration-300 ease-out" style={{ width: `${progressPercentage}%` }} />
+          <div className="w-14 sm:w-16 h-2 bg-[#F9950826] rounded-full overflow-hidden shrink-0">
+            <div className="h-full bg-[#F99508] rounded-full transition-all duration-300 ease-out" style={{ width: `${progressPercentage}%` }} />
           </div>
         </div>
       </div>

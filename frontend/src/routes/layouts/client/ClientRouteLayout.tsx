@@ -43,12 +43,17 @@ const ClientRouteLayout = () => {
   return (
     <>
       {showAdminWarning && (
-        <Alert closable className="bg-accent/50 rounded-none sticky top-0" title="You are accessing a client page as an admin" onClose={onCloseAdminWarning} />
+        <Alert
+          closable
+          className="bg-white/95 backdrop-blur-md border-b border-[#072E4714] border-x-0 border-t-0 rounded-none sticky top-0 z-20 text-pycon-dark-blue shadow-xs"
+          title="You are accessing a client page as an admin"
+          onClose={onCloseAdminWarning}
+        />
       )}
 
       <header
         style={{ height: CLIENT_HEADER_HEIGHT, boxShadow: '0px 8px 12px 0px hsla(0, 0%, 12%, 0.04)', top: showAdminWarning ? 50 : 0 }}
-        className="sticky z-10 w-full py-2 px-8 md:px16 border-b bg-pycon-custard"
+        className="sticky z-10 w-full py-2 px-8 md:px16 border-b bg-pycon-beige border-pycon-teal"
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

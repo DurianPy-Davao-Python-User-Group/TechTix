@@ -71,10 +71,22 @@ const SummaryStep = ({ event }: SummaryProps) => {
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || '-';
 
   const formatSocials = () => {
-    const socials: string[] = [];
-    if (facebookLink) socials.push(`[FB] ${facebookLink}`);
-    if (linkedInLink) socials.push(`[in] ${linkedInLink}`);
-    return socials.length > 0 ? socials.join(' · ') : 'None';
+    const socials: React.ReactNode[] = [];
+    if (facebookLink) {
+      socials.push(
+        <span key="fb" className="block [overflow-wrap:anywhere] break-words">
+          [FB] {facebookLink}
+        </span>
+      );
+    }
+    if (linkedInLink) {
+      socials.push(
+        <span key="in" className="block [overflow-wrap:anywhere] break-words">
+          [in] {linkedInLink}
+        </span>
+      );
+    }
+    return socials.length > 0 ? <div className="flex flex-col gap-1">{socials}</div> : 'None';
   };
 
   const getUploadedIdDisplay = () => {
@@ -152,7 +164,7 @@ const SummaryStep = ({ event }: SummaryProps) => {
                 <div className="flex items-center space-x-3">
                   <Checkbox pyconStyles id="agreeToDataUse" checked={field.value} onCheckedChange={field.onChange} />
                   <Label htmlFor="agreeToDataUse" className="text-xs sm:text-sm font-medium cursor-pointer text-neutral-800">
-                    I consent for photography, data use, and communication
+                    I consent to event photography, data processing, and receiving event updates
                   </Label>
                 </div>
                 <FormError />
@@ -173,7 +185,7 @@ const SummaryStep = ({ event }: SummaryProps) => {
                       rel="noreferrer"
                       className="text-[#04b1a4] underline hover:text-[#038e83] transition-colors font-semibold"
                     >
-                      code of conduct
+                      Code of Conduct
                     </a>
                   </Label>
                 </div>

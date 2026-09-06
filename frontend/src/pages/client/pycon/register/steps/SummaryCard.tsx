@@ -30,13 +30,17 @@ export const SummaryRow: FC<SummaryRowProps> = ({ label, value, isAlt = false, c
   return (
     <div
       className={cn(
-        'grid grid-cols-[150px_1fr] sm:grid-cols-[180px_1fr] md:grid-cols-[200px_1fr] items-center px-5 py-2.5 sm:px-6 sm:py-3 text-left transition-colors',
+        'grid grid-cols-[120px_minmax(0,1fr)] sm:grid-cols-[160px_minmax(0,1fr)] md:grid-cols-[190px_minmax(0,1fr)] gap-3 sm:gap-4 items-center px-4 py-2.5 sm:px-6 sm:py-3 text-left transition-colors',
         isAlt ? 'bg-[#FFFFFF4D]' : 'bg-[#FFF9F299]',
         className
       )}
     >
-      <span className="text-[11px] sm:text-xs font-bold tracking-wider text-[#F99508] uppercase select-none mr-5">{label}</span>
-      <span className="text-xs sm:text-sm font-medium text-[#1e293b] break-words text-left">{value}</span>
+      <span className="text-[11px] sm:text-xs font-bold tracking-wider text-[#F99508] uppercase select-none shrink-0">
+        {label}
+      </span>
+      <span className="min-w-0 text-xs sm:text-sm font-medium text-[#1e293b] [overflow-wrap:anywhere] break-words text-left">
+        {value}
+      </span>
     </div>
   );
 };

@@ -25,7 +25,7 @@ const PyconBackground: FC = () => {
       <img
         src={tealSnake}
         alt=""
-        className="absolute bottom-0 left-0 w-[240px] sm:w-[320px] md:w-[420px] lg:w-[500px] xl:w-[580px] h-auto object-contain object-left-bottom -z-10 pointer-events-none select-none opacity-50 md:opacity-80 lg:opacity-100"
+        className="absolute bottom-0 left-0 w-[240px] sm:w-[320px] md:w-[420px] lg:w-[500px] xl:w-[580px] h-auto object-contain object-left-bottom -z-10 pointer-events-none select-none opacity-40 sm:opacity-50 md:opacity-65 lg:opacity-80"
       />
 
       {/* Leaf - at the right center */}

@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react';
-import { Calendar, Check, Coffee, Plus, Star, Users, Zap } from 'lucide-react';
+import { Calendar, Check, Coffee, Plus, Star, Users, X, Zap } from 'lucide-react';
 import checkmarkIcon from '@/assets/Checkmark.svg';
 import { FormError, FormItem, FormLabel } from '@/components/Form';
 import { Event } from '@/model/events';
@@ -13,22 +13,37 @@ interface Props {
 
 type EventTicketType = NonNullable<Event['ticketTypes']>[number];
 
-const CODER_BENEFITS = [
-  'Lunch',
-  'Snack',
-  'Kit — Lanyard + ID',
-  'Special Merch',
-  'Stickers',
-  'Workshops',
-  'Talks',
-  'Panel Discussions',
-  'Open Spaces'
+export interface TicketBenefitItem {
+  label: string;
+  included?: boolean;
+}
+
+const CODER_BENEFITS: TicketBenefitItem[] = [
+  { label: 'Lunch', included: true },
+  { label: 'Snack', included: true },
+  { label: 'Kit — Lanyard + ID', included: true },
+  { label: 'Special Merch', included: true },
+  { label: 'Stickers', included: true },
+  { label: 'Workshops', included: true },
+  { label: 'Talks', included: true },
+  { label: 'Panel Discussions', included: true },
+  { label: 'Open Spaces', included: true },
+  { label: 'Special Metallic Pin', included: false },
+  { label: 'Kasosyo Night with Speakers & Volunteers', included: false }
 ];
 
-const KASOSYO_BENEFITS = [
-  'Everything in Coder',
-  'Kasosyo Night',
-  'Special Metalic Pin'
+const KASOSYO_BENEFITS: TicketBenefitItem[] = [
+  { label: 'Lunch', included: true },
+  { label: 'Snack', included: true },
+  { label: 'Kit — Lanyard + ID', included: true },
+  { label: 'Special Merch', included: true },
+  { label: 'Stickers', included: true },
+  { label: 'Special Metallic Pin', included: true },
+  { label: 'Workshops', included: true },
+  { label: 'Talks', included: true },
+  { label: 'Panel Discussions', included: true },
+  { label: 'Open Spaces', included: true },
+  { label: 'Kasosyo Night with Speakers & Volunteers', included: true }
 ];
 
 const ORANGE_ACCENT_COLOR = '#F99508';
@@ -43,13 +58,11 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
   const kasosyoTicket = event.ticketTypes?.find((t) => t.id === 'kasosyo');
 
   const sprintDayPrice = event.sprintDayPrice ?? 200;
-  const sprintIsSoldOut =
-    event.maximumSprintDaySlots != null && event.sprintDayRegistrationCount >= event.maximumSprintDaySlots;
 
   return (
     <div
       className={cn(
-        'mx-auto flex w-full max-w-full sm:max-w-[90%] flex-col gap-5 px-3 sm:px-6 md:gap-8',
+        'mx-auto flex w-full max-w-3xl flex-col gap-5 px-3 sm:px-6 md:gap-8',
         'rounded-3xl border border-[#F995081F] bg-white py-5 sm:py-6 shadow-[0px_6px_40px_0px_#F9950812]',
         'md:rounded-none md:border-0 md:bg-transparent md:py-0 md:shadow-none'
       )}
@@ -69,6 +82,7 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
                 price={coderTicket?.price ?? 0}
                 originalPrice={coderTicket?.originalPrice}
                 benefits={CODER_BENEFITS}
+                bestValue
                 backgroundClass="bg-gradient-to-br from-[#5DA144] to-[#4b8935]"
                 selectedBorderColor={ORANGE_ACCENT_COLOR}
                 isSelected={!!coderTicket && field.value === coderTicket.id}
@@ -88,7 +102,6 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
                 originalPrice={kasosyoTicket?.originalPrice}
                 benefits={KASOSYO_BENEFITS}
                 star
-                bestValue
                 backgroundClass="bg-gradient-to-br from-[#38A69D] to-[#25857d]"
                 selectedBorderColor={ORANGE_ACCENT_COLOR}
                 isSelected={!!kasosyoTicket && field.value === kasosyoTicket.id}
@@ -129,7 +142,7 @@ interface TicketCardProps {
   ticketId?: string;
   price: number;
   originalPrice?: number | null;
-  benefits: string[];
+  benefits: (TicketBenefitItem | string)[];
   backgroundClass: string;
   selectedBorderColor: string;
   star?: boolean;
@@ -214,14 +227,14 @@ const TicketCard: FC<TicketCardProps> = ({
       </div>
 
       <div className="mt-4 grid grid-cols-1 min-[360px]:grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-4">
-        {benefits.map((benefit) => (
-          <TicketBenefit key={benefit} benefit={benefit} />
+        {benefits.map((benefit, idx) => (
+          <TicketBenefit key={typeof benefit === 'string' ? benefit : `${benefit.label}-${idx}`} benefit={benefit} />
         ))}
       </div>
 
       {bestValue && (
         <div className="mt-3 flex justify-end">
-          <span className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/20 px-3 py-0.5 font-inter text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap backdrop-blur-xs shadow-xs">
+          <span className="inline-flex items-center justify-center rounded-full bg-[#F27B12] px-3.5 py-1 font-inter text-[11px] font-extrabold uppercase tracking-wider text-white shadow-xs">
             Best Value
           </span>
         </div>
@@ -246,14 +259,23 @@ const TicketCard: FC<TicketCardProps> = ({
 };
 
 interface TicketBenefitProps {
-  benefit: string;
+  benefit: TicketBenefitItem | string;
 }
 
 const TicketBenefit: FC<TicketBenefitProps> = ({ benefit }) => {
+  const item: TicketBenefitItem = typeof benefit === 'string' ? { label: benefit, included: true } : benefit;
+  const isIncluded = item.included !== false;
+
   return (
-    <div className="flex min-w-0 items-start gap-1.5">
-      <img src={checkmarkIcon} alt="" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-      <span className="font-inter text-xs sm:text-sm font-medium leading-snug break-words">{benefit}</span>
+    <div className={cn('flex min-w-0 items-start gap-1.5', !isIncluded && 'opacity-55')}>
+      {isIncluded ? (
+        <img src={checkmarkIcon} alt="" aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      ) : (
+        <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/80 stroke-[2.5]" aria-hidden="true" />
+      )}
+      <span className={cn('font-inter text-xs sm:text-sm font-medium leading-snug break-words', !isIncluded && 'line-through decoration-white/40')}>
+        {item.label}
+      </span>
     </div>
   );
 };
@@ -282,7 +304,7 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
     }
   }, [value, onChange, sprintIsSoldOut]);
 
-  const displayPrice = `₱ ${new Intl.NumberFormat('en-PH', { maximumFractionDigits: 2 }).format(sprintDayPrice)}`;
+  const displayPrice = `₱ ${new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(sprintDayPrice)}`;
 
   return (
     <section className="flex flex-col gap-3 md:gap-4">
@@ -315,7 +337,7 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
           onChange(!isSelected);
         }}
         className={cn(
-          'group relative flex w-full flex-col rounded-[22px] border-[3px] p-4 sm:p-6 font-inter bg-white transition-all duration-300 ease-out',
+          'group relative flex w-full flex-col rounded-[22px] border-[3px] p-4 sm:p-6 font-inter bg-[#FDDEB2] transition-all duration-300 ease-out',
           !sprintIsSoldOut &&
             'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-xl active:scale-[0.99] active:translate-y-0',
           isSelected
@@ -327,38 +349,38 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
         <div className="flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-[#072E47] shrink-0" />
-            <h4 className="font-sora text-lg sm:text-xl font-bold text-[#04B1A4] md:text-2xl">Join Sprint Day</h4>
+            <h4 className="font-sora text-lg sm:text-xl font-bold text-[#072E47] md:text-2xl">Join Sprint Day</h4>
             <span className="rounded-full bg-[#F99508] px-2.5 py-0.5 font-inter text-xs font-bold text-white shrink-0">
               {displayPrice}
             </span>
           </div>
 
-          <p className="text-xs italic text-[#072E4799]">
+          <p className="text-xs italic text-[#072E47]/75">
             Sprint Day is on October 18, 2026 (2nd Day).
           </p>
         </div>
 
         <div className="mt-4 grid grid-cols-1 min-[360px]:grid-cols-2 gap-x-3 gap-y-2.5 sm:gap-x-4">
           <div className="flex min-w-0 items-start gap-2">
-            <Users className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <Users className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
             <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
               Collaborative coding
             </span>
           </div>
           <div className="flex min-w-0 items-start gap-2">
-            <Coffee className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <Coffee className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
             <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
               Refreshments included
             </span>
           </div>
           <div className="flex min-w-0 items-start gap-2">
-            <Zap className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <Zap className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
             <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
               Open source projects
             </span>
           </div>
           <div className="flex min-w-0 items-start gap-2">
-            <Check className="mt-0.5 h-4 w-4 text-[#072E4799] shrink-0" />
+            <Check className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
             <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
               Networking opportunity
             </span>
@@ -373,11 +395,11 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
                 Added
               </span>
             ) : sprintIsSoldOut ? (
-              <span className="inline-flex h-8 items-center rounded-full bg-gray-100 px-4 font-inter text-xs font-bold uppercase tracking-wide text-gray-400">
+              <span className="inline-flex h-8 items-center rounded-full bg-black/10 px-4 font-inter text-xs font-bold uppercase tracking-wide text-[#072E47]/50">
                 Sold Out
               </span>
             ) : (
-              <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#072E4725] bg-white px-4 font-inter text-xs font-bold uppercase tracking-wide text-[#072E47] transition-colors duration-150 group-hover:border-[#F99508] group-hover:text-[#F99508]">
+              <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#072E47]/20 bg-white/90 px-4 font-inter text-xs font-bold uppercase tracking-wide text-[#072E47] transition-colors duration-150 group-hover:border-[#F99508] group-hover:bg-white group-hover:text-[#F99508]">
                 <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                 Add to registration
               </span>
