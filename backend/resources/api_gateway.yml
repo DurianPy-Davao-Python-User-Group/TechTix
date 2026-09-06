@@ -7,10 +7,24 @@ Resources:
         gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.corsOriginValue}'"
         gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'"
         gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
       ResponseType: UNAUTHORIZED
       RestApiId:
         Ref: 'ApiGatewayRestApi'
       StatusCode: '401'
+
+  GatewayResponseAccessDenied:
+    Type: 'AWS::ApiGateway::GatewayResponse'
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.corsOriginValue}'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+      ResponseType: ACCESS_DENIED
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      StatusCode: '403'
 
   GatewayResponseDefault4XX:
     Type: 'AWS::ApiGateway::GatewayResponse'
@@ -19,6 +33,7 @@ Resources:
         gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.corsOriginValue}'"
         gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'"
         gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
       ResponseType: DEFAULT_4XX
       RestApiId:
         Ref: 'ApiGatewayRestApi'
@@ -30,6 +45,7 @@ Resources:
         gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.corsOriginValue}'"
         gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'"
         gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
       ResponseType: DEFAULT_5XX
       RestApiId:
         Ref: 'ApiGatewayRestApi'
@@ -41,6 +57,7 @@ Resources:
         gatewayresponse.header.Access-Control-Allow-Origin: "'${self:custom.corsOriginValue}'"
         gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'"
         gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
       ResponseType: THROTTLED
       RestApiId:
         Ref: 'ApiGatewayRestApi'

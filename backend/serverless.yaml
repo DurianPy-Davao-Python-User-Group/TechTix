@@ -7,7 +7,7 @@ custom:
   serviceName: events
   stage: ${opt:stage, self:provider.stage}
   corsOrigin:
-    prod: '*.durianpy.org'
+    prod: 'https://techtix.durianpy.org'
     default: '*'
   corsOriginValue: ${self:custom.corsOrigin.${self:custom.stage}, self:custom.corsOrigin.default}
   s3CorsAllowedOrigins:
@@ -15,10 +15,9 @@ custom:
       - '*.durianpy.org'
       - 'https://*.durianpy.org'
       - 'https://durianpy.org'
+      - 'https://techtix.durianpy.org'
     default:
       - '*'
-  apiGatewayRateLimit: 30
-  apiGatewayBurstLimit: 30
   pitr:
     prod: true
   pitrEnabled: ${self:custom.pitr.${self:custom.stage}, false}
@@ -85,10 +84,6 @@ provider:
         Action: execute-api:Invoke
         Principal: "*"
         Resource: execute-api:/*/*/*
-    usagePlan:
-      throttle:
-        rateLimit: ${self:custom.apiGatewayRateLimit}
-        burstLimit: ${self:custom.apiGatewayBurstLimit}
   # Sampling rate is set centrally by the sampling rules in durianpy-root-infra.
   tracing:
     apiGateway: true
