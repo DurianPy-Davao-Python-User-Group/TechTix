@@ -1,10 +1,12 @@
 import { FC, useEffect } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { Calendar, Check, Coffee, Plus, Star, Users, X, Zap } from 'lucide-react';
 import checkmarkIcon from '@/assets/Checkmark.svg';
 import { FormError, FormItem, FormLabel } from '@/components/Form';
 import { Event } from '@/model/events';
 import { cn } from '@/utils/classes';
 import { formatMoney, formatPercentage } from '@/utils/functions';
+import { RegisterFormValues } from '../../hooks/useRegisterForm';
 
 interface Props {
   event: Event;
@@ -54,10 +56,22 @@ const getTicketSoldOutState = (ticketType?: EventTicketType) => {
 };
 
 const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
+  const { control } = useFormContext<RegisterFormValues>();
+  const ticketType = useWatch({ control, name: 'ticketType' });
+
   const coderTicket = event.ticketTypes?.find((t) => t.id === 'coder');
   const kasosyoTicket = event.ticketTypes?.find((t) => t.id === 'kasosyo');
 
   const sprintDayPrice = event.sprintDayPrice ?? 200;
+
+  useEffect(() => {
+    if (ticketType) {
+      const selectedTicket = event.ticketTypes?.find((t) => t.id === ticketType);
+      if (selectedTicket) {
+        updateEventPrice(selectedTicket.price);
+      }
+    }
+  }, [ticketType, event.ticketTypes]);
 
   return (
     <div

@@ -1,3 +1,15 @@
+import { Event } from '@/model/events';
+
+export const getEffectivePrice = (event: Event, ticketTypeId?: string | null): number => {
+  if (event.ticketTypes && ticketTypeId) {
+    const matchedTicket = event.ticketTypes.find((t) => t.id === ticketTypeId);
+    if (matchedTicket) {
+      return matchedTicket.price;
+    }
+  }
+  return event.price;
+};
+
 export const calculateTotalPrice = ({
   price,
   sprintDayPrice = 0,

@@ -6,6 +6,7 @@ import Label from '@/components/Label';
 import { Event } from '@/model/events';
 import { formatMoney, formatPercentage } from '@/utils/functions';
 import { RegisterFormValues } from '../../hooks/useRegisterForm';
+import { getEffectivePrice } from '../pricing';
 import { SummaryCard, SummaryRow } from './SummaryCard';
 
 const PYCON_CODE_OF_CONDUCT = import.meta.env.VITE_PYCON_CODE_OF_CONDUCT || 'https://pycon-davao.durianpy.org/code-of-conduct';
@@ -68,6 +69,7 @@ const SummaryStep = ({ event }: SummaryProps) => {
   });
 
   const ticketType = event.ticketTypes?.find((ticket) => ticket.id === ticketTypeId);
+  const effectivePrice = getEffectivePrice(event, ticketTypeId);
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || '-';
 
   const formatSocials = () => {
@@ -116,13 +118,13 @@ const SummaryStep = ({ event }: SummaryProps) => {
 
         {event.paidEvent && event.status !== 'preregistration' && (
           <>
-            <SummaryRow label="PRICE" value={formatMoney(event.price, 'PHP')} isAlt={true} />
+            <SummaryRow label="PRICE" value={formatMoney(effectivePrice, 'PHP')} isAlt={true} />
 
             {discountPercentage && validCode && discountedPrice ? (
               <>
                 <SummaryRow label="DISCOUNT CODE" value={validCode} isAlt={false} />
                 <SummaryRow label="DISCOUNT" value={formatPercentage(discountPercentage)} isAlt={true} />
-                <SummaryRow label="DISCOUNTED PRICE" value={formatMoney(discountedPrice ?? event.price, 'PHP')} isAlt={false} />
+                <SummaryRow label="DISCOUNTED PRICE" value={formatMoney(discountedPrice ?? effectivePrice, 'PHP')} isAlt={false} />
               </>
             ) : null}
 
@@ -131,7 +133,7 @@ const SummaryStep = ({ event }: SummaryProps) => {
             <SummaryRow label="TRANSACTION FEE" value={transactionFee ? formatMoney(transactionFee, 'PHP') : 'None'} isAlt={false} />
             <SummaryRow
               label="TOTAL"
-              value={<span className="font-extrabold text-neutral-900">{formatMoney(total ?? event.price, 'PHP')}</span>}
+              value={<span className="font-extrabold text-neutral-900">{formatMoney(total ?? effectivePrice, 'PHP')}</span>}
               isAlt={true}
             />
           </>
@@ -148,7 +150,6 @@ const SummaryStep = ({ event }: SummaryProps) => {
 
       {/* 4. Promotions & Verification Card */}
       <SummaryCard title="PROMOTIONS & VERIFICATION">
-        <SummaryRow label="REFERRAL CODE" value={validCode || 'None'} isAlt={true} />
         <SummaryRow label="DISCOUNT CODE" value={validCode || 'None'} isAlt={false} />
         <SummaryRow label="UPLOADED ID" value={getUploadedIdDisplay()} isAlt={true} />
       </SummaryCard>

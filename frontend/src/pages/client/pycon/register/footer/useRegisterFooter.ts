@@ -9,7 +9,7 @@ import { getPathFromUrl, isEmpty, reloadPage, scrollToView } from '@/utils/funct
 import { useApi } from '@/hooks/useApi';
 import { useNotifyToast } from '@/hooks/useNotifyToast';
 import { RegisterField, RegisterFormValues } from '../../hooks/useRegisterForm';
-import { calculateTotalPrice } from '../pricing';
+import { calculateTotalPrice, getEffectivePrice } from '../pricing';
 import { RegisterStep, STEP_PAYMENT, STEP_SUCCESS, STEP_TICKET_SELECTION } from '../steps/RegistrationSteps';
 import { usePayment } from '../usePayment';
 
@@ -27,9 +27,9 @@ export const useRegisterFooter = (
 
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const { trigger, setValue, getValues, control } = useFormContext<RegisterFormValues>();
-  const [paymentChannel, paymentMethod, transactionFee, discountPercentage, sprintDay] = useWatch({
+  const [paymentChannel, paymentMethod, transactionFee, discountPercentage, sprintDay, ticketType] = useWatch({
     control,
-    name: ['paymentChannel', 'paymentMethod', 'transactionFee', 'discountPercentage', 'sprintDay']
+    name: ['paymentChannel', 'paymentMethod', 'transactionFee', 'discountPercentage', 'sprintDay', 'ticketType']
   });
 
   const baseUrl = getPathFromUrl(window.location.href);
@@ -38,9 +38,11 @@ export const useRegisterFooter = (
 
   const currentIndex = steps.indexOf(currentStep);
 
+  const effectivePrice = getEffectivePrice(event, ticketType);
+
   // Calculate if this is a free ticket (total = 0)
   const total = calculateTotalPrice({
-    price: event.price,
+    price: effectivePrice,
     transactionFee: transactionFee ?? 0,
     discountPercentage: discountPercentage ?? 0,
     platformFee: event.platformFee ?? 0,
@@ -71,7 +73,7 @@ export const useRegisterFooter = (
   const setPaymentTotal = () => {
     const total = Number(
       calculateTotalPrice({
-        price: event.price,
+        price: effectivePrice,
         transactionFee: transactionFee ?? 0,
         discountPercentage: discountPercentage ?? 0,
         platformFee: event.platformFee ?? 0,

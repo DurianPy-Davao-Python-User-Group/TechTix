@@ -7,7 +7,7 @@ import Input from '@/components/Input';
 import { Event, EVENT_UPLOAD_TYPE } from '@/model/events';
 import { formatMoney, formatPercentage } from '@/utils/functions';
 import { RegisterFormValues } from '../../hooks/useRegisterForm';
-import { calculateDiscountedPrice, calculateTotalPrice } from '../pricing';
+import { calculateDiscountedPrice, calculateTotalPrice, getEffectivePrice } from '../pricing';
 import { useDiscount } from '../useDiscount';
 import { useTransactionFee } from '../useTransactionFee';
 import PaymentGateways from './PaymentGateways';
@@ -18,15 +18,17 @@ interface Props {
   setIsFeesLoading: (isLoading: boolean) => void;
 }
 
-const PaymentAndVerificationStep = ({ event: { eventId, price, platformFee, sprintDayPrice }, isFeesLoading, setIsFeesLoading }: Props) => {
+const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: Props) => {
+  const { eventId, platformFee, sprintDayPrice } = event;
   const { control, setValue, getValues } = useFormContext<RegisterFormValues>();
-  const [transactionFee, sprintDay] = useWatch({ name: ['transactionFee', 'sprintDay'], control });
-  const { discountPercentage, isValidatingDiscountCode, validateDiscountCode } = useDiscount(price);
-  const { getTransactionFee } = useTransactionFee(price, platformFee, setIsFeesLoading, discountPercentage, sprintDayPrice);
+  const [transactionFee, sprintDay, ticketType] = useWatch({ name: ['transactionFee', 'sprintDay', 'ticketType'], control });
+  const effectivePrice = getEffectivePrice(event, ticketType);
+  const { discountPercentage, isValidatingDiscountCode, validateDiscountCode } = useDiscount(effectivePrice);
+  const { getTransactionFee } = useTransactionFee(effectivePrice, platformFee, setIsFeesLoading, discountPercentage, sprintDayPrice);
   const currentSprintPrice = sprintDay && sprintDayPrice ? sprintDayPrice : 0;
-  const discountedPrice = calculateDiscountedPrice({ price, discountPercentage: discountPercentage ?? 0 });
+  const discountedPrice = calculateDiscountedPrice({ price: effectivePrice, discountPercentage: discountPercentage ?? 0 });
   const total = calculateTotalPrice({
-    price,
+    price: effectivePrice,
     sprintDayPrice: currentSprintPrice,
     transactionFee: transactionFee || 0,
     discountPercentage: discountPercentage || 0,
@@ -145,14 +147,14 @@ const PaymentAndVerificationStep = ({ event: { eventId, price, platformFee, spri
           <div className="flex flex-col text-base font-inter">
             <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
               <span className="font-bold text-[#072E47]">Ticket Price</span>
-              <span className="font-bold text-[#072E47]">{formatMoney(price, 'PHP')}</span>
+              <span className="font-bold text-[#072E47]">{formatMoney(effectivePrice, 'PHP')}</span>
             </div>
 
             {discountPercentage ? (
               <>
                 <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
                   <span className="font-bold text-[#072E47]">Discount ({formatPercentage(discountPercentage)})</span>
-                  <span className="font-bold text-[#072E47]">- {formatMoney(price - discountedPrice, 'PHP')}</span>
+                  <span className="font-bold text-[#072E47]">- {formatMoney(effectivePrice - discountedPrice, 'PHP')}</span>
                 </div>
                 <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
                   <span className="font-bold text-[#072E47]">Discounted Price</span>
@@ -170,7 +172,7 @@ const PaymentAndVerificationStep = ({ event: { eventId, price, platformFee, spri
 
             <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
               <span className="font-bold text-[#072E47]">Subtotal</span>
-              <span className="font-bold text-[#072E47]">{formatMoney((discountPercentage ? discountedPrice : price) + currentSprintPrice, 'PHP')}</span>
+              <span className="font-bold text-[#072E47]">{formatMoney((discountPercentage ? discountedPrice : effectivePrice) + currentSprintPrice, 'PHP')}</span>
             </div>
 
             {total > 0 && (
@@ -183,7 +185,7 @@ const PaymentAndVerificationStep = ({ event: { eventId, price, platformFee, spri
             {platformFee ? (
               <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
                 <span className="font-bold text-[#072E47]">Platform Fee</span>
-                <span className="font-bold text-[#072E47]">{formatMoney(price * platformFee, 'PHP')}</span>
+                <span className="font-bold text-[#072E47]">{formatMoney(effectivePrice * platformFee, 'PHP')}</span>
               </div>
             ) : null}
 
