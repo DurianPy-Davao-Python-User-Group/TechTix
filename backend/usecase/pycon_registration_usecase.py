@@ -63,6 +63,15 @@ class PyconRegistrationUsecase:
 
         event_id = registration_in.eventId
 
+        # if registration already exists, return the registration entry
+        (status, registrations, message) = self.__registrations_repository.query_registrations_with_email(event_id=event_id, email=registration_in.email)
+        if status == HTTPStatus.OK and registrations:
+            logger.info(f'Registration with email {registration_in.email} already exists, returning existing registration')
+            registration = registrations[0]
+            registration_data = self.__convert_data_entry_to_dict(registration)
+            registration_out = PyconRegistrationOut(**registration_data)
+            return self.collect_pre_signed_url_pycon(registration_out)
+
         # Check if the event is still open
         if event.status != EventStatus.OPEN.value:
             return JSONResponse(
