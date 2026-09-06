@@ -1,5 +1,8 @@
 from usecase.payment_tracking_sqs_usecase import PaymentTrackingSQSUsecase
 from utils.logger import logger
+from utils.tracing import enable_tracing
+
+enable_tracing()
 
 
 def handler(event, context):
