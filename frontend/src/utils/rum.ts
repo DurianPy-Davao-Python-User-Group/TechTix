@@ -37,6 +37,27 @@ const parseSampleRate = (raw: string | undefined): number => {
 };
 
 /**
+ * Origins that get an X-Amzn-Trace-Id header, so a browser trace joins the
+ * backend trace for the same request.
+ *
+ * The header is only safe to send where the API's CORS preflight allows it. The
+ * payment API is deliberately absent: its deployed OPTIONS mock still advertises
+ * an older Access-Control-Allow-Headers list without X-Amzn-Trace-Id, so adding
+ * it there would fail preflight and break checkout. Its next deploy refreshes
+ * that list, after which it can be added here.
+ */
+const traceHeaderUrls = (): RegExp[] =>
+  [import.meta.env.VITE_API_AUTH_BASE_URL, import.meta.env.VITE_API_EVENTS_BASE_URL]
+    .filter((url): url is string => Boolean(url))
+    .flatMap((url) => {
+      try {
+        return [new RegExp(`^${new URL(url).origin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)];
+      } catch {
+        return [];
+      }
+    });
+
+/**
  * Starts CloudWatch RUM. Config comes from SSM at build time via
  * scripts/generate-env.mjs; stages without an app monitor have no values, and
  * Vite then eliminates this body so the SDK never enters the bundle.
@@ -65,12 +86,23 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
 
     const config: AwsRumConfig = {
       identityPoolId,
-      // Must match the app monitor in durianpy-root-infra. 'http' is excluded:
-      // an event per fetch/XHR, and RUM bills per event.
-      telemetries: ['errors', 'performance'],
+      // Must match the app monitor in durianpy-root-infra. The http plugin
+      // records failed requests only — recordAllRequests is left at its false
+      // default, so successful calls cost nothing.
+      telemetries: [
+        'errors',
+        'performance',
+        [
+          'http',
+          {
+            addXRayTraceIdHeader: traceHeaderUrls()
+          }
+        ]
+      ],
       allowCookies: true,
-      // Would bill a trace per instrumented request; the backend is traced.
-      enableXRay: false,
+      // Emits an X-Ray trace per request in a sampled session. Combined with the
+      // header above this joins the browser to the backend traces.
+      enableXRay: true,
       sessionSampleRate: parseSampleRate(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE)
     };
 
