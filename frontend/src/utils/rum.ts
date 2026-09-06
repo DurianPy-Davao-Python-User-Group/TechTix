@@ -86,12 +86,17 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
 
     const config: AwsRumConfig = {
       identityPoolId,
-      // Must match the app monitor in durianpy-root-infra. The http plugin
-      // records failed requests only — recordAllRequests is left at its false
-      // default, so successful calls cost nothing.
+      // 'errors', 'performance' and 'http' mirror the app monitor in
+      // durianpy-root-infra. 'replay' is client-only — the RUM service has no
+      // telemetry value for it — and listing telemetries at all opts out of it
+      // by default, which is why session replay was previously absent.
+      //
+      // The http plugin records failed requests only; recordAllRequests is left
+      // at its false default, so successful calls cost nothing.
       telemetries: [
         'errors',
         'performance',
+        'replay',
         [
           'http',
           {
