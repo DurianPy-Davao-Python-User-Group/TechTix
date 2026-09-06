@@ -208,16 +208,17 @@ class PaymentTrackingUsecase:
 
             list_items = [
                 f'Registration ID: {reg_data.registrationId if reg_data.registrationId else "N/A"}',
-                f'Ticket Type: {ticket.capitalize()}',
+                f'Ticket Type: {ticket.capitalize() if ticket else "N/A"}',
                 f'Sprint Day Participation: {"Yes" if reg_data.sprintDay else "No"}',
-                f'Amount Paid: ₱{reg_data.amountPaid:.2f}' if reg_data.amountPaid is not None else 'Amount Paid: ₱0',
+                f'Amount Paid: ₱{reg_data.amountPaid if reg_data.amountPaid else "0"}',
                 f'Transaction ID: {reg_data.transactionId if reg_data.transactionId else "N/A"}',
+                f'Payment Method: {reg_data.paymentMethod.capitalize() if reg_data.paymentMethod else "N/A"}',
             ]
 
             if is_pycon_event:
-                base_body[
-                    0
-                ] = "Thank you for registering for PyCon Davao 2025 by DurianPy! Your payment was successful, and we're excited to see you at the event."
+                base_body[0] = (
+                    "Thank you for registering for PyCon Davao 2026 by DurianPy! Your payment was successful, and we're excited to see you at the event."
+                )
                 list_items.pop()
 
             base_body.append(_email_list_elements(list_items))
@@ -248,8 +249,8 @@ class PaymentTrackingUsecase:
         }
 
         if is_pycon_event:
-            templates[TransactionStatus.SUCCESS]['subject'] = "You're all set for PyCon Davao 2025!"
-            templates[TransactionStatus.FAILED]['subject'] = 'Issue with your PyCon Davao 2025 Payment'
+            templates[TransactionStatus.SUCCESS]['subject'] = "You're all set for PyCon Davao 2026!"
+            templates[TransactionStatus.FAILED]['subject'] = 'Issue with your PyCon Davao 2026 Payment'
 
         template = templates.get(status)
 
@@ -257,7 +258,9 @@ class PaymentTrackingUsecase:
             logger.error(f'No email template found for status: {status}')
             return
 
-        logger.info(f'Preparing to send email for event {event_detail.eventId} with status {status} to {mask_email(email)}.')
+        logger.info(
+            f'Preparing to send email for event {event_detail.eventId} with status {status} to {mask_email(email)}.'
+        )
 
         email_in = EmailIn(
             to=[email],
@@ -270,4 +273,6 @@ class PaymentTrackingUsecase:
             isDurianPy=is_pycon_event,
         )
         self.email_usecase.send_email(email_in=email_in, event=event_detail)
-        logger.info(f'Email notification sent for event {event_detail.eventId} with status {status} to {mask_email(email)}.')
+        logger.info(
+            f'Email notification sent for event {event_detail.eventId} with status {status} to {mask_email(email)}.'
+        )

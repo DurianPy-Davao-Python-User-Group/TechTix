@@ -33,15 +33,15 @@ class PyConRegistrationEmailNotification:
         body = [
             f"Thank you for registering for {event.name}! Your payment was successful, and we're excited to see you at the event."
             if not is_pycon_event
-            else "Thank you for registering for PyCon Davao 2025 by DurianPy! Your payment was successful, and we're excited to see you at the event.",
+            else "Thank you for registering for PyCon Davao 2026 by DurianPy! Your payment was successful, and we're excited to see you at the event.",
             self.__email_bold_element('Below is a summary of your registration details:'),
             self.__email_list_elements(
                 [
                     f'Registration ID: {registration_data.registrationId}',
-                    f"Ticket Type: {str(registration_data.ticketType).capitalize() if registration_data.ticketType else 'N/A'}",
-                    f"Sprint Day Participation: {'Yes' if registration_data.sprintDay else 'No'}",
-                    f"Amount Paid: ₱{registration_data.amountPaid if registration_data.amountPaid else '0'}",
-                    f"Transaction ID: {registration_data.transactionId if registration_data.transactionId else 'N/A'}",
+                    f'Ticket Type: {str(registration_data.ticketType).capitalize() if registration_data.ticketType else "N/A"}',
+                    f'Sprint Day Participation: {"Yes" if registration_data.sprintDay else "No"}',
+                    f'Amount Paid: ₱{registration_data.amountPaid if registration_data.amountPaid else "0"}',
+                    f'Transaction ID: {registration_data.transactionId if registration_data.transactionId else "N/A"}',
                 ]
             ),
             self.__email_newline_element(),
@@ -50,9 +50,9 @@ class PyConRegistrationEmailNotification:
 
         email_in = EmailIn(
             to=[email],
-            subject=f'Issue with your {event.name} Payment'
+            subject=f"You're all set for {event.name}!"
             if not is_pycon_event
-            else 'Issue with your PyCon Davao 2025 Payment',
+            else "You're all set for PyCon Davao 2026!",
             salutation=f'Dear {registration_data.firstName},'
             if registration_data and registration_data.firstName
             else 'Dear Attendee,',
@@ -83,7 +83,7 @@ class PyConRegistrationEmailNotification:
             to=[email],
             subject=f'Issue with your {event.name} Payment'
             if not is_pycon_event
-            else 'Issue with your PyCon Davao 2025 Payment',
+            else 'Issue with your PyCon Davao 2026 Payment',
             salutation='Dear Attendee,'
             if not payment_transaction.registrationData
             else f'Dear {payment_transaction.registrationData.firstName},',

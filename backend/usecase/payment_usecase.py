@@ -46,7 +46,9 @@ class PaymentUsecase:
             logger.error(f'[{payment_transaction.eventId}] {message}')
             return JSONResponse(status_code=status, content={'message': message})
 
-        logger.info(f'Payment transaction created: transaction_id={payment_transaction.rangeKey}, event_id={payment_transaction.eventId}')
+        logger.info(
+            f'Payment transaction created: transaction_id={payment_transaction.rangeKey}, event_id={payment_transaction.eventId}'
+        )
         payment_transaction_dict = self.__convert_data_entry_to_dict(payment_transaction)
         return PaymentTransactionOut(**payment_transaction_dict)
 
@@ -79,7 +81,9 @@ class PaymentUsecase:
             logger.error(f'[{payment_transaction_id}] {message}')
             return JSONResponse(status_code=status, content={'message': message})
 
-        logger.info(f'Payment transaction updated: transaction_id={payment_transaction_id}, status={payment_transaction_in.transactionStatus}')
+        logger.info(
+            f'Payment transaction updated: transaction_id={payment_transaction_id}, status={payment_transaction_in.transactionStatus}'
+        )
         payment_transaction_dict = self.__convert_data_entry_to_dict(updated_payment_transaction)
         return PaymentTransactionOut(**payment_transaction_dict)
 
@@ -298,7 +302,7 @@ class PaymentUsecase:
 
             # Determine email subject based on event type
             if is_pycon_event:
-                subject = 'Issue with your PyCon Davao 2025 Registration'
+                subject = 'Issue with your PyCon Davao 2026 Registration'
             else:
                 subject = f'Issue with your {event_detail.name} Registration'
 
