@@ -36,6 +36,20 @@ const parameterNames = {
   VITE_API_PAYMENT_BASE_URL: `/techtix/payment-api-url-${STAGE}`
 };
 
+/**
+ * CloudWatch RUM configuration, written by durianpy-root-infra.
+ *
+ * Optional on purpose: only stages with an app monitor have these parameters,
+ * and a missing app monitor should mean "no browser telemetry", not "the build
+ * fails". src/utils/rum.ts skips initialisation when they are absent.
+ */
+const optionalParameterNames = {
+  VITE_RUM_APP_MONITOR_ID: `/techtix/rum-app-monitor-id-${STAGE}`,
+  VITE_RUM_IDENTITY_POOL_ID: `/techtix/rum-identity-pool-id-${STAGE}`,
+  VITE_RUM_REGION: `/techtix/rum-region-${STAGE}`,
+  VITE_RUM_SESSION_SAMPLE_RATE: `/techtix/rum-session-sample-rate-${STAGE}`
+};
+
 async function fetchParams(names) {
   const nameToValue = {};
   const invalidParams = [];
@@ -65,8 +79,9 @@ function serializeEnv(obj) {
 async function main() {
   console.log(`ℹ️ Generating ${OUT} for stage="${STAGE}" (region: ${REGION})`);
 
-  const names = Object.values(parameterNames);
+  const names = [...Object.values(parameterNames), ...Object.values(optionalParameterNames)];
   const { nameToValue, invalid } = await fetchParams(names);
+  const optionalSsmNames = new Set(Object.values(optionalParameterNames));
 
   const missing = [];
   const envOut = {};
@@ -78,17 +93,33 @@ async function main() {
     else envOut[envKey] = val;
   }
 
-  if (invalid.length || missing.length) {
+  const skippedOptional = [];
+
+  for (const [envKey, ssmName] of Object.entries(optionalParameterNames)) {
+    const val = nameToValue[ssmName];
+    if (isBad(val)) skippedOptional.push(`${envKey} (${ssmName})`);
+    else envOut[envKey] = val;
+  }
+
+  // Optional parameters that were simply not found are expected, not errors.
+  const blockingInvalid = invalid.filter((n) => !optionalSsmNames.has(n));
+
+  if (blockingInvalid.length || missing.length) {
     const lines = [];
     if (missing.length) {
       lines.push('Missing/invalid values:');
       for (const m of missing) lines.push(`  - ${m}`);
     }
-    if (invalid.length) {
+    if (blockingInvalid.length) {
       lines.push('Invalid SSM parameter names (not found):');
-      for (const n of invalid) lines.push(`  - ${n}`);
+      for (const n of blockingInvalid) lines.push(`  - ${n}`);
     }
     throw new Error(lines.join('\n'));
+  }
+
+  if (skippedOptional.length) {
+    console.log(`\u2139\ufe0f  CloudWatch RUM not configured for stage="${STAGE}"; skipping:`);
+    for (const s of skippedOptional) console.log(`  - ${s}`);
   }
 
   // Optional sanity: ensure these look like URLs
