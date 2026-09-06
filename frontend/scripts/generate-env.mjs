@@ -37,11 +37,9 @@ const parameterNames = {
 };
 
 /**
- * CloudWatch RUM configuration, written by durianpy-root-infra.
- *
- * Optional on purpose: only stages with an app monitor have these parameters,
- * and a missing app monitor should mean "no browser telemetry", not "the build
- * fails". src/utils/rum.ts skips initialisation when they are absent.
+ * CloudWatch RUM configuration, written by durianpy-root-infra. Optional: a
+ * stage without an app monitor should mean no browser telemetry, not a failed
+ * build. src/utils/rum.ts skips initialisation when these are absent.
  */
 const optionalParameterNames = {
   VITE_RUM_APP_MONITOR_ID: `/techtix/rum-app-monitor-id-${STAGE}`,

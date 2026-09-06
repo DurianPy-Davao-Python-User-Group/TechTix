@@ -34,12 +34,10 @@ custom:
   betterCredentials:
     enabled: true
 
-  # Alarm destination is owned by durianpy-root-infra and published to SSM, so
-  # the same value resolves in both the nonprod and prod accounts. The default
-  # keeps `sls print`/`package` working before that stack has been applied.
+  # Published by durianpy-root-infra; default keeps `sls print` working before
+  # that stack is applied.
   alarmTopicArn: ${ssm:/durianpy/observability/alarm-topic-arn, ''}
-  # dev is a scratch stage with no traffic worth paging on; alarms there would
-  # be pure cost. staging and prod are the environments that page.
+  # dev is a scratch stage; alarms there would be cost with nobody listening.
   alarmsEnabledByStage:
     dev: "false"
     staging: "true"
@@ -52,9 +50,8 @@ custom:
     functionErrorCount: 1
 
   serverlessIamRolesPerFunction:
-    # serverless-iam-roles-per-function builds each function role from scratch
-    # and drops the X-Ray grants Serverless adds to the shared role, so tracing
-    # would silently fail. Inheriting provider.iamRoleStatements puts them back.
+    # The plugin rebuilds each function role from scratch and drops the X-Ray
+    # grants, so tracing would fail silently without this.
     defaultInherit: true
   emailQueue: !ImportValue EmailQueue-${self:custom.stage}
   certificateQueue: !ImportValue CertificateQueue-${self:custom.stage}
@@ -92,9 +89,7 @@ provider:
       throttle:
         rateLimit: ${self:custom.apiGatewayRateLimit}
         burstLimit: ${self:custom.apiGatewayBurstLimit}
-  # Sampling rate is controlled centrally by the X-Ray sampling rules in
-  # durianpy-root-infra: 100% on the dev stage, 5% elsewhere with an adaptive
-  # boost during anomalies. API Gateway makes the decision and Lambda honours it.
+  # Sampling rate is set centrally by the sampling rules in durianpy-root-infra.
   tracing:
     apiGateway: true
     lambda: true
@@ -103,8 +98,7 @@ provider:
       Action:
         - xray:PutTraceSegments
         - xray:PutTelemetryRecords
-      # The X-Ray write APIs have no resource-level permissions; "*" is the
-      # only resource these actions accept.
+      # X-Ray write APIs have no resource-level permissions.
       Resource: "*"
   environment:
     REGION: ${self:provider.region}

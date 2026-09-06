@@ -1,11 +1,5 @@
-# CloudWatch alarms for this service.
-#
-# Notifications go to the account-wide SNS topic created by durianpy-root-infra
-# (modules/aws/alarm-notifications), resolved from SSM so the same file works in
-# both the nonprod and prod accounts.
-#
-# Cost: standard-resolution alarms are $0.10 per alarm per month, and a metric
-# math alarm is billed per metric it references. This file is 4 alarm metrics.
+# Alarms notify the account-wide SNS topic from durianpy-root-infra, resolved
+# from SSM so this file works unchanged in nonprod and prod.
 Conditions:
   ShouldCreateAlarms:
     Fn::Equals:
@@ -13,7 +7,7 @@ Conditions:
       - "true"
 
 Resources:
-  # Any 5xx is a defect: the API failed, not the caller. Alarm on the first one.
+  # A 5xx is the API's fault, not the caller's, so alarm on the first one.
   ApiServerErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: ShouldCreateAlarms
@@ -41,13 +35,9 @@ Resources:
       OKActions:
         - ${self:custom.alarmTopicArn}
 
-  # 4xx is measured as a share of traffic rather than a raw count. This API sits
-  # behind a Cognito authorizer and a 30 req/s usage plan, so 401s and 429s are
-  # part of normal operation; a count-based threshold would either fire
-  # constantly or be set so high it misses a real spike.
-  #
-  # The IF() guard suppresses the low-volume case where a single 404 against an
-  # otherwise idle stage reads as a 100% error rate.
+  # Rate-based: a Cognito authorizer and a 30 req/s usage plan make 401s and
+  # 429s routine, so a raw count is either noisy or too high to catch a spike.
+  # The IF() guard stops one 404 on an idle stage reading as 100%.
   ApiClientErrorSpikeAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: ShouldCreateAlarms
@@ -100,10 +90,9 @@ Resources:
       OKActions:
         - ${self:custom.alarmTopicArn}
 
-  # paymentHandler is driven by SQS, not the API, so its failures never surface
-  # in the 5xx metric. It is the step that turns a completed payment into a
-  # confirmed registration, so a silent failure here is invisible to the
-  # attendee until they notice they were charged and have no ticket.
+  # SQS-driven, so its failures never surface in the 5xx metric. It turns a
+  # completed payment into a confirmed registration; a silent failure here is
+  # invisible until the attendee notices they were charged and have no ticket.
   PaymentHandlerErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: ShouldCreateAlarms

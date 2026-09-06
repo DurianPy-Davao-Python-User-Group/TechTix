@@ -37,22 +37,13 @@ const parseSampleRate = (raw: string | undefined): number => {
 };
 
 /**
- * Starts CloudWatch RUM.
+ * Starts CloudWatch RUM. Config comes from SSM at build time via
+ * scripts/generate-env.mjs; stages without an app monitor have no values, and
+ * Vite then eliminates this body so the SDK never enters the bundle.
  *
- * Configuration is written to SSM by durianpy-root-infra and baked in at build
- * time by scripts/generate-env.mjs. Stages without an app monitor — local dev,
- * and the dev stage — simply have no values, so this is a no-op there. Because
- * the check is against build-time constants, Vite eliminates the whole body and
- * the SDK never enters the bundle on those stages.
- *
- * The SDK is loaded dynamically so it lands in its own chunk. It statically
- * imports rrweb for session replay, which we do not enable but which cannot be
- * tree-shaken, and that is ~86 kB gzipped — too much to put on the critical path
- * of a page whose load performance we are trying to measure.
- *
- * Errors thrown while that chunk is in flight would otherwise be missed, which
- * is the worst moment to be blind, so they are buffered and replayed once the
- * client exists.
+ * The SDK is imported dynamically because it statically pulls in rrweb, which
+ * we do not enable and cannot tree-shake — 86 kB gzipped off the critical path.
+ * Errors thrown while that chunk loads are buffered and replayed.
  */
 export const initRum = async (): Promise<AwsRum | undefined> => {
   if (client) {
@@ -74,13 +65,11 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
 
     const config: AwsRumConfig = {
       identityPoolId,
-      // Keep in step with the app monitor's telemetries in durianpy-root-infra.
-      // 'http' is deliberately excluded: it emits an event per fetch/XHR, and
-      // RUM is billed per event, so it is by far the most expensive category.
+      // Must match the app monitor in durianpy-root-infra. 'http' is excluded:
+      // an event per fetch/XHR, and RUM bills per event.
       telemetries: ['errors', 'performance'],
       allowCookies: true,
-      // Browser-side X-Ray tracing bills a trace per instrumented request on
-      // top of the RUM events. The backend services are already traced.
+      // Would bill a trace per instrumented request; the backend is traced.
       enableXRay: false,
       sessionSampleRate: parseSampleRate(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE)
     };
@@ -93,8 +82,7 @@ export const initRum = async (): Promise<AwsRum | undefined> => {
 
     return client;
   } catch (error) {
-    // Telemetry must never take the app down with it. A blocked request or a
-    // failed Cognito exchange should cost us monitoring, not the page.
+    // Telemetry must never take the app down with it.
     console.warn('CloudWatch RUM failed to initialise', error);
     return undefined;
   } finally {
