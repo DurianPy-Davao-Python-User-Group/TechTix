@@ -1,5 +1,7 @@
 # Alarms notify the account-wide SNS topic from durianpy-root-infra, resolved
 # from SSM so this file works unchanged in nonprod and prod.
+#
+# No OKActions: recovery is not worth a page.
 Conditions:
   ShouldCreateAlarms:
     Fn::Equals:
@@ -31,8 +33,6 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - ${self:custom.alarmTopicArn}
-      OKActions:
         - ${self:custom.alarmTopicArn}
 
   # Rate-based: a Cognito authorizer and a 30 req/s usage plan make 401s and
@@ -87,8 +87,6 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
         - ${self:custom.alarmTopicArn}
-      OKActions:
-        - ${self:custom.alarmTopicArn}
 
   # SQS-driven, so its failures never surface in the 5xx metric. It turns a
   # completed payment into a confirmed registration; a silent failure here is
@@ -115,6 +113,4 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - ${self:custom.alarmTopicArn}
-      OKActions:
         - ${self:custom.alarmTopicArn}
