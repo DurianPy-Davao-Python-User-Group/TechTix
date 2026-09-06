@@ -1,0 +1,131 @@
+# CloudWatch alarms for this service.
+#
+# Notifications go to the account-wide SNS topic created by durianpy-root-infra
+# (modules/aws/alarm-notifications), resolved from SSM so the same file works in
+# both the nonprod and prod accounts.
+#
+# Cost: standard-resolution alarms are $0.10 per alarm per month, and a metric
+# math alarm is billed per metric it references. This file is 4 alarm metrics.
+Conditions:
+  ShouldCreateAlarms:
+    Fn::Equals:
+      - ${self:custom.alarmsEnabled}
+      - "true"
+
+Resources:
+  # Any 5xx is a defect: the API failed, not the caller. Alarm on the first one.
+  ApiServerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: ShouldCreateAlarms
+    Properties:
+      AlarmName: ${self:custom.stage}-${self:service}-5xx
+      AlarmDescription: >-
+        API Gateway returned at least ${self:custom.alarmThresholds.serverErrorCount}
+        5xx response in 5 minutes for ${self:custom.stage}-${self:service}.
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+        - Name: ApiName
+          Value: ${self:custom.stage}-${self:service}
+        - Name: Stage
+          Value: ${self:custom.stage}
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: ${self:custom.alarmThresholds.serverErrorCount}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - ${self:custom.alarmTopicArn}
+      OKActions:
+        - ${self:custom.alarmTopicArn}
+
+  # 4xx is measured as a share of traffic rather than a raw count. This API sits
+  # behind a Cognito authorizer and a 30 req/s usage plan, so 401s and 429s are
+  # part of normal operation; a count-based threshold would either fire
+  # constantly or be set so high it misses a real spike.
+  #
+  # The IF() guard suppresses the low-volume case where a single 404 against an
+  # otherwise idle stage reads as a 100% error rate.
+  ApiClientErrorSpikeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: ShouldCreateAlarms
+    Properties:
+      AlarmName: ${self:custom.stage}-${self:service}-4xx-spike
+      AlarmDescription: >-
+        More than ${self:custom.alarmThresholds.clientErrorRatePercent}% of requests to
+        ${self:custom.stage}-${self:service} returned 4xx across two consecutive
+        5-minute windows.
+      Metrics:
+        - Id: clientErrors
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 4XXError
+              Dimensions:
+                - Name: ApiName
+                  Value: ${self:custom.stage}-${self:service}
+                - Name: Stage
+                  Value: ${self:custom.stage}
+            Period: 300
+            Stat: Sum
+        - Id: requests
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiName
+                  Value: ${self:custom.stage}-${self:service}
+                - Name: Stage
+                  Value: ${self:custom.stage}
+            Period: 300
+            Stat: Sum
+        - Id: clientErrorRate
+          ReturnData: true
+          Label: 4xx share of requests (%)
+          Expression: >-
+            IF(requests >= ${self:custom.alarmThresholds.minimumRequests},
+            100 * clientErrors / requests, 0)
+      EvaluationPeriods: 2
+      DatapointsToAlarm: 2
+      Threshold: ${self:custom.alarmThresholds.clientErrorRatePercent}
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - ${self:custom.alarmTopicArn}
+      OKActions:
+        - ${self:custom.alarmTopicArn}
+
+  # paymentHandler is driven by SQS, not the API, so its failures never surface
+  # in the 5xx metric. It is the step that turns a completed payment into a
+  # confirmed registration, so a silent failure here is invisible to the
+  # attendee until they notice they were charged and have no ticket.
+  PaymentHandlerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: ShouldCreateAlarms
+    Properties:
+      AlarmName: ${self:custom.stage}-${self:service}-payment-handler-errors
+      AlarmDescription: >-
+        The paymentHandler consumer failed at least
+        ${self:custom.alarmThresholds.functionErrorCount} time(s) in 5 minutes on
+        ${self:custom.stage}.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: ${self:service}-${self:custom.stage}-paymentHandler
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: ${self:custom.alarmThresholds.functionErrorCount}
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - ${self:custom.alarmTopicArn}
+      OKActions:
+        - ${self:custom.alarmTopicArn}

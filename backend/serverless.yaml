@@ -33,6 +33,29 @@ custom:
   # konfHubApiKey: ${ssm:/konfhub/api-key-${self:custom.stage}}
   betterCredentials:
     enabled: true
+
+  # Alarm destination is owned by durianpy-root-infra and published to SSM, so
+  # the same value resolves in both the nonprod and prod accounts. The default
+  # keeps `sls print`/`package` working before that stack has been applied.
+  alarmTopicArn: ${ssm:/durianpy/observability/alarm-topic-arn, ''}
+  # dev is a scratch stage with no traffic worth paging on; alarms there would
+  # be pure cost. staging and prod are the environments that page.
+  alarmsEnabledByStage:
+    dev: "false"
+    staging: "true"
+    prod: "true"
+  alarmsEnabled: ${self:custom.alarmsEnabledByStage.${self:custom.stage}, "true"}
+  alarmThresholds:
+    serverErrorCount: 1
+    clientErrorRatePercent: 25
+    minimumRequests: 20
+    functionErrorCount: 1
+
+  serverlessIamRolesPerFunction:
+    # serverless-iam-roles-per-function builds each function role from scratch
+    # and drops the X-Ray grants Serverless adds to the shared role, so tracing
+    # would silently fail. Inheriting provider.iamRoleStatements puts them back.
+    defaultInherit: true
   emailQueue: !ImportValue EmailQueue-${self:custom.stage}
   certificateQueue: !ImportValue CertificateQueue-${self:custom.stage}
   basicAuthorizerARN: !ImportValue BasicAuthAuthorizerARN-${self:custom.stage}
@@ -69,6 +92,20 @@ provider:
       throttle:
         rateLimit: ${self:custom.apiGatewayRateLimit}
         burstLimit: ${self:custom.apiGatewayBurstLimit}
+  # Sampling rate is controlled centrally by the X-Ray sampling rules in
+  # durianpy-root-infra: 100% on the dev stage, 5% elsewhere with an adaptive
+  # boost during anomalies. API Gateway makes the decision and Lambda honours it.
+  tracing:
+    apiGateway: true
+    lambda: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTraceSegments
+        - xray:PutTelemetryRecords
+      # The X-Ray write APIs have no resource-level permissions; "*" is the
+      # only resource these actions accept.
+      Resource: "*"
   environment:
     REGION: ${self:provider.region}
     STAGE: ${self:custom.stage}
@@ -97,6 +134,7 @@ resources:
   - ${file(resources/s3.yml)}
   - ${file(resources/sqs.yml)}
   - ${file(resources/frontend_role.yml)}
+  - ${file(resources/alarms.yml)}
   - Resources:
       ApiGatewayCloudWatchRole:
         Type: AWS::IAM::Role
