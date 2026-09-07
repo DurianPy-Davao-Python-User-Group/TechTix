@@ -103,8 +103,15 @@ const UserInfoPage = () => {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#04b1a4] md:text-[#F99508] font-sora tracking-tight leading-tight">
               See you at {name}!
             </h1>
-            <p className="text-sm sm:text-base text-pycon-dark-blue/80 font-inter">
-              Please follow DurianPy&apos;s social media accounts and check your email for updates!
+            <p className="text-sm sm:text-base text-pycon-dark-blue/80 font-inter leading-relaxed">
+              Your response has been recorded. Check your email for updates and confirmation details.
+            </p>
+            <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter leading-relaxed">
+              Emails may take up to 10 minutes to arrive. If you don&apos;t see it in your inbox, be sure to check your spam folder. Or contact DurianPy via {' '}
+              <a href="mailto:contact@durianpy.org" className="text-[#04b1a4] underline hover:text-[#038e83] transition-colors font-medium">
+                contact@durianpy.org
+              </a>{' '}
+              or on their social media platforms.
             </p>
           </div>
 
