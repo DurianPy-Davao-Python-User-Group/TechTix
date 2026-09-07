@@ -20,6 +20,9 @@ from starlette.responses import JSONResponse
 from usecase.discount_usecase import DiscountUsecase
 from usecase.email_usecase import EmailUsecase
 from usecase.file_s3_usecase import FileS3Usecase
+from usecase.pycon_registration_email_notification import (
+    PyConRegistrationEmailNotification,
+)
 from utils.logger import log_execution, logger, mask_email
 
 
@@ -38,6 +41,7 @@ class PyconRegistrationUsecase:
         self.__registrations_repository = RegistrationsRepository()
         self.__events_repository = EventsRepository()
         self.__email_usecase = EmailUsecase()
+        self.__pycon_email_notification = PyConRegistrationEmailNotification()
         self.__discount_usecase = DiscountUsecase()
         self.__file_s3_usecase = FileS3Usecase()
         self.__ticket_type_repository = TicketTypeRepository()
@@ -212,7 +216,12 @@ class PyconRegistrationUsecase:
         registration_data = self.__convert_data_entry_to_dict(registration)
 
         if not registration.registrationEmailSent:
-            self.__email_usecase.send_registration_creation_email(registration=registration, event=event)
+            self.__pycon_email_notification.send_registration_success_email(
+                email=registration.email,
+                event=event,
+                is_pycon_event=True,
+                registration_data=registration,
+            )
 
         registration_out = PyconRegistrationOut(**registration_data)
         return self.collect_pre_signed_url_pycon(registration_out)
@@ -475,7 +484,12 @@ class PyconRegistrationUsecase:
         if status == HTTPStatus.OK and registrations and registrations[0].transactionId:
             registration = registrations[0]
             logger.info(f'Resending confirmation email for event {event_id} to {mask_email(email)}')
-            self.__email_usecase.send_registration_creation_email(registration=registration, event=event)
+            self.__pycon_email_notification.send_registration_success_email(
+                email=email,
+                event=event,
+                is_pycon_event=True,
+                registration_data=registration,
+            )
             return JSONResponse(status_code=HTTPStatus.OK, content={'message': f'Confirmation email sent to {email}'})
 
         return JSONResponse(status_code=status, content={'message': message})
