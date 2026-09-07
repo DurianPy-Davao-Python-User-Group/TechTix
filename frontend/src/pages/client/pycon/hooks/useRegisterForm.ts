@@ -1,8 +1,10 @@
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { getEvent } from '@/api/events';
 import { registerUserInEvent } from '@/api/pycon/registrations';
 import { CustomAxiosError } from '@/api/utils/createApi';
+import { TicketType } from '@/model/events';
 import { PaymentChannel, PaymentMethod } from '@/model/payments';
 import { mapCreateRegistrationValues } from '@/model/pycon/registrations';
 import { isValidContactNumber } from '@/utils/functions';
@@ -120,6 +122,17 @@ export const REGISTER_FIELDS: RegisterFieldMap = {
   Success: []
 } as const;
 
+export const isMatchingStoredEmail = (storedEmail?: string | null, currentEmail?: string | null): boolean => {
+  if (!storedEmail || !currentEmail) return false;
+  return storedEmail.trim().toLowerCase() === currentEmail.trim().toLowerCase();
+};
+
+export const isTicketAvailable = (ticketType?: TicketType | null): boolean => {
+  if (!ticketType) return false;
+  if (!ticketType.maximumQuantity) return true;
+  return (ticketType.currentSales ?? 0) < ticketType.maximumQuantity;
+};
+
 export const useRegisterForm = (eventId: string, navigateOnSuccess: () => void) => {
   const { successToast, errorToast } = useNotifyToast();
   const api = useApi();
@@ -137,13 +150,63 @@ export const useRegisterForm = (eventId: string, navigateOnSuccess: () => void) 
       const savedState = localStorage.getItem('formState');
 
       if (savedState) {
-        const parsedState = JSON.parse(savedState);
-        console.log({ parsedState });
+        try {
+          const parsedState = JSON.parse(savedState);
+          console.log({ parsedState });
 
-        return {
-          ...parsedState,
-          transactionId: transactionIdFromUrl || parsedState.transactionId
-        };
+          if (isMatchingStoredEmail(parsedState?.email, userEmail)) {
+            let resolvedTicketType = parsedState.ticketType ?? '';
+            let resolvedSprintDay = parsedState.sprintDay ?? false;
+
+            try {
+              const eventResponse = await api.execute(getEvent(eventId));
+              if (eventResponse.status === 200 && eventResponse.data) {
+                const eventData = eventResponse.data;
+
+                if (resolvedTicketType && eventData.ticketTypes && eventData.ticketTypes.length > 0) {
+                  const selectedTicket = eventData.ticketTypes.find(
+                    (t) => t.id === resolvedTicketType || t.id === resolvedTicketType.trim().toLowerCase()
+                  );
+                  if (!isTicketAvailable(selectedTicket)) {
+                    resolvedTicketType = '';
+                  }
+                }
+
+                if (resolvedSprintDay && eventData.maximumSprintDaySlots != null) {
+                  if (eventData.sprintDayRegistrationCount >= eventData.maximumSprintDaySlots) {
+                    resolvedSprintDay = false;
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('Failed to fetch event to verify ticket availability:', e);
+            }
+
+            const updatedParsedState = {
+              ...parsedState,
+              ticketType: resolvedTicketType,
+              sprintDay: resolvedSprintDay
+            };
+
+            if (
+              resolvedTicketType !== parsedState.ticketType ||
+              resolvedSprintDay !== parsedState.sprintDay
+            ) {
+              localStorage.setItem('formState', JSON.stringify(updatedParsedState));
+            }
+
+            return {
+              ...updatedParsedState,
+              email: userEmail,
+              transactionId: transactionIdFromUrl || parsedState.transactionId
+            };
+          } else {
+            localStorage.removeItem('formState');
+          }
+        } catch (e) {
+          console.error('Failed to parse formState from localStorage:', e);
+          localStorage.removeItem('formState');
+        }
       }
 
       return {

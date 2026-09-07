@@ -3,7 +3,7 @@ import moment from 'moment';
 import Icon from '@/components/Icon';
 import RichTextContent from '@/components/RichContent/RichTextContent';
 import { Event } from '@/model/events';
-import { formatMoney } from '@/utils/functions';
+// import { formatMoney } from '@/utils/functions';
 import { useFileUrl } from '@/hooks/useFileUrl';
 
 export const REGISTER_BUTTON_ID = 'REGISTER_BUTTON';
@@ -14,7 +14,9 @@ interface Props {
 }
 
 const EventDetails: FC<Props> = ({
-  event: { eventId, name, description, venue, status, startDate, endDate, paidEvent, price, hasMultipleTicketTypes, ticketTypes, logoLink, bannerLink },
+  event: { eventId, name, description, venue, startDate, endDate,
+    // status, paidEvent, price, hasMultipleTicketTypes, ticketTypes, 
+    logoLink, bannerLink },
   registerButton
 }) => {
   const isSameDayEvent = moment(startDate).isSame(endDate, 'day');
@@ -25,7 +27,7 @@ const EventDetails: FC<Props> = ({
     return `${moment(startDate).format('MMMM Do YYYY, h:mm A')} - ${moment(endDate).format('MMMM Do YYYY')}`;
   };
 
-  const eventPrice = hasMultipleTicketTypes && ticketTypes ? Math.min(...ticketTypes.map((x) => x.price)) : price;
+  // const eventPrice = hasMultipleTicketTypes && ticketTypes ? Math.min(...ticketTypes.map((x) => x.price)) : price;
 
   const { fileUrl: bannerUrl } = useFileUrl(eventId, bannerLink);
   const { fileUrl: logoUrl } = useFileUrl(eventId, logoLink);
@@ -43,12 +45,12 @@ const EventDetails: FC<Props> = ({
         <Icon name="MapPin" size={18} className="col-span-1 text-pycon-teal" />
         <p className="text-sm sm:text-base col-span-1 font-inter font-medium text-pycon-dark-blue/80">{venue}</p>
 
-        {paidEvent && status !== 'completed' && (
+        {/* {paidEvent && status !== 'completed' && (
           <>
             <Icon name="Banknote" size={18} className="col-span-1 text-pycon-teal" />
             <p className="text-sm sm:text-base col-span-1 font-inter font-medium text-pycon-dark-blue/80">{formatMoney(eventPrice, 'PHP')}</p>
           </>
-        )}
+        )} */}
       </div>
 
       {registerButton ?? <div id={REGISTER_BUTTON_ID} />}

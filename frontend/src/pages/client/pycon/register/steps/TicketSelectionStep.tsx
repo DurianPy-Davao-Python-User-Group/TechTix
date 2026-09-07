@@ -89,43 +89,45 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
             </FormLabel>
 
             <div className="flex w-full flex-col gap-4">
-              <TicketCard
-                title="Coder"
-                subtitle="Regular"
-                ticketId={coderTicket?.id}
-                price={coderTicket?.price ?? 0}
-                originalPrice={coderTicket?.originalPrice}
-                benefits={CODER_BENEFITS}
-                bestValue
-                backgroundClass="bg-gradient-to-br from-[#5DA144] to-[#4b8935]"
-                selectedBorderColor={ORANGE_ACCENT_COLOR}
-                isSelected={!!coderTicket && field.value === coderTicket.id}
-                isSoldOut={getTicketSoldOutState(coderTicket)}
-                onSelect={() => {
-                  if (!coderTicket) return;
-                  field.onChange(coderTicket.id);
-                  updateEventPrice(coderTicket.price);
-                }}
-              />
+              {coderTicket && (
+                <TicketCard
+                  title="Coder"
+                  subtitle="Regular"
+                  ticketId={coderTicket.id}
+                  price={coderTicket.price ?? 0}
+                  originalPrice={coderTicket.originalPrice}
+                  benefits={CODER_BENEFITS}
+                  bestValue
+                  backgroundClass="bg-gradient-to-br from-[#5DA144] to-[#4b8935]"
+                  selectedBorderColor={ORANGE_ACCENT_COLOR}
+                  isSelected={field.value === coderTicket.id}
+                  isSoldOut={getTicketSoldOutState(coderTicket)}
+                  onSelect={() => {
+                    field.onChange(coderTicket.id);
+                    updateEventPrice(coderTicket.price);
+                  }}
+                />
+              )}
 
-              <TicketCard
-                title="Kasosyo"
-                subtitle="Patron"
-                ticketId={kasosyoTicket?.id}
-                price={kasosyoTicket?.price ?? 0}
-                originalPrice={kasosyoTicket?.originalPrice}
-                benefits={KASOSYO_BENEFITS}
-                star
-                backgroundClass="bg-gradient-to-br from-[#38A69D] to-[#25857d]"
-                selectedBorderColor={ORANGE_ACCENT_COLOR}
-                isSelected={!!kasosyoTicket && field.value === kasosyoTicket.id}
-                isSoldOut={getTicketSoldOutState(kasosyoTicket)}
-                onSelect={() => {
-                  if (!kasosyoTicket) return;
-                  field.onChange(kasosyoTicket.id);
-                  updateEventPrice(kasosyoTicket.price);
-                }}
-              />
+              {kasosyoTicket && (
+                <TicketCard
+                  title="Kasosyo"
+                  subtitle="Patron"
+                  ticketId={kasosyoTicket.id}
+                  price={kasosyoTicket.price ?? 0}
+                  originalPrice={kasosyoTicket.originalPrice}
+                  benefits={KASOSYO_BENEFITS}
+                  star
+                  backgroundClass="bg-gradient-to-br from-[#38A69D] to-[#25857d]"
+                  selectedBorderColor={ORANGE_ACCENT_COLOR}
+                  isSelected={field.value === kasosyoTicket.id}
+                  isSoldOut={getTicketSoldOutState(kasosyoTicket)}
+                  onSelect={() => {
+                    field.onChange(kasosyoTicket.id);
+                    updateEventPrice(kasosyoTicket.price);
+                  }}
+                />
+              )}
             </div>
 
             <FormError />
@@ -181,8 +183,9 @@ const TicketCard: FC<TicketCardProps> = ({
   isSoldOut = false,
   onSelect
 }) => {
-  const isUnavailable = !ticketId || isSoldOut;
-  const canSelect = !!onSelect && !isUnavailable;
+  if (!ticketId) return null;
+
+  const canSelect = !!onSelect && !isSoldOut;
   const hasDiscount = originalPrice != null && price < originalPrice;
 
   const handleSelect = () => {
@@ -190,11 +193,36 @@ const TicketCard: FC<TicketCardProps> = ({
     onSelect?.();
   };
 
+  const renderStatusBadge = () => {
+    if (isSelected) {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#072E47] px-4 py-1.5 font-inter text-xs font-extrabold uppercase tracking-wide text-white shadow-md animate-in fade-in zoom-in-95 duration-200">
+          <img src={checkmarkIcon} alt="" aria-hidden="true" className="h-3 w-3" />
+          Selected
+        </span>
+      );
+    }
+
+    if (isSoldOut) {
+      return (
+        <span className="inline-flex items-center rounded-full bg-black/20 px-3.5 py-1.5 font-inter text-xs font-bold uppercase tracking-wide text-white/75">
+          Sold Out
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5 font-inter text-xs font-semibold tracking-wide text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        Click to select
+      </span>
+    );
+  };
+
   return (
     <div
       role={canSelect ? 'radio' : undefined}
       aria-checked={canSelect ? isSelected : undefined}
-      aria-disabled={isUnavailable || undefined}
+      aria-disabled={isSoldOut || undefined}
       tabIndex={canSelect ? 0 : undefined}
       onClick={handleSelect}
       onKeyDown={(e) => {
@@ -212,7 +240,7 @@ const TicketCard: FC<TicketCardProps> = ({
         isSelected
           ? 'border-[#F99508] shadow-2xl shadow-black/25 ring-4 ring-[#F99508]/30 -translate-y-0.5'
           : 'border-transparent shadow-md hover:shadow-xl',
-        isUnavailable && 'cursor-not-allowed opacity-60 grayscale'
+        isSoldOut && 'cursor-not-allowed opacity-60 grayscale'
       )}
     >
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
@@ -255,18 +283,7 @@ const TicketCard: FC<TicketCardProps> = ({
       )}
 
       <div className={cn('flex items-center justify-start', bestValue ? 'mt-2' : 'mt-4 sm:mt-5')}>
-        <div>
-          {isSelected ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#072E47] px-4 py-1.5 font-inter text-xs font-extrabold uppercase tracking-wide text-white shadow-md animate-in fade-in zoom-in-95 duration-200">
-              <img src={checkmarkIcon} alt="" aria-hidden="true" className="h-3 w-3" />
-              Selected
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1.5 font-inter text-xs font-semibold tracking-wide text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              Click to select
-            </span>
-          )}
-        </div>
+        <div>{renderStatusBadge()}</div>
       </div>
     </div>
   );

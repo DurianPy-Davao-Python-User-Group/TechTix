@@ -1,9 +1,11 @@
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { getEvent } from '@/api/events';
 import { preRegisterUserInEvent } from '@/api/preregistrations';
 import { registerUserInEvent } from '@/api/registrations';
 import { CustomAxiosError } from '@/api/utils/createApi';
+import { TicketType } from '@/model/events';
 import { PaymentChannel, PaymentMethod } from '@/model/payments';
 import { mapCreatePreregistrationValues } from '@/model/preregistrations';
 import { RegisterMode, mapCreateRegistrationValues } from '@/model/registrations';
@@ -11,6 +13,7 @@ import { isValidContactNumber } from '@/utils/functions';
 import { useNotifyToast } from '@/hooks/useNotifyToast';
 import { RegisterStepId } from '@/pages/client/register/steps/RegistrationSteps';
 import { useApi } from './useApi';
+import { useCurrentUser } from './useCurrentUser';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const PreRegisterFormSchema = z.object({
@@ -119,9 +122,17 @@ const getFormSchema = (mode: RegisterMode, isConference: boolean) => {
   return isConference ? RegisterFormSchemaAWS : RegisterFormSchema;
 };
 
+export const isTicketAvailable = (ticketType?: TicketType | null): boolean => {
+  if (!ticketType) return false;
+  if (!ticketType.maximumQuantity) return true;
+  return (ticketType.currentSales ?? 0) < ticketType.maximumQuantity;
+};
+
 export const useRegisterForm = (eventId: string, mode: RegisterMode, navigateOnSuccess: () => void, isConference: boolean = false) => {
   const { successToast, errorToast } = useNotifyToast();
   const api = useApi();
+  const auth = useCurrentUser();
+  const userEmail = auth?.user?.email ?? '';
   const [searchParams] = useSearchParams();
   const transactionIdFromUrl = searchParams.get('paymentTransactionId');
 
@@ -145,11 +156,52 @@ export const useRegisterForm = (eventId: string, mode: RegisterMode, navigateOnS
 
       const savedState = localStorage.getItem('formState');
       if (savedState) {
-        const parsedState = JSON.parse(savedState);
-        return {
-          ...parsedState,
-          transactionId: transactionIdFromUrl || parsedState.transactionId
-        };
+        try {
+          const parsedState = JSON.parse(savedState);
+          const isEmailMatch =
+            !userEmail || !parsedState?.email || parsedState.email.trim().toLowerCase() === userEmail.trim().toLowerCase();
+
+          if (isEmailMatch) {
+            let resolvedTicketTypeId = parsedState.ticketTypeId ?? '';
+
+            try {
+              const eventResponse = await api.execute(getEvent(eventId));
+              if (eventResponse.status === 200 && eventResponse.data) {
+                const eventData = eventResponse.data;
+                if (resolvedTicketTypeId && eventData.ticketTypes && eventData.ticketTypes.length > 0) {
+                  const selectedTicket = eventData.ticketTypes.find(
+                    (t) => t.id === resolvedTicketTypeId || t.id === resolvedTicketTypeId.trim().toLowerCase()
+                  );
+                  if (!isTicketAvailable(selectedTicket)) {
+                    resolvedTicketTypeId = '';
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('Failed to fetch event to verify ticket availability:', e);
+            }
+
+            const updatedParsedState = {
+              ...parsedState,
+              ticketTypeId: resolvedTicketTypeId
+            };
+
+            if (resolvedTicketTypeId !== parsedState.ticketTypeId) {
+              localStorage.setItem('formState', JSON.stringify(updatedParsedState));
+            }
+
+            return {
+              ...updatedParsedState,
+              email: userEmail || parsedState.email,
+              transactionId: transactionIdFromUrl || parsedState.transactionId
+            };
+          } else {
+            localStorage.removeItem('formState');
+          }
+        } catch (e) {
+          console.error('Failed to parse formState from localStorage:', e);
+          localStorage.removeItem('formState');
+        }
       }
 
       return {

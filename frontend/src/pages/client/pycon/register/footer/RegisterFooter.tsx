@@ -46,7 +46,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
       <>
         <Button
           onClick={onPrevStep}
-          className="cursor-pointer bg-transparent border-2 border-[#F99508] text-[#F99508] font-sora font-bold rounded-2xl py-6 sm:px-6 hover:bg-[#F9950812] transition-colors"
+          className="cursor-pointer bg-[#F99508] hover:bg-[#E08405] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors"
         >
           Back
         </Button>
@@ -71,7 +71,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
       <>
         <Button
           onClick={onPrevStep}
-          className="cursor-pointer bg-transparent border-2 border-[#F99508] text-[#F99508] font-sora font-bold rounded-2xl py-6 sm:px-6 hover:bg-[#F9950812] transition-colors"
+          className="cursor-pointer bg-[#F99508] hover:bg-[#E08405] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors"
         >
           Back
         </Button>
@@ -95,7 +95,7 @@ const RegisterFooter: FC<Props> = ({ event, steps, currentStep, fieldsToCheck, i
         <Button
           onClick={onPrevStep}
           disabled={isFormSubmitting}
-          className="cursor-pointer bg-transparent border-2 border-[#F99508] text-[#F99508] font-sora font-bold rounded-2xl py-6 sm:px-6 hover:bg-[#F9950812] transition-colors disabled:opacity-50"
+          className="cursor-pointer bg-[#F99508] hover:bg-[#E08405] text-white font-sora font-bold rounded-2xl py-6 sm:px-6 shadow-xs transition-colors disabled:opacity-50"
         >
           Back
         </Button>
