@@ -3,7 +3,6 @@ from http import HTTPStatus
 from typing import Optional
 
 import ulid
-from model.email.email import EmailIn, EmailType
 from model.events.event import Event
 from model.payments.payments import PaymentTrackingBody, TransactionStatus
 from model.pycon_registrations.pycon_registration import PyconRegistrationIn
@@ -11,26 +10,26 @@ from model.registrations.registration import Registration
 from repository.events_repository import EventsRepository
 from repository.payment_transaction_repository import PaymentTransactionRepository
 from repository.registrations_repository import RegistrationsRepository
-from usecase.email_usecase import EmailUsecase
+from usecase.pycon_registration_email_notification import (
+    PyConRegistrationEmailNotification,
+)
 from utils.logger import log_execution, logger, mask_email
 
 
 class PaymentTrackingUsecase:
     def __init__(self):
         self.registration_repository = RegistrationsRepository()
-        self.email_usecase = EmailUsecase()
         self.event_repository = EventsRepository()
         self.payment_transaction_repository = PaymentTransactionRepository()
-        self.registration_repository = RegistrationsRepository()
+        self.pycon_email_notification = PyConRegistrationEmailNotification()
 
     @log_execution
-    def process_payment_event(self, message_body: dict) -> None:
+    def process_payment_event(self, message_body: dict, is_pycon_event: bool = True) -> None:
         """
         Processes a payment event message, updates the payment transaction status,
         and stores the registration details.
         """
         try:
-            logger.info('Processing payment event message')
             self._update_timestamps(message_body)
             payment_tracking_body = PaymentTrackingBody(**message_body)
 
@@ -39,15 +38,27 @@ class PaymentTrackingUsecase:
             registration_data = registration_details.registrationData
             event_id = registration_details.eventId
             entry_id = registration_details.entryId
+            masked_email = (
+                mask_email(registration_data.email)
+                if registration_data and registration_data.email
+                else 'unknown'
+            )
             recorded_registration_data = None
 
+            logger.info(
+                f'Processing payment event message for entry_id={entry_id}, event_id={event_id}, '
+                f'status={transaction_status}, email={masked_email}'
+            )
+
             if transaction_status == TransactionStatus.PENDING:
-                logger.info(f'Skipping PENDING message for entryId: {entry_id}')
+                logger.info(
+                    f'Skipping PENDING payment event for entry_id={entry_id}, event_id={event_id}, email={masked_email}'
+                )
                 return
 
             _, event_detail, _ = self.event_repository.query_events(event_id)
             if not event_detail:
-                logger.error(f'Event details not found for eventId: {event_id}')
+                logger.error(f'Event details not found for event_id={event_id}, entry_id={entry_id}')
                 raise ValueError(f'Event details not found for eventId: {event_id}')
 
             # Update Payment Transaction Status
@@ -56,18 +67,24 @@ class PaymentTrackingUsecase:
             )
 
             if status != HTTPStatus.OK:
-                logger.error(f'Failed to update payment transaction status for entryId {entry_id}: {msg}')
+                logger.error(
+                    f'Failed to update payment transaction status to {transaction_status} for entry_id={entry_id}, '
+                    f'event_id={event_id}: {msg}'
+                )
                 return
 
-            logger.info(f'Payment transaction status updated to {transaction_status} for entryId {entry_id}')
+            logger.info(
+                f'Payment transaction status updated to {transaction_status} for entry_id={entry_id}, event_id={event_id}'
+            )
 
-            status, registration_details, _ = self.registration_repository.query_registrations_with_email(
+            status, existing_registrations, _ = self.registration_repository.query_registrations_with_email(
                 event_id=event_id, email=registration_data.email
             )
 
-            if status == HTTPStatus.OK and registration_details:
+            if status == HTTPStatus.OK and existing_registrations:
                 logger.info(
-                    f'Skipping duplicate email for {mask_email(registration_data.email)} - user already has existing registration'
+                    f'Skipping duplicate registration for entry_id={entry_id}, event_id={event_id}, '
+                    f'email={masked_email} - user already has existing registration'
                 )
                 return
 
@@ -76,10 +93,13 @@ class PaymentTrackingUsecase:
                     payment_tracking_body=payment_tracking_body
                 )
                 if not recorded_registration_data:
-                    logger.error(f'Failed to save registration for entryId {entry_id}')
+                    logger.error(
+                        f'Failed to save registration for entry_id={entry_id}, event_id={event_id}, email={masked_email}'
+                    )
                 else:
                     logger.info(
-                        f'Registration created via payment tracking for entry_id={entry_id}, event_id={event_id}, email={mask_email(registration_data.email)}'
+                        f'Registration created via payment tracking for entry_id={entry_id}, '
+                        f'event_id={event_id}, email={masked_email}'
                     )
 
             elif transaction_status == TransactionStatus.FAILED:
@@ -88,23 +108,48 @@ class PaymentTrackingUsecase:
                 )
                 if status == HTTPStatus.OK and registrations:
                     logger.info(
-                        f'Skipping failed payment email for {mask_email(registration_data.email)} - user already has existing registration'
+                        f'Skipping failed payment email for entry_id={entry_id}, event_id={event_id}, '
+                        f'email={masked_email} - user already has existing registration'
                     )
                     return
 
-            self._send_email_notification(
-                first_name=registration_data.firstName,
-                email=registration_data.email,
-                transaction_id=entry_id,
-                recorded_registration=recorded_registration_data,
-                ticket_type=registration_data.ticketType.value,
-                status=transaction_status,
-                event_detail=event_detail,
+            if transaction_status == TransactionStatus.SUCCESS:
+                logger.info(
+                    f'Triggering registration success email for entry_id={entry_id}, event_id={event_id}, email={masked_email}'
+                )
+                self.pycon_email_notification.send_registration_success_email(
+                    email=registration_data.email,
+                    event=event_detail,
+                    is_pycon_event=is_pycon_event,
+                    registration_data=recorded_registration_data,
+                )
+            elif transaction_status == TransactionStatus.FAILED:
+                logger.info(
+                    f'Triggering registration failure email for entry_id={entry_id}, event_id={event_id}, email={masked_email}'
+                )
+                self.pycon_email_notification.send_registration_failure_email(
+                    email=registration_data.email,
+                    event=event_detail,
+                    payment_transaction=registration_details,
+                    is_pycon_event=is_pycon_event,
+                )
+            logger.info(
+                f'Successfully processed payment event for entry_id={entry_id}, event_id={event_id}, '
+                f'status={transaction_status}, email={masked_email}'
             )
-            logger.info(f'Successfully processed registration for {mask_email(registration_data.email)}')
 
         except Exception as e:
-            logger.error(f'Failed to process successful payment for entryId {registration_details.entryId}: {e}')
+            entry_id = (
+                message_body.get('registration_details', {}).get('entryId', 'unknown')
+                if isinstance(message_body, dict)
+                else 'unknown'
+            )
+            event_id = (
+                message_body.get('registration_details', {}).get('eventId', 'unknown')
+                if isinstance(message_body, dict)
+                else 'unknown'
+            )
+            logger.error(f'Failed to process payment event for entry_id={entry_id}, event_id={event_id}: {e}')
             raise
 
     def _update_timestamps(self, message_body: dict):
@@ -162,117 +207,22 @@ class PaymentTrackingUsecase:
             entryStatus=payment_tracking_body.status.value,
         )
 
-        status, registration_data, _ = self.registration_repository.store_registration(
+        status, stored_registration, message = self.registration_repository.store_registration(
             registration_in=registration_in, registration_id=registration_id
         )
 
-        logger.info(
-            f'Registration stored with status: {status}, registrationId: {registration_id}, data: {registration_data}'
-        )
+        if status == HTTPStatus.OK:
+            logger.info(
+                f'Registration stored successfully with status={status}, registration_id={registration_id}, '
+                f'event_id={registration_in.eventId}, email={mask_email(registration_in.email)}, '
+                f'ticket_type={registration_in.ticketType}'
+            )
+        else:
+            logger.error(
+                f'Failed to store registration with status={status}, registration_id={registration_id}, '
+                f'event_id={registration_in.eventId}, email={mask_email(registration_in.email)}: {message}'
+            )
 
-        return registration_data
+        return stored_registration
 
-    def _send_email_notification(
-        self,
-        email: str,
-        first_name: str,
-        transaction_id: str,
-        ticket_type: str,
-        status: TransactionStatus,
-        event_detail: Event,
-        is_pycon_event: bool = True,
-        recorded_registration: Optional[Registration] = None,
-    ):
-        """
-        Sends an email notification based on the transaction status and event type.
-        """
-        if not event_detail:
-            logger.error('Event details are missing. Cannot send email.')
-            return
 
-        def _email_list_elements(elements: list[str]) -> str:
-            return '\n'.join([f'<li>{element}</li>' for element in elements])
-
-        def _email_bold_element(element: str) -> str:
-            return f'<b>{element}</b>'
-
-        def _email_newline_element() -> str:
-            return '<br/>'
-
-        def _create_success_body(reg_data: Registration, ticket: str) -> list[str]:
-            logger.info(f'Creating success email body for registration: {reg_data}')
-            base_body = [
-                f"Thank you for registering for {event_detail.name}! Your payment was successful, and we're excited to see you at the event.",
-                _email_bold_element('Below is a summary of your registration details:'),
-            ]
-
-            list_items = [
-                f'Registration ID: {reg_data.registrationId if reg_data.registrationId else "N/A"}',
-                f'Ticket Type: {ticket.capitalize() if ticket else "N/A"}',
-                f'Sprint Day Participation: {"Yes" if reg_data.sprintDay else "No"}',
-                f'Amount Paid: ₱{reg_data.amountPaid if reg_data.amountPaid else "0"}',
-                f'Transaction ID: {reg_data.transactionId if reg_data.transactionId else "N/A"}',
-                f'Payment Method: {reg_data.paymentMethod.capitalize() if reg_data.paymentMethod else "N/A"}',
-            ]
-
-            if is_pycon_event:
-                base_body[0] = (
-                    "Thank you for registering for PyCon Davao 2026 by DurianPy! Your payment was successful, and we're excited to see you at the event."
-                )
-                list_items.pop()
-
-            base_body.append(_email_list_elements(list_items))
-            base_body.append(_email_newline_element())
-            base_body.append('See you there!')
-
-            return base_body
-
-        def _create_failed_body(name: str, transaction_id: str) -> list[str]:
-            return [
-                f'There was an issue processing your payment for {name}. Please check your payment details or try again.',
-                f'If the problem persists, please contact our support team at durianpy.davao@gmail.com and present your transaction ID: {transaction_id}',
-            ]
-
-        templates = {
-            TransactionStatus.SUCCESS: {
-                'subject': f"You're all set for {event_detail.name}!",
-                'salutation': f'Hi {first_name},',
-                'body': lambda: _create_success_body(recorded_registration, ticket_type),
-                'regards': ['Best,'],
-            },
-            TransactionStatus.FAILED: {
-                'subject': f'Issue with your {event_detail.name} Payment',
-                'salutation': f'Hi {first_name},',
-                'body': lambda: _create_failed_body(event_detail.name, transaction_id),
-                'regards': ['Sincerely,'],
-            },
-        }
-
-        if is_pycon_event:
-            templates[TransactionStatus.SUCCESS]['subject'] = "You're all set for PyCon Davao 2026!"
-            templates[TransactionStatus.FAILED]['subject'] = 'Issue with your PyCon Davao 2026 Payment'
-
-        template = templates.get(status)
-
-        if not template:
-            logger.error(f'No email template found for status: {status}')
-            return
-
-        logger.info(
-            f'Preparing to send email for event {event_detail.eventId} with status {status} to {mask_email(email)}.'
-        )
-
-        email_in = EmailIn(
-            to=[email],
-            subject=template['subject'],
-            salutation=template['salutation'],
-            body=template['body'](),
-            regards=template['regards'],
-            emailType=EmailType.REGISTRATION_EMAIL,
-            eventId=event_detail.eventId,
-            isDurianPy=is_pycon_event,
-        )
-        self.email_usecase.send_email(email_in=email_in, event=event_detail)
-        logger.info(
-            f'Email notification sent for event {event_detail.eventId} with status {status} to {mask_email(email)}.'
-        )
