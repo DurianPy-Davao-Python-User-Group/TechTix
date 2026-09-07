@@ -10,6 +10,16 @@ export const getEffectivePrice = (event: Event, ticketTypeId?: string | null): n
   return event.price;
 };
 
+export const getOriginalPrice = (event: Event, ticketTypeId?: string | null): number | null => {
+  if (event.ticketTypes && ticketTypeId) {
+    const matchedTicket = event.ticketTypes.find((t) => t.id === ticketTypeId);
+    if (matchedTicket) {
+      return matchedTicket.originalPrice ?? null;
+    }
+  }
+  return null;
+};
+
 export const calculateTotalPrice = ({
   price,
   sprintDayPrice = 0,

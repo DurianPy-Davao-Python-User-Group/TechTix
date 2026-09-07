@@ -7,7 +7,7 @@ import Input from '@/components/Input';
 import { Event, EVENT_UPLOAD_TYPE } from '@/model/events';
 import { formatMoney, formatPercentage } from '@/utils/functions';
 import { RegisterFormValues } from '../../hooks/useRegisterForm';
-import { calculateDiscountedPrice, calculateTotalPrice, getEffectivePrice } from '../pricing';
+import { calculateDiscountedPrice, calculateTotalPrice, getEffectivePrice, getOriginalPrice } from '../pricing';
 import { useDiscount } from '../useDiscount';
 import { useTransactionFee } from '../useTransactionFee';
 import PaymentGateways from './PaymentGateways';
@@ -23,6 +23,8 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
   const { control, setValue, getValues } = useFormContext<RegisterFormValues>();
   const [transactionFee, sprintDay, ticketType] = useWatch({ name: ['transactionFee', 'sprintDay', 'ticketType'], control });
   const effectivePrice = getEffectivePrice(event, ticketType);
+  const originalPrice = getOriginalPrice(event, ticketType);
+  const hasTicketSale = originalPrice != null && effectivePrice < originalPrice;
   const { discountPercentage, isValidatingDiscountCode, validateDiscountCode } = useDiscount(effectivePrice);
   const { getTransactionFee } = useTransactionFee(effectivePrice, platformFee, setIsFeesLoading, discountPercentage, sprintDayPrice);
   const currentSprintPrice = sprintDay && sprintDayPrice ? sprintDayPrice : 0;
@@ -147,7 +149,14 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
           <div className="flex flex-col text-base font-inter">
             <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
               <span className="font-bold text-[#072E47]">Ticket Price</span>
-              <span className="font-bold text-[#072E47]">{formatMoney(effectivePrice, 'PHP')}</span>
+              <div className="flex items-center gap-2">
+                {hasTicketSale && (
+                  <span className="line-through text-gray-400 font-normal text-sm">
+                    {formatMoney(originalPrice!, 'PHP')}
+                  </span>
+                )}
+                <span className="font-bold text-[#072E47]">{formatMoney(effectivePrice, 'PHP')}</span>
+              </div>
             </div>
 
             {discountPercentage ? (

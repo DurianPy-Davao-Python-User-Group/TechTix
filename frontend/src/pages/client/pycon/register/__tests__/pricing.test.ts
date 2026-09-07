@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Event } from '@/model/events';
-import { calculateDiscountedPrice, calculateTotalPrice, getEffectivePrice, roundUpToTwoDecimals } from '../pricing';
+import { calculateDiscountedPrice, calculateTotalPrice, getEffectivePrice, getOriginalPrice, roundUpToTwoDecimals } from '../pricing';
 
 describe('PyCon pricing utilities', () => {
   const baseEvent: Event = {
@@ -51,10 +51,41 @@ describe('PyCon pricing utilities', () => {
     ]
   };
 
+  const saleEvent: Event = {
+    ...baseEvent,
+    ticketTypes: [
+      {
+        id: 'coder',
+        name: 'Coder Ticket (Early Bird Sale)',
+        description: null,
+        tier: '1',
+        originalPrice: 3000,
+        price: 2000,
+        maximumQuantity: 100,
+        currentSales: 10
+      },
+      {
+        id: 'kasosyo',
+        name: 'Kasosyo Ticket',
+        description: null,
+        tier: '2',
+        originalPrice: 6000,
+        price: 4500,
+        maximumQuantity: 50,
+        currentSales: 5
+      }
+    ]
+  };
+
   describe('getEffectivePrice', () => {
     it('returns the matched ticket price when ticketType is selected', () => {
       expect(getEffectivePrice(baseEvent, 'coder')).toBe(2500);
       expect(getEffectivePrice(baseEvent, 'kasosyo')).toBe(5000);
+    });
+
+    it('returns the discounted sale price (not originalPrice) when a ticket is on sale', () => {
+      expect(getEffectivePrice(saleEvent, 'coder')).toBe(2000);
+      expect(getEffectivePrice(saleEvent, 'kasosyo')).toBe(4500);
     });
 
     it('falls back to event.price when ticketType does not match', () => {
@@ -69,6 +100,28 @@ describe('PyCon pricing utilities', () => {
     it('falls back to event.price when event has no ticketTypes', () => {
       const eventNoTickets: Event = { ...baseEvent, ticketTypes: null };
       expect(getEffectivePrice(eventNoTickets, 'coder')).toBe(1500);
+    });
+  });
+
+  describe('getOriginalPrice', () => {
+    it('returns originalPrice when ticket has an original price', () => {
+      expect(getOriginalPrice(saleEvent, 'coder')).toBe(3000);
+      expect(getOriginalPrice(saleEvent, 'kasosyo')).toBe(6000);
+    });
+
+    it('returns null when ticket originalPrice is null or not set', () => {
+      expect(getOriginalPrice(baseEvent, 'coder')).toBeNull();
+    });
+
+    it('returns null when ticket does not match or ticketType is null/undefined', () => {
+      expect(getOriginalPrice(saleEvent, 'non-existent')).toBeNull();
+      expect(getOriginalPrice(saleEvent, null)).toBeNull();
+      expect(getOriginalPrice(saleEvent, undefined)).toBeNull();
+    });
+
+    it('returns null when event has no ticketTypes', () => {
+      const eventNoTickets: Event = { ...baseEvent, ticketTypes: null };
+      expect(getOriginalPrice(eventNoTickets, 'coder')).toBeNull();
     });
   });
 
@@ -89,6 +142,33 @@ describe('PyCon pricing utilities', () => {
       // transactionFee = 50
       // total = 2250 + 50 + 125 + 200 = 2625
       expect(total).toBe(2625);
+    });
+
+    it('correctly calculates total using sale price when ticket is on sale', () => {
+      const effectivePrice = getEffectivePrice(saleEvent, 'coder'); // 2000, not 3000
+      const total = calculateTotalPrice({
+        price: effectivePrice,
+        sprintDayPrice: 0,
+        transactionFee: 0,
+        discountPercentage: 0,
+        platformFee: 0
+      });
+
+      expect(total).toBe(2000);
+    });
+
+    it('correctly applies promotional discount code on top of ticket sale price', () => {
+      const effectivePrice = getEffectivePrice(saleEvent, 'coder'); // 2000
+      const total = calculateTotalPrice({
+        price: effectivePrice,
+        sprintDayPrice: 0,
+        transactionFee: 0,
+        discountPercentage: 0.2, // 20% off the sale price
+        platformFee: 0
+      });
+
+      // 2000 * 0.8 = 1600
+      expect(total).toBe(1600);
     });
 
     it('calculates 0 total for 100% discount without sprint day or fees', () => {

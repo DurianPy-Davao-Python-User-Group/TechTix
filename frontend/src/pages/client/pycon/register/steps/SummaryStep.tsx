@@ -70,6 +70,7 @@ const SummaryStep = ({ event }: SummaryProps) => {
 
   const ticketType = event.ticketTypes?.find((ticket) => ticket.id === ticketTypeId);
   const effectivePrice = getEffectivePrice(event, ticketTypeId);
+  const hasTicketSale = ticketType?.originalPrice != null && effectivePrice < ticketType.originalPrice;
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || '-';
 
   const formatSocials = () => {
@@ -118,7 +119,22 @@ const SummaryStep = ({ event }: SummaryProps) => {
 
         {event.paidEvent && event.status !== 'preregistration' && (
           <>
-            <SummaryRow label="PRICE" value={formatMoney(effectivePrice, 'PHP')} isAlt={true} />
+            <SummaryRow
+              label="PRICE"
+              value={
+                hasTicketSale ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="line-through text-neutral-400 font-normal text-xs sm:text-sm">
+                      {formatMoney(ticketType!.originalPrice!, 'PHP')}
+                    </span>
+                    <span>{formatMoney(effectivePrice, 'PHP')}</span>
+                  </span>
+                ) : (
+                  formatMoney(effectivePrice, 'PHP')
+                )
+              }
+              isAlt={true}
+            />
 
             {discountPercentage && validCode && discountedPrice ? (
               <>
