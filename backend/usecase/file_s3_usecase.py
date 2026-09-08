@@ -22,7 +22,7 @@ class FileS3Usecase:
             config=Config(signature_version='s3v4'),
         )
         self.__bucket = os.getenv('S3_BUCKET')
-        self.__presigned_url_expiration_time = 30
+        self.__presigned_url_expiration_time = 60 * 2  # 2 minutes
 
     @log_execution
     def create_presigned_url(self, object_key) -> FileUploadOut:
