@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/Accordion';
 import Button from '@/components/Button';
 import FileUpload from '@/components/FileUpload';
 import { FormItem, FormLabel, FormError, FormDescription } from '@/components/Form';
@@ -17,6 +18,21 @@ interface Props {
   isFeesLoading: boolean;
   setIsFeesLoading: (isLoading: boolean) => void;
 }
+
+const ACCEPTED_VALID_IDS = [
+  'Philippine Passport',
+  'LTO Driver\'s License',
+  'Unified Multi-Purpose ID (UMID) / SSS ID',
+  'Professional Regulation Commission (PRC) License',
+  'Postal ID',
+  'PhilHealth ID',
+  'Voter\'s ID or Voter\'s Certification',
+  'Taxpayer Identification Number (TIN) ID',
+  'Persons with Disability (PWD) ID',
+  'Senior Citizen\'s ID',
+  'PSA-issued Birth Certificate',
+  'School ID (with current registration card, for students)'
+];
 
 const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: Props) => {
   const { eventId, platformFee, sprintDayPrice } = event;
@@ -108,11 +124,25 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
                 Identity Verification
               </p>
               <FormLabel className="font-inter text-sm font-bold uppercase tracking-[0.5px] text-[#F99508] block">
-                Upload ID *
+                Upload Valid ID *
               </FormLabel>
-              <FormDescription className="font-inter text-xs italic text-[#072E4799] block -mt-1">
-                Required upon entry to venue
+              <FormDescription className="font-inter text-xs text-[#072E4799] block -mt-1">
+                Please upload a clear photo of your valid ID card (e.g., Government or Student ID) for venue security clearance upon entry. Do not upload a selfie or 2x2 photo.
               </FormDescription>
+              <Accordion type="single" collapsible defaultValue="accepted-ids" className="max-w-xl pt-1">
+                <AccordionItem value="accepted-ids" className="border-b-0 border border-[#072E4714] rounded-2xl bg-pycon-dirty-white/60 px-4">
+                  <AccordionTrigger className="text-xs font-bold uppercase tracking-[0.05em] text-[#072E47] hover:text-[#F99508] hover:no-underline py-3 cursor-pointer [&>svg]:text-pycon-teal">
+                    Accepted Valid IDs
+                  </AccordionTrigger>
+                  <AccordionContent className="text-xs text-[#072E47cc] pb-3">
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 list-disc list-inside">
+                      {ACCEPTED_VALID_IDS.map((id) => (
+                        <li key={id}>{id}</li>
+                      ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
               <div className="pt-2">
                 <FileUpload pyconStyles name={name} eventId={eventId} uploadType={EVENT_UPLOAD_TYPE.VALID_ID} value={value} onChange={onChange} />
               </div>
