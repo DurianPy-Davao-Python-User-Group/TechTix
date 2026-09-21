@@ -7,7 +7,7 @@ interface QueryOptions {
   active?: boolean;
 }
 
-export const useApiQuery = <T>(request: createApiReturn<T>, { active = true }: QueryOptions = {}) => {
+export function useApiQuery<T>(request: createApiReturn<T>, { active = true }: QueryOptions = {}) {
   const api = useApi();
   return useQuery({
     queryKey: request.queryKey,
@@ -16,7 +16,7 @@ export const useApiQuery = <T>(request: createApiReturn<T>, { active = true }: Q
     refetchOnWindowFocus: false,
     retry: 3
   });
-};
+}
 
 export class ApiClient {
   constructor(private queryClient: QueryClient) {}

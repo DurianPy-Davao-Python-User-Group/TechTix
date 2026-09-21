@@ -1,26 +1,32 @@
 import * as React from 'react';
+import { Check } from 'lucide-react';
 import { cn } from '@/utils/classes';
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
-import { CheckIcon } from '@radix-ui/react-icons';
+import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
 
-const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & { pyconStyles?: boolean }
->(({ className, pyconStyles = false, ...props }, ref) => (
-  <CheckboxPrimitive.Root
+export interface CheckboxProps extends React.ComponentPropsWithoutRef<typeof BaseCheckbox.Root> {
+  pyconStyles?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  ref?: React.Ref<React.ComponentRef<typeof BaseCheckbox.Root>>;
+}
+
+const Checkbox = ({ className, pyconStyles = false, onCheckedChange, ref, ...props }: CheckboxProps) => (
+  <BaseCheckbox.Root
     ref={ref}
+    onCheckedChange={(checked) => {
+      onCheckedChange?.(checked === true);
+    }}
     className={cn(
-      'peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
-      pyconStyles && 'data-[state=checked]:text-white data-[state=checked]:bg-pycon-orange border-pycon-orange',
+      'peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-checked:bg-primary data-checked:text-primary-foreground',
+      pyconStyles && '[state=checked]:text-pycon-red data-[state=checked]:bg-pycon-orange data-checked:bg-pycon-orange border-pycon-orange',
       className
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator className={cn('flex items-center justify-center text-current')}>
-      <CheckIcon stroke="currentColor" className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-));
-Checkbox.displayName = CheckboxPrimitive.Root.displayName;
+    <BaseCheckbox.Indicator className={cn('flex items-center justify-center text-current')}>
+      <Check stroke="currentColor" className="h-4 w-4" />
+    </BaseCheckbox.Indicator>
+  </BaseCheckbox.Root>
+);
+Checkbox.displayName = 'Checkbox';
 
 export default Checkbox;

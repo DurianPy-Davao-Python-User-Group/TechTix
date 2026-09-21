@@ -14,9 +14,17 @@ interface Props {
 }
 
 const EventDetails: FC<Props> = ({
-  event: { eventId, name, description, venue, startDate, endDate,
-    // status, paidEvent, price, hasMultipleTicketTypes, ticketTypes, 
-    logoLink, bannerLink },
+  event: {
+    eventId,
+    name,
+    description,
+    venue,
+    startDate,
+    endDate,
+    // status, paidEvent, price, hasMultipleTicketTypes, ticketTypes,
+    logoLink,
+    bannerLink
+  },
   registerButton
 }) => {
   const isSameDayEvent = moment(startDate).isSame(endDate, 'day');
@@ -36,7 +44,9 @@ const EventDetails: FC<Props> = ({
     <section className="flex flex-col items-center max-w-3xl p-2 mx-auto text-pycon-dark-blue font-inter">
       {logoLink && <img src={logoUrl} className="w-16 h-16 rounded-full overflow-hidden mb-2" alt="" />}
       {bannerLink && <div className="h-60 my-4 w-fit">{<img className="max-h-60 rounded-2xl object-cover shadow-xs" src={bannerUrl} alt="" />}</div>}
-      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-pycon-orange! font-sora tracking-tight leading-tight w-full mb-4 text-left">{name}</h1>
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-pycon-orange! font-sora tracking-tight leading-tight w-full mb-4 text-left">
+        {name}
+      </h1>
 
       <div className="w-full grid grid-cols-[auto_1fr] text-pycon-dark-blue justify-center items-center gap-x-3.5 gap-y-2.5 font-inter">
         <Icon name="Clock" size={18} className="col-span-1 text-pycon-teal" />

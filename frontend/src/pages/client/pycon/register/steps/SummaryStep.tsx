@@ -124,9 +124,7 @@ const SummaryStep = ({ event }: SummaryProps) => {
               value={
                 hasTicketSale ? (
                   <span className="inline-flex items-center gap-2">
-                    <span className="line-through text-neutral-400 font-normal text-xs sm:text-sm">
-                      {formatMoney(ticketType!.originalPrice!, 'PHP')}
-                    </span>
+                    <span className="line-through text-neutral-400 font-normal text-xs sm:text-sm">{formatMoney(ticketType!.originalPrice!, 'PHP')}</span>
                     <span>{formatMoney(effectivePrice, 'PHP')}</span>
                   </span>
                 ) : (

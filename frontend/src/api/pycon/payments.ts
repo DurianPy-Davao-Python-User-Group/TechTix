@@ -10,7 +10,6 @@ export const getTransactionDetails = (transactionDetails: TransactionDetails) =>
     body: { ...transactionDetails }
   });
 
-
 export const createEwalletPaymentRequest = (paymentDetails: EWalletPaymentIn) =>
   createApi<PaymentRequestOut>({
     method: 'post',
@@ -28,4 +27,3 @@ export const initiateDirectDebitPayment = (paymentDetails: DirectDebitPaymentIn)
     url: '/direct_debit/payment_request',
     body: { ...paymentDetails }
   });
-

@@ -1,13 +1,15 @@
-import * as AspectRatioPrimitive from '@radix-ui/react-aspect-ratio';
+import * as React from 'react';
 
-const AspectRatio = ({ ratio, children, ...props }: AspectRatioPrimitive.AspectRatioProps) => {
+export interface AspectRatioProps extends React.HTMLAttributes<HTMLDivElement> {
+  ratio?: number;
+}
+
+const AspectRatio = ({ ratio = 1 / 1, style, children, ...props }: AspectRatioProps) => {
   return (
-    <AspectRatioPrimitive.Root ratio={ratio} {...props}>
+    <div style={{ position: 'relative', width: '100%', aspectRatio: `${ratio}`, ...style }} {...props}>
       {children}
-    </AspectRatioPrimitive.Root>
+    </div>
   );
 };
 
 export default AspectRatio;
-
-// Better with Next/Image

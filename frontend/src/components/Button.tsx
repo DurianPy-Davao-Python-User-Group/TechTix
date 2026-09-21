@@ -47,57 +47,54 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   strokeWidth?: number;
   iconPlacement?: 'left' | 'right';
   iconClassname?: string;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      children,
-      icon,
-      strokeWidth,
-      iconClassname,
-      iconPlacement = 'left',
-      asChild = false,
-      loading = false,
-      disabled = false,
-      ...props
-    },
-    ref
-  ) => {
-    const iconStyles = cn('shrink-0', size !== 'icon' && children && (iconPlacement === 'left' ? 'mr-3' : 'ml-3'), iconClassname, loading && 'animate-spin');
+const Button = ({
+  className,
+  variant,
+  size,
+  children,
+  icon,
+  strokeWidth,
+  iconClassname,
+  iconPlacement = 'left',
+  asChild = false,
+  loading = false,
+  disabled = false,
+  ref,
+  ...props
+}: ButtonProps) => {
+  const iconStyles = cn('shrink-0', size !== 'icon' && children && (iconPlacement === 'left' ? 'mr-3' : 'ml-3'), iconClassname, loading && 'animate-spin');
 
-    const getButtonContent = () => {
-      if (icon) {
-        return (
-          <>
-            <Icon strokeWidth={strokeWidth} name={loading ? 'LoaderCircle' : icon} className={iconStyles} />
-            {children}
-          </>
-        );
-      }
+  const getButtonContent = () => {
+    if (icon) {
       return (
         <>
-          {loading && <Loader2 className={iconStyles} />}
+          <Icon strokeWidth={strokeWidth} name={loading ? 'LoaderCircle' : icon} className={iconStyles} />
           {children}
         </>
       );
-    };
-
+    }
     return (
-      <button
-        className={cn(buttonVariants({ variant, size, loading, className }), iconPlacement === 'right' && 'flex-row-reverse')}
-        ref={ref}
-        disabled={disabled || loading}
-        {...props}
-      >
-        {getButtonContent()}
-      </button>
+      <>
+        {loading && <Loader2 className={iconStyles} />}
+        {children}
+      </>
     );
-  }
-);
+  };
+
+  return (
+    <button
+      className={cn(buttonVariants({ variant, size, loading, className }), iconPlacement === 'right' && 'flex-row-reverse')}
+      ref={ref}
+      disabled={disabled || loading}
+      {...props}
+    >
+      {getButtonContent()}
+    </button>
+  );
+};
 Button.displayName = 'Button';
 
 export default Button;

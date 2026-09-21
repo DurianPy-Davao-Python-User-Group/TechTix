@@ -35,9 +35,7 @@ const FAQs: FC = () => {
               <AccordionTrigger className="text-pycon-dark-blue font-inter font-semibold hover:text-pycon-teal hover:no-underline text-left py-4 cursor-pointer [&>svg]:text-pycon-teal">
                 <p className="text-sm sm:text-base font-semibold text-pycon-dark-blue pr-2">{faq.question}</p>
               </AccordionTrigger>
-              <AccordionContent className="text-pycon-dark-blue/80 font-inter text-sm sm:text-base leading-relaxed pb-4">
-                {faq.answer}
-              </AccordionContent>
+              <AccordionContent className="text-pycon-dark-blue/80 font-inter text-sm sm:text-base leading-relaxed pb-4">{faq.answer}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

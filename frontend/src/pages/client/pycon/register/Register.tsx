@@ -105,35 +105,25 @@ const Register: FC = () => {
             <div className="space-y-2 text-left w-full mb-2">
               {showStepper && !shouldBeVertical && (
                 <div className="w-full mb-3 sm:mb-4">
-                  <Stepper
-                    orientation="horizontal"
-                    steps={STEPS}
-                    currentStep={currentStep}
-                    stepsToExclude={[STEP_SUCCESS]}
-                    onPrevStep={onPrevStep}
-                  />
+                  <Stepper orientation="horizontal" steps={STEPS} currentStep={currentStep} stepsToExclude={[STEP_SUCCESS]} onPrevStep={onPrevStep} />
                 </div>
               )}
               {currentStep.category && (
-                <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">
-                  {currentStep.category}
-                </p>
+                <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">{currentStep.category}</p>
               )}
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#04b1a4] md:text-[#F99508] font-sora tracking-tight leading-tight">
                 {currentStep.title}
               </h1>
               {currentStep.description && (
                 <p className="text-sm sm:text-base md:text-lg text-pycon-dark-blue/60 font-inter">
-                  {currentStep.description.includes('*') ? (
-                    currentStep.description.split('*').map((part, index, array) => (
-                      <Fragment key={index}>
-                        {part}
-                        {index < array.length - 1 && <span className="text-[#F99508] font-bold">*</span>}
-                      </Fragment>
-                    ))
-                  ) : (
-                    currentStep.description
-                  )}
+                  {currentStep.description.includes('*')
+                    ? currentStep.description.split('*').map((part, index, array) => (
+                        <Fragment key={index}>
+                          {part}
+                          {index < array.length - 1 && <span className="text-[#F99508] font-bold">*</span>}
+                        </Fragment>
+                      ))
+                    : currentStep.description}
                 </p>
               )}
             </div>
@@ -159,9 +149,7 @@ const Register: FC = () => {
                 <PaymentAndVerificationStep event={eventInfo} isFeesLoading={isFeesLoading} setIsFeesLoading={setIsFeesLoading} />
               )}
               {currentStep.id === 'Summary' && <SummaryStep event={eventInfo} />}
-              {currentStep.id === 'Success' && (
-                <SuccessStep event={eventInfo} isRegisterSuccessful={isRegisterSuccessful} retryRegister={retryRegister} />
-              )}
+              {currentStep.id === 'Success' && <SuccessStep event={eventInfo} isRegisterSuccessful={isRegisterSuccessful} retryRegister={retryRegister} />}
             </div>
           </div>
 

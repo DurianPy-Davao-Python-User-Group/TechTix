@@ -158,8 +158,7 @@ export const useRegisterForm = (eventId: string, mode: RegisterMode, navigateOnS
       if (savedState) {
         try {
           const parsedState = JSON.parse(savedState);
-          const isEmailMatch =
-            !userEmail || !parsedState?.email || parsedState.email.trim().toLowerCase() === userEmail.trim().toLowerCase();
+          const isEmailMatch = !userEmail || !parsedState?.email || parsedState.email.trim().toLowerCase() === userEmail.trim().toLowerCase();
 
           if (isEmailMatch) {
             let resolvedTicketTypeId = parsedState.ticketTypeId ?? '';
@@ -169,9 +168,7 @@ export const useRegisterForm = (eventId: string, mode: RegisterMode, navigateOnS
               if (eventResponse.status === 200 && eventResponse.data) {
                 const eventData = eventResponse.data;
                 if (resolvedTicketTypeId && eventData.ticketTypes && eventData.ticketTypes.length > 0) {
-                  const selectedTicket = eventData.ticketTypes.find(
-                    (t) => t.id === resolvedTicketTypeId || t.id === resolvedTicketTypeId.trim().toLowerCase()
-                  );
+                  const selectedTicket = eventData.ticketTypes.find((t) => t.id === resolvedTicketTypeId || t.id === resolvedTicketTypeId.trim().toLowerCase());
                   if (!isTicketAvailable(selectedTicket)) {
                     resolvedTicketTypeId = '';
                   }

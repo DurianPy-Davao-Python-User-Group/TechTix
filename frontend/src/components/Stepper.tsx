@@ -1,5 +1,6 @@
+import * as React from 'react';
 import { cn } from '@/utils/classes';
-import * as Slider from '@radix-ui/react-slider';
+import { Slider as BaseSlider } from '@base-ui/react/slider';
 
 export interface Step {
   id: string;
@@ -24,17 +25,17 @@ const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude }: Stepper
 
   return (
     <div className="my-8">
-      <Slider.Root
+      <BaseSlider.Root
         className="relative flex w-full touch-none select-none items-center cursor-pointer data-disabled:pointer-events-none"
         value={arrayOfValues}
         max={100}
         step={interval}
       >
-        <Slider.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary">
-          <Slider.Range className="absolute h-full bg-primary px-1" />
-        </Slider.Track>
+        <BaseSlider.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary">
+          <BaseSlider.Indicator className="absolute h-full bg-primary px-1" />
+        </BaseSlider.Track>
         {visibleSteps.map((step, index) => (
-          <Slider.Thumb
+          <BaseSlider.Thumb
             className={cn(
               'flex items-center justify-center h-8 w-8 rounded-full font-subjectivity bg-neutrals-200 text-primary transition-colors disabled:pointer-events-none',
               step.id === currentStep.id && 'bg-primary text-neutral-200'
@@ -42,9 +43,9 @@ const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude }: Stepper
             key={step.id}
           >
             {index + 1}
-          </Slider.Thumb>
+          </BaseSlider.Thumb>
         ))}
-      </Slider.Root>
+      </BaseSlider.Root>
     </div>
   );
 };

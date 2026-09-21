@@ -1,60 +1,73 @@
 import * as React from 'react';
 import Icon from '@/components/Icon';
 import { cn } from '@/utils/classes';
-import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 
-const TooltipProvider = TooltipPrimitive.Provider;
+const TooltipProvider = BaseTooltip.Provider;
+const TooltipContainer = BaseTooltip.Root;
 
-const TooltipContainer = TooltipPrimitive.Root;
-
-const TooltipTrigger = TooltipPrimitive.Trigger;
-
-const TooltipArrow = () => {
+const TooltipTrigger = ({
+  asChild,
+  children,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof BaseTooltip.Trigger> & {
+  asChild?: boolean;
+  ref?: React.Ref<HTMLButtonElement>;
+}) => {
+  if (asChild && React.isValidElement(children)) {
+    return <BaseTooltip.Trigger ref={ref} render={children} {...props} />;
+  }
   return (
-    <span
-      style={{
-        position: 'absolute',
-        bottom: 1,
-        transform: 'translateY(100%)',
-        left: 78.5
-      }}
-    >
-      <svg width="10" height="5" viewBox="0 0 30 10" preserveAspectRatio="none" style={{ display: 'block' }}>
-        <polygon points="0,0 30,0 15,10" />
-      </svg>
-    </span>
+    <BaseTooltip.Trigger ref={ref} {...props}>
+      {children}
+    </BaseTooltip.Trigger>
   );
 };
+TooltipTrigger.displayName = 'TooltipTrigger';
 
-const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive.Content>, React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>>(
-  ({ className, sideOffset = 4, side = 'top', ...props }, ref) => (
-    <TooltipPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      side={side}
-      className={cn(
-        'z-50 overflow-hidden rounded-md bg-card text-card-foreground border border-border px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-        className
-      )}
-      {...props}
-    />
-  )
+const TooltipContent = ({
+  className,
+  sideOffset = 4,
+  side = 'top',
+  align = 'center',
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof BaseTooltip.Popup> & {
+  sideOffset?: number;
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  align?: 'start' | 'center' | 'end';
+  ref?: React.Ref<React.ComponentRef<typeof BaseTooltip.Popup>>;
+}) => (
+  <BaseTooltip.Portal>
+    <BaseTooltip.Positioner side={side} align={align} sideOffset={sideOffset} className="z-50 outline-none">
+      <BaseTooltip.Popup
+        ref={ref}
+        className={cn(
+          'z-50 overflow-hidden rounded-md bg-card text-card-foreground border border-border px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-closed:animate-out data-open:animate-in',
+          className
+        )}
+        {...props}
+      />
+    </BaseTooltip.Positioner>
+  </BaseTooltip.Portal>
 );
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+TooltipContent.displayName = 'TooltipContent';
 
 export { TooltipContainer, TooltipTrigger, TooltipContent, TooltipProvider };
 
-interface TooltipProps extends React.ComponentPropsWithoutRef<typeof TooltipContent> {
+interface TooltipProps extends React.ComponentPropsWithoutRef<typeof BaseTooltip.Popup> {
   toolTipContent: React.ReactNode;
   delayDuration?: number;
   skipDelayDuration?: number;
   defaultOpen?: boolean;
   side?: 'top' | 'right' | 'bottom' | 'left';
+  children?: React.ReactNode;
 }
 
-const Tooltip = ({ children, toolTipContent, delayDuration = 300, skipDelayDuration = 300, defaultOpen = false, side = 'top', ...props }: TooltipProps) => {
+const Tooltip = ({ children, toolTipContent, delayDuration = 300, defaultOpen = false, side = 'top', ...props }: TooltipProps) => {
   return (
-    <TooltipProvider delayDuration={delayDuration} skipDelayDuration={skipDelayDuration} disableHoverableContent>
+    <TooltipProvider delay={delayDuration}>
       <TooltipContainer defaultOpen={defaultOpen}>
         <TooltipTrigger asChild>
           <div>{children}</div>

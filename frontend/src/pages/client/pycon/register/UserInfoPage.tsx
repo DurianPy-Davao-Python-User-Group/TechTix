@@ -1,7 +1,10 @@
 import { FC, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
+import { ShoppingBag } from 'lucide-react';
 import moment from 'moment';
-import { Facebook, Instagram, Linkedin, ShoppingBag } from 'lucide-react';
+import iconFb from '@/assets/logos/icon-fb.svg';
+import iconIg from '@/assets/logos/icon-ig.svg';
+import iconLinkedin from '@/assets/logos/icon-linkedin.svg';
 import Button from '@/components/Button';
 import Icon from '@/components/Icon';
 import ImageViewer from '@/components/ImageViewer';
@@ -12,8 +15,8 @@ import { getEventRegistrationWithEmail } from '@/api/pycon/registrations';
 import { formatMoney } from '@/utils/functions';
 import { useApiQuery } from '@/hooks/useApi';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import PyconBackground from '@/routes/layouts/PyconBackground';
 import { SummaryCard, SummaryRow } from './steps/SummaryCard';
+import PyconBackground from '@/routes/layouts/PyconBackground';
 
 const UserInfoPage = () => {
   const { eventId } = useParams();
@@ -97,9 +100,7 @@ const UserInfoPage = () => {
         {/* 1. Event Header Confirmation Card */}
         <div className="w-full text-left rounded-3xl sm:rounded-[2.5rem] bg-white/85 backdrop-blur-md border border-[#F995081F] p-6 sm:p-8 md:p-10 shadow-[0px_6px_40px_0px_#F9950812] flex flex-col gap-5">
           <div className="space-y-2 text-left w-full">
-            <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">
-              REGISTRATION CONFIRMED
-            </p>
+            <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">REGISTRATION CONFIRMED</p>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#04b1a4] md:text-[#F99508] font-sora tracking-tight leading-tight">
               See you at {name}!
             </h1>
@@ -107,7 +108,7 @@ const UserInfoPage = () => {
               Your response has been recorded. Check your email for updates and confirmation details.
             </p>
             <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter leading-relaxed">
-              Emails may take up to 10 minutes to arrive. If you don&apos;t see it in your inbox, be sure to check your spam folder. Or contact DurianPy via {' '}
+              Emails may take up to 10 minutes to arrive. If you don&apos;t see it in your inbox, be sure to check your spam folder. Or contact DurianPy via{' '}
               <a href="mailto:contact@durianpy.org" className="text-[#04b1a4] underline hover:text-[#038e83] transition-colors font-medium">
                 contact@durianpy.org
               </a>{' '}
@@ -127,12 +128,8 @@ const UserInfoPage = () => {
         {/* 2. Registration Details Card with frosted background to prevent contrast clash with snake tail */}
         <div className="flex flex-col gap-8 w-full text-left rounded-3xl sm:rounded-[2.5rem] bg-white/85 backdrop-blur-md border border-[#F995081F] p-6 sm:p-8 md:p-10 shadow-[0px_6px_40px_0px_#F9950812]">
           <div>
-            <h2 className="font-sora text-xl sm:text-2xl font-bold text-pycon-dark-blue">
-              Registration Details
-            </h2>
-            <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter mt-1">
-              Summary of your registered information
-            </p>
+            <h2 className="font-sora text-xl sm:text-2xl font-bold text-pycon-dark-blue">Registration Details</h2>
+            <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter mt-1">Summary of your registered information</p>
           </div>
 
           {/* Basic Information Card */}
@@ -213,12 +210,8 @@ const UserInfoPage = () => {
               <ShoppingBag className="w-5 h-5 text-[#F99508]" />
             </div>
             <div>
-              <h3 className="font-sora text-xl sm:text-2xl font-bold text-pycon-dark-blue">
-                Interested in PyCon Merch?
-              </h3>
-              <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter">
-                Stay tuned on our official social media channels
-              </p>
+              <h3 className="font-sora text-xl sm:text-2xl font-bold text-pycon-dark-blue">Interested in PyCon Merch?</h3>
+              <p className="text-xs sm:text-sm text-pycon-dark-blue/60 font-inter">Stay tuned on our official social media channels</p>
             </div>
           </div>
 
@@ -233,7 +226,7 @@ const UserInfoPage = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 px-4 sm:px-5 py-2.5 rounded-2xl bg-white hover:bg-neutral-50 text-pycon-dark-blue text-xs sm:text-sm font-semibold border border-[#072E4714] shadow-xs transition-all hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Facebook className="w-4 h-4 text-[#1877F2] shrink-0" />
+              <img src={iconFb} alt="Facebook" className="w-4 h-4 shrink-0" />
               <span>Facebook</span>
             </a>
             <a
@@ -242,7 +235,7 @@ const UserInfoPage = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 px-4 sm:px-5 py-2.5 rounded-2xl bg-white hover:bg-neutral-50 text-pycon-dark-blue text-xs sm:text-sm font-semibold border border-[#072E4714] shadow-xs transition-all hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Instagram className="w-4 h-4 text-[#E4405F] shrink-0" />
+              <img src={iconIg} alt="Instagram" className="w-4 h-4 shrink-0" />
               <span>Instagram</span>
             </a>
             <a
@@ -251,7 +244,7 @@ const UserInfoPage = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 px-4 sm:px-5 py-2.5 rounded-2xl bg-white hover:bg-neutral-50 text-pycon-dark-blue text-xs sm:text-sm font-semibold border border-[#072E4714] shadow-xs transition-all hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Linkedin className="w-4 h-4 text-[#0A66C2] shrink-0" />
+              <img src={iconLinkedin} alt="LinkedIn" className="w-4 h-4 shrink-0" />
               <span>LinkedIn</span>
             </a>
           </div>
@@ -274,7 +267,12 @@ interface UserIdModalProps {
 
 const UserIdModal: FC<UserIdModalProps> = ({ eventId, showModal, validIdObjectKey, setShowModal }) => {
   return (
-    <Modal modalTitle="Submitted ID" visible={showModal} onOpenChange={setShowModal} className="md:max-w-2xl bg-white rounded-3xl border border-[#072E4714] text-pycon-dark-blue">
+    <Modal
+      modalTitle="Submitted ID"
+      visible={showModal}
+      onOpenChange={setShowModal}
+      className="md:max-w-2xl bg-white rounded-3xl border border-[#072E4714] text-pycon-dark-blue"
+    >
       <div className="flex flex-col w-full items-center justify-center p-2">
         <ImageViewer eventId={eventId} objectKey={validIdObjectKey} className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl" />
       </div>

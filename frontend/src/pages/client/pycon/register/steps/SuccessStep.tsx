@@ -23,12 +23,8 @@ const SuccessStep: FC<SuccessProps> = ({ event, isRegisterSuccessful, retryRegis
           <img src={montyShocked} className="w-32 h-32 sm:w-40 sm:h-40 object-contain mx-auto drop-shadow-xs" alt="Registration failed" />
 
           <div className="space-y-1 text-center">
-            <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-negative uppercase font-inter">
-              REGISTRATION
-            </p>
-            <h1 className="font-sora text-2xl sm:text-3xl font-extrabold text-negative tracking-tight leading-tight">
-              Oops! Something went wrong
-            </h1>
+            <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-negative uppercase font-inter">REGISTRATION</p>
+            <h1 className="font-sora text-2xl sm:text-3xl font-extrabold text-negative tracking-tight leading-tight">Oops! Something went wrong</h1>
           </div>
 
           <p className="text-sm sm:text-base text-pycon-dark-blue/80 font-inter leading-relaxed max-w-sm mx-auto">
@@ -53,12 +49,8 @@ const SuccessStep: FC<SuccessProps> = ({ event, isRegisterSuccessful, retryRegis
         <img src={montyHappy} className="w-32 h-32 sm:w-40 sm:h-40 object-contain mx-auto drop-shadow-xs" alt="Registration successful" />
 
         <div className="space-y-1 text-center">
-          <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">
-            REGISTRATION
-          </p>
-          <h1 className="font-sora text-3xl sm:text-4xl font-extrabold text-[#04b1a4] tracking-tight leading-tight">
-            You&apos;re all set!
-          </h1>
+          <p className="text-xs sm:text-sm font-extrabold tracking-[0.16em] text-[#04b1a4] uppercase font-inter">REGISTRATION</p>
+          <h1 className="font-sora text-3xl sm:text-4xl font-extrabold text-[#04b1a4] tracking-tight leading-tight">You&apos;re all set!</h1>
         </div>
 
         <div className="space-y-2 text-center max-w-sm mx-auto">

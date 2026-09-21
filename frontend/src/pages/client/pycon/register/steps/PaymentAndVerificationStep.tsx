@@ -21,15 +21,15 @@ interface Props {
 
 const ACCEPTED_VALID_IDS = [
   'Philippine Passport',
-  'LTO Driver\'s License',
+  "LTO Driver's License",
   'Unified Multi-Purpose ID (UMID) / SSS ID',
   'Professional Regulation Commission (PRC) License',
   'Postal ID',
   'PhilHealth ID',
-  'Voter\'s ID or Voter\'s Certification',
+  "Voter's ID or Voter's Certification",
   'Taxpayer Identification Number (TIN) ID',
   'Persons with Disability (PWD) ID',
-  'Senior Citizen\'s ID',
+  "Senior Citizen's ID",
   'PSA-issued Birth Certificate',
   'School ID (with current registration card, for students)'
 ];
@@ -93,14 +93,7 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
                 Discount Code
               </label>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <Input
-                  pyconStyles
-                  id={field.name}
-                  type="text"
-                  placeholder="Enter your code..."
-                  className="w-full sm:flex-1"
-                  {...field}
-                />
+                <Input pyconStyles id={field.name} type="text" placeholder="Enter your code..." className="w-full sm:flex-1" {...field} />
                 <Button
                   className="h-13 md:h-14 w-full cursor-pointer rounded-2xl bg-[#F99508] px-8 font-inter text-base font-bold text-white shadow-md shadow-[#F99508]/20 transition-all hover:bg-[#F99508]/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   disabled={!field.value}
@@ -120,14 +113,11 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
         <FormItem name="validIdObjectKey">
           {({ field: { name, value, onChange } }) => (
             <div className="space-y-2">
-              <p className="font-inter text-xs font-bold uppercase tracking-[0.15em] text-[#072E4766]">
-                Identity Verification
-              </p>
-              <FormLabel className="font-inter text-sm font-bold uppercase tracking-[0.5px] text-[#F99508] block">
-                Upload Valid ID *
-              </FormLabel>
+              <p className="font-inter text-xs font-bold uppercase tracking-[0.15em] text-[#072E4766]">Identity Verification</p>
+              <FormLabel className="font-inter text-sm font-bold uppercase tracking-[0.5px] text-[#F99508] block">Upload Valid ID *</FormLabel>
               <FormDescription className="font-inter text-xs text-[#072E4799] block -mt-1">
-                Please upload a clear photo of your valid ID card (e.g., Government or Student ID) for venue security clearance upon entry. Do not upload a selfie or 2x2 photo.
+                Please upload a clear photo of your valid ID card (e.g., Government or Student ID) for venue security clearance upon entry. Do not upload a
+                selfie or 2x2 photo.
               </FormDescription>
               <Accordion type="single" collapsible defaultValue="accepted-ids" className="max-w-xl pt-1">
                 <AccordionItem value="accepted-ids" className="border-b-0 border border-[#072E4714] rounded-2xl bg-pycon-dirty-white/60 px-4">
@@ -180,11 +170,7 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
             <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
               <span className="font-bold text-[#072E47]">Ticket Price</span>
               <div className="flex items-center gap-2">
-                {hasTicketSale && (
-                  <span className="line-through text-gray-400 font-normal text-sm">
-                    {formatMoney(originalPrice!, 'PHP')}
-                  </span>
-                )}
+                {hasTicketSale && <span className="line-through text-gray-400 font-normal text-sm">{formatMoney(originalPrice!, 'PHP')}</span>}
                 <span className="font-bold text-[#072E47]">{formatMoney(effectivePrice, 'PHP')}</span>
               </div>
             </div>
@@ -211,7 +197,9 @@ const PaymentAndVerificationStep = ({ event, isFeesLoading, setIsFeesLoading }: 
 
             <div className="flex items-center justify-between py-3.5 border-b border-[#072E4714]">
               <span className="font-bold text-[#072E47]">Subtotal</span>
-              <span className="font-bold text-[#072E47]">{formatMoney((discountPercentage ? discountedPrice : effectivePrice) + currentSprintPrice, 'PHP')}</span>
+              <span className="font-bold text-[#072E47]">
+                {formatMoney((discountPercentage ? discountedPrice : effectivePrice) + currentSprintPrice, 'PHP')}
+              </span>
             </div>
 
             {total > 0 && (

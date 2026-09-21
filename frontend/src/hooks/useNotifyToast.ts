@@ -23,7 +23,14 @@ export const useNotifyToast = () => {
       duration
     });
 
-  const successToast = ({ id = '', title = 'Success', description, icon = 'CircleCheckBig', iconClassname = 'text-pycon-green', duration = 5000 }: ToastProps) =>
+  const successToast = ({
+    id = '',
+    title = 'Success',
+    description,
+    icon = 'CircleCheckBig',
+    iconClassname = 'text-pycon-green',
+    duration = 5000
+  }: ToastProps) =>
     toast({
       id,
       title,

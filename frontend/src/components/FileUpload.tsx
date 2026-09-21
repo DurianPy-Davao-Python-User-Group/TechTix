@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Loader2, Paperclip, X } from 'lucide-react';
 import { UploadType } from '@/model/events';
 import { cn } from '@/utils/classes';
@@ -16,6 +16,7 @@ interface FileUploadProps {
   value: string;
   pyconStyles?: boolean;
   onChange: (value: string) => void;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
 const extractImagePath = (path: string) => {
@@ -23,7 +24,7 @@ const extractImagePath = (path: string) => {
   return name;
 };
 
-const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ name, eventId, uploadType, value, onChange, pyconStyles = false }, ref) => {
+const FileUpload = ({ name, eventId, uploadType, value, onChange, pyconStyles = false, ref }: FileUploadProps) => {
   const { uploadProgress, isUploading, onFileChange } = useFileUpload(eventId, uploadType, onChange, name);
   const label = useMemo(() => {
     if (!value) {
@@ -72,7 +73,10 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ name, eventI
           </Label>
           <Label className="text-sm font-inter text-pycon-dark-blue line-clamp-1 max-w-40 break-all w-1/2">{label}</Label>
           {value && (
-            <button className="ms-auto disabled:opacity-70 disabled:cursor-not-allowed hover:opacity-70 me-5 cursor-pointer text-pycon-dark-blue hover:text-pycon-orange transition-colors" onClick={() => onChange('')}>
+            <button
+              className="ms-auto disabled:opacity-70 disabled:cursor-not-allowed hover:opacity-70 me-5 cursor-pointer text-pycon-dark-blue hover:text-pycon-orange transition-colors"
+              onClick={() => onChange('')}
+            >
               <X size={24} />
             </button>
           )}
@@ -104,6 +108,6 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ name, eventI
       </CardFooter>
     </CardContainer>
   );
-});
+};
 
 export default FileUpload;

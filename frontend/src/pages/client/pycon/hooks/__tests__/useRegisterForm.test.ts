@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { REGISTER_FIELDS, isMatchingStoredEmail, isTicketAvailable } from '../useRegisterForm';
 import { TicketType } from '@/model/events';
+import { REGISTER_FIELDS, isMatchingStoredEmail, isTicketAvailable } from '../useRegisterForm';
 
 describe('REGISTER_FIELDS mapping', () => {
   it('contains the correct active fields for BasicInfo step', () => {

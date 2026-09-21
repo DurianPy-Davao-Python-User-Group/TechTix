@@ -20,7 +20,15 @@ interface StepperProps<T extends Step> {
 
 const STEP_CIRCLE_SIZE = '1.5rem';
 
-const Stepper = <T extends Step>({ steps, currentStep, stepsToExclude, onStepClick, orientation = 'horizontal', hideTitle = false, onPrevStep }: StepperProps<T>) => {
+const Stepper = <T extends Step>({
+  steps,
+  currentStep,
+  stepsToExclude,
+  onStepClick,
+  orientation = 'horizontal',
+  hideTitle = false,
+  onPrevStep
+}: StepperProps<T>) => {
   const visibleSteps = steps.filter((step) => step.title && !stepsToExclude?.some((excludeStep) => excludeStep.id === step.id));
   const showTitle = orientation === 'vertical' && !hideTitle;
   const currentStepIndex = visibleSteps.findIndex((step) => step.id === currentStep.id);

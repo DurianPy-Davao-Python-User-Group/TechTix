@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
 import { Calendar, Check, Coffee, Plus, Star, Users, X, Zap } from 'lucide-react';
+import { useFormContext, useWatch } from 'react-hook-form';
 import checkmarkIcon from '@/assets/Checkmark.svg';
 import { FormError, FormItem, FormLabel } from '@/components/Form';
 import { Event } from '@/model/events';
@@ -84,9 +84,7 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
       <FormItem name="ticketType">
         {({ field }) => (
           <section className="flex flex-col gap-3 md:gap-4">
-            <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">
-              Ticket Type
-            </FormLabel>
+            <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">Ticket Type</FormLabel>
 
             <div className="flex w-full flex-col gap-4">
               {coderTicket && (
@@ -235,11 +233,8 @@ const TicketCard: FC<TicketCardProps> = ({
         'group relative flex w-full flex-col rounded-[22px] border-[3px] p-4 sm:p-6 text-white',
         'font-inter transition-all duration-300 ease-out',
         backgroundClass,
-        canSelect &&
-          'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-2xl hover:brightness-105 active:scale-[0.99] active:translate-y-0',
-        isSelected
-          ? 'border-[#F99508] shadow-2xl shadow-black/25 ring-4 ring-[#F99508]/30 -translate-y-0.5'
-          : 'border-transparent shadow-md hover:shadow-xl',
+        canSelect && 'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-2xl hover:brightness-105 active:scale-[0.99] active:translate-y-0',
+        isSelected ? 'border-[#F99508] shadow-2xl shadow-black/25 ring-4 ring-[#F99508]/30 -translate-y-0.5' : 'border-transparent shadow-md hover:shadow-xl',
         isSoldOut && 'cursor-not-allowed opacity-60 grayscale'
       )}
     >
@@ -250,15 +245,11 @@ const TicketCard: FC<TicketCardProps> = ({
             <span className="font-inter text-xl sm:text-2xl font-black uppercase leading-tight tracking-wide">{title}</span>
           </span>
 
-          <span className="font-inter text-xs sm:text-sm font-medium leading-tight opacity-85">
-            ({subtitle})
-          </span>
+          <span className="font-inter text-xs sm:text-sm font-medium leading-tight opacity-85">({subtitle})</span>
         </div>
 
         <div className="flex flex-col items-start sm:items-end shrink-0 whitespace-nowrap text-left sm:text-right">
-          <span className="font-inter text-base sm:text-lg font-bold leading-tight">
-            {formatMoney(price, 'PHP')}
-          </span>
+          <span className="font-inter text-base sm:text-lg font-bold leading-tight">{formatMoney(price, 'PHP')}</span>
           {hasDiscount && (
             <div className="mt-0.5 font-inter text-xs font-medium whitespace-nowrap">
               <span className="text-gray-300 line-through mr-1.5">{formatMoney(originalPrice!, 'PHP')}</span>
@@ -319,13 +310,7 @@ interface SprintDaySectionProps {
   onChange: (selected: boolean) => void;
 }
 
-const SprintDaySection: FC<SprintDaySectionProps> = ({
-  value,
-  sprintDayPrice,
-  maximumSprintDaySlots,
-  sprintDayRegistrationCount,
-  onChange
-}) => {
+const SprintDaySection: FC<SprintDaySectionProps> = ({ value, sprintDayPrice, maximumSprintDaySlots, sprintDayRegistrationCount, onChange }) => {
   const sprintIsSoldOut = maximumSprintDaySlots != null && sprintDayRegistrationCount >= maximumSprintDaySlots;
   const isSelected = value === true;
 
@@ -339,18 +324,14 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
 
   return (
     <section className="flex flex-col gap-3 md:gap-4">
-      <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">
-        Add-Ons
-      </FormLabel>
+      <FormLabel className="font-inter text-xs font-extrabold uppercase tracking-[0.15em] text-[#072E474D]">Add-Ons</FormLabel>
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 fill-[#F99508] text-[#F99508]" />
           <h3 className="font-sora text-xl font-bold text-[#04B1A4] md:text-2xl">Add Sprint Day</h3>
         </div>
-        <p className="font-inter text-sm text-[#072E4799]">
-          Enhance your conference experience with hands-on coding
-        </p>
+        <p className="font-inter text-sm text-[#072E4799]">Enhance your conference experience with hands-on coding</p>
       </div>
 
       <div
@@ -369,8 +350,7 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
         }}
         className={cn(
           'group relative flex w-full flex-col rounded-[22px] border-[3px] p-4 sm:p-6 font-inter bg-[#FDDEB2] transition-all duration-300 ease-out',
-          !sprintIsSoldOut &&
-            'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-xl active:scale-[0.99] active:translate-y-0',
+          !sprintIsSoldOut && 'cursor-pointer hover:-translate-y-1 hover:scale-[1.015] hover:shadow-xl active:scale-[0.99] active:translate-y-0',
           isSelected
             ? 'border-[#F99508] shadow-xl shadow-black/10 ring-4 ring-[#F99508]/20 -translate-y-0.5'
             : 'border-[#072E4718] shadow-sm hover:border-[#F99508]/40 hover:shadow-md',
@@ -381,40 +361,28 @@ const SprintDaySection: FC<SprintDaySectionProps> = ({
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-[#072E47] shrink-0" />
             <h4 className="font-sora text-lg sm:text-xl font-bold text-[#072E47] md:text-2xl">Join Sprint Day</h4>
-            <span className="rounded-full bg-[#F99508] px-2.5 py-0.5 font-inter text-xs font-bold text-white shrink-0">
-              {displayPrice}
-            </span>
+            <span className="rounded-full bg-[#F99508] px-2.5 py-0.5 font-inter text-xs font-bold text-white shrink-0">{displayPrice}</span>
           </div>
 
-          <p className="text-xs italic text-[#072E47]/75">
-            Sprint Day is on October 18, 2026 (2nd Day).
-          </p>
+          <p className="text-xs italic text-[#072E47]/75">Sprint Day is on October 18, 2026 (2nd Day).</p>
         </div>
 
         <div className="mt-4 grid grid-cols-1 min-[360px]:grid-cols-2 gap-x-3 gap-y-2.5 sm:gap-x-4">
           <div className="flex min-w-0 items-start gap-2">
             <Users className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
-            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
-              Collaborative coding
-            </span>
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">Collaborative coding</span>
           </div>
           <div className="flex min-w-0 items-start gap-2">
             <Coffee className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
-            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
-              Refreshments included
-            </span>
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">Refreshments included</span>
           </div>
           <div className="flex min-w-0 items-start gap-2">
             <Zap className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
-            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
-              Open source projects
-            </span>
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">Open source projects</span>
           </div>
           <div className="flex min-w-0 items-start gap-2">
             <Check className="mt-0.5 h-4 w-4 text-[#072E47]/70 shrink-0" />
-            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">
-              Networking opportunity
-            </span>
+            <span className="font-inter text-xs sm:text-sm font-medium leading-snug text-[#072E47] break-words">Networking opportunity</span>
           </div>
         </div>
 

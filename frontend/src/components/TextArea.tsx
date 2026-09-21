@@ -3,9 +3,10 @@ import { cn } from '@/utils/classes';
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   variant?: 'default' | 'custard';
+  ref?: React.Ref<HTMLTextAreaElement>;
 }
 
-const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, variant = 'default', ...props }, ref) => {
+const Textarea = ({ className, variant = 'default', ref, ...props }: TextareaProps) => {
   const variantClass = variant === 'custard' ? 'bg-[#feefdb] text-[#312541] placeholder:text-gray-600' : 'bg-input';
 
   return (
@@ -20,7 +21,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
       {...props}
     />
   );
-});
+};
 
 Textarea.displayName = 'Textarea';
 

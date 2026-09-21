@@ -3,7 +3,6 @@ import {
   Controller,
   ControllerFieldState,
   ControllerRenderProps,
-  FieldError,
   FieldPath,
   FieldValues,
   GlobalError,
@@ -14,8 +13,6 @@ import {
 import Label from '@/components/Label';
 import { cn } from '@/utils/classes';
 import { InfoToolTip } from './Tooltip';
-import * as LabelPrimitive from '@radix-ui/react-label';
-import { Slot } from '@radix-ui/react-slot';
 
 interface FormItemContextProps {
   id: string;
@@ -26,8 +23,7 @@ interface FormItemContextProps {
     invalid: boolean;
     isDirty: boolean;
     isTouched: boolean;
-    isValidating?: boolean;
-    error?: FieldError | GlobalError | undefined;
+    error?: any;
   };
 }
 
@@ -64,9 +60,9 @@ export const FormItem = <TFieldValues extends FieldValues, TName extends FieldPa
         fieldState
       }}
     >
-      <Slot id={formItemId} aria-describedby={ariaDescribedby} aria-invalid={!!fieldState.error}>
+      <div id={formItemId} aria-describedby={ariaDescribedby} aria-invalid={!!fieldState.error}>
         <Controller name={name} control={control} render={({ field, fieldState, formState }) => children({ field, fieldState, formState })} />
-      </Slot>
+      </div>
     </FormItemContext.Provider>
   );
 };
@@ -81,38 +77,37 @@ const useFormField = () => {
   return fieldContext;
 };
 
-interface FormLabelProps extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
+interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   toolTipContent?: string;
   optional?: boolean;
   optionalClass?: string;
+  ref?: React.Ref<HTMLLabelElement>;
 }
 
-const FormLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, FormLabelProps>(
-  ({ className, optionalClass, children, toolTipContent, optional = false, ...props }, ref) => {
-    const {
-      fieldState: { error },
-      formItemId
-    } = useFormField();
+const FormLabel = ({ className, optionalClass, children, toolTipContent, optional = false, ref, ...props }: FormLabelProps) => {
+  const {
+    fieldState: { error },
+    formItemId
+  } = useFormField();
 
-    return (
-      <Label ref={ref} className={cn(error && 'text-negative', 'flex flex-row items-center gap-x-2', className)} htmlFor={formItemId} {...props}>
-        {children}
-        {optional && <p className={cn('text-[0.8rem] text-muted-foreground', optionalClass)}>{`(Optional)`}</p>}
-        {toolTipContent && toolTipContent.length > 0 && <InfoToolTip toolTipContent={toolTipContent} />}
-      </Label>
-    );
-  }
-);
+  return (
+    <Label ref={ref} className={cn(error && 'text-negative', 'flex flex-row items-center gap-x-2', className)} htmlFor={formItemId} {...props}>
+      {children}
+      {optional && <p className={cn('text-[0.8rem] text-muted-foreground', optionalClass)}>{`(Optional)`}</p>}
+      {toolTipContent && toolTipContent.length > 0 && <InfoToolTip toolTipContent={toolTipContent} />}
+    </Label>
+  );
+};
 FormLabel.displayName = 'FormLabel';
 
-const FormDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(({ className, ...props }, ref) => {
+const FormDescription = ({ className, ref, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.Ref<HTMLParagraphElement> }) => {
   const { formDescriptionId } = useFormField();
 
   return <p ref={ref} id={formDescriptionId} className={cn('text-[0.8rem] text-muted-foreground', className)} {...props} />;
-});
+};
 FormDescription.displayName = 'FormDescription';
 
-const FormError = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(({ className, children, ...props }, ref) => {
+const FormError = ({ className, children, ref, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.Ref<HTMLParagraphElement> }) => {
   const {
     fieldState: { error },
     formMessageId
@@ -137,7 +132,7 @@ const FormError = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
       {getError()}
     </p>
   );
-});
+};
 FormError.displayName = 'FormError';
 
 interface FormItemContainerProps {

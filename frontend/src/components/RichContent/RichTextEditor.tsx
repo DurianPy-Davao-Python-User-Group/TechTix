@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import './RichContent.css';
 import RichEditorMenu from './RichEditorMenu';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -10,9 +9,10 @@ interface RichTextEditorProps {
   content: Content;
   placeholder?: string;
   setContent: (value: string) => void;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
-const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ content, placeholder, setContent }, ref) => {
+const RichTextEditor = ({ content, placeholder, setContent, ref }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -51,6 +51,6 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({ conten
       <EditorContent editor={editor} ref={ref} />
     </div>
   );
-});
+};
 
 export default RichTextEditor;

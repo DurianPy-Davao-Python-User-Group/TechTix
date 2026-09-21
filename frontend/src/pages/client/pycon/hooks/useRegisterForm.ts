@@ -164,9 +164,7 @@ export const useRegisterForm = (eventId: string, navigateOnSuccess: () => void) 
                 const eventData = eventResponse.data;
 
                 if (resolvedTicketType && eventData.ticketTypes && eventData.ticketTypes.length > 0) {
-                  const selectedTicket = eventData.ticketTypes.find(
-                    (t) => t.id === resolvedTicketType || t.id === resolvedTicketType.trim().toLowerCase()
-                  );
+                  const selectedTicket = eventData.ticketTypes.find((t) => t.id === resolvedTicketType || t.id === resolvedTicketType.trim().toLowerCase());
                   if (!isTicketAvailable(selectedTicket)) {
                     resolvedTicketType = '';
                   }
@@ -188,10 +186,7 @@ export const useRegisterForm = (eventId: string, navigateOnSuccess: () => void) 
               sprintDay: resolvedSprintDay
             };
 
-            if (
-              resolvedTicketType !== parsedState.ticketType ||
-              resolvedSprintDay !== parsedState.sprintDay
-            ) {
+            if (resolvedTicketType !== parsedState.ticketType || resolvedSprintDay !== parsedState.sprintDay) {
               localStorage.setItem('formState', JSON.stringify(updatedParsedState));
             }
 

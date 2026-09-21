@@ -35,12 +35,8 @@ export const SummaryRow: FC<SummaryRowProps> = ({ label, value, isAlt = false, c
         className
       )}
     >
-      <span className="text-[11px] sm:text-xs font-bold tracking-wider text-[#F99508] uppercase select-none shrink-0">
-        {label}
-      </span>
-      <span className="min-w-0 text-xs sm:text-sm font-medium text-[#1e293b] [overflow-wrap:anywhere] break-words text-left">
-        {value}
-      </span>
+      <span className="text-[11px] sm:text-xs font-bold tracking-wider text-[#F99508] uppercase select-none shrink-0">{label}</span>
+      <span className="min-w-0 text-xs sm:text-sm font-medium text-[#1e293b] [overflow-wrap:anywhere] break-words text-left">{value}</span>
     </div>
   );
 };
