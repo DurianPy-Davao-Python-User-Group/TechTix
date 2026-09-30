@@ -18,6 +18,7 @@ const MenubarTrigger = ({
   asChild,
   children,
   className,
+  nativeButton,
   ref,
   ...props
 }: React.ComponentPropsWithoutRef<typeof BaseMenu.Trigger> & {
@@ -25,13 +26,15 @@ const MenubarTrigger = ({
   ref?: React.Ref<HTMLButtonElement>;
 }) => {
   if (asChild && React.isValidElement(children)) {
-    return <BaseMenu.Trigger ref={ref} render={children} {...props} />;
+    const isButton = nativeButton !== undefined ? nativeButton : children.type === 'button';
+    return <BaseMenu.Trigger ref={ref} render={children} nativeButton={isButton} {...props} />;
   }
   return (
     <BaseMenu.Trigger
       ref={ref}
+      nativeButton={nativeButton}
       className={cn(
-        'flex cursor-default select-none items-center rounded-sm px-3 py-1.5 text-sm font-medium outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground',
+        'flex cursor-default select-none items-center rounded-sm px-3 py-1.5 text-sm font-medium outline-hidden focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground',
         className
       )}
       {...props}
@@ -55,7 +58,7 @@ const MenubarSubTrigger = ({
   <BaseMenu.SubmenuTrigger
     ref={ref}
     className={cn(
-      'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground',
+      'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground',
       inset && 'pl-8',
       className
     )}
@@ -80,7 +83,7 @@ const MenubarSubContent = ({
     <BaseMenu.Popup
       ref={ref}
       className={cn(
-        'min-w-32 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-open:animate-in data-closed:animate-out',
+        'min-w-32 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95',
         className
       )}
       {...props}
@@ -106,7 +109,7 @@ const MenubarContent = ({
       <BaseMenu.Popup
         ref={ref}
         className={cn(
-          'min-w-48 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-open:animate-in data-closed:animate-out',
+          'min-w-48 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95',
           className
         )}
         {...props}
@@ -128,7 +131,7 @@ const MenubarItem = ({
   <BaseMenu.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
       inset && 'pl-8',
       className
     )}
@@ -149,7 +152,7 @@ const MenubarCheckboxItem = ({
   <BaseMenu.CheckboxItem
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
+      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
       className
     )}
     checked={checked}
@@ -176,7 +179,7 @@ const MenubarRadioItem = ({
   <BaseMenu.RadioItem
     ref={ref}
     className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
+      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
       className
     )}
     {...props}

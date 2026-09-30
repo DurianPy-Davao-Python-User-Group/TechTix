@@ -4,7 +4,7 @@ import { cn } from '@/utils/classes';
 import { Toggle as BaseToggle } from '@base-ui/react/toggle';
 
 const toggleVariants = cva(
-  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-pressed:bg-accent data-pressed:text-accent-foreground',
+  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-pressed:bg-accent data-pressed:text-accent-foreground',
   {
     variants: {
       variant: {
@@ -28,12 +28,13 @@ const Toggle = ({
   className,
   variant,
   size,
+  nativeButton,
   ref,
   ...props
 }: React.ComponentPropsWithoutRef<typeof BaseToggle> &
   VariantProps<typeof toggleVariants> & {
     ref?: React.Ref<React.ComponentRef<typeof BaseToggle>>;
-  }) => <BaseToggle ref={ref} className={cn(toggleVariants({ variant, size, className }))} {...props} />;
+  }) => <BaseToggle ref={ref} nativeButton={nativeButton} className={cn(toggleVariants({ variant, size, className }))} {...props} />;
 
 Toggle.displayName = 'Toggle';
 

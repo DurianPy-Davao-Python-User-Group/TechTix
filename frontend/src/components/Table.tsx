@@ -27,7 +27,7 @@ const TableRow = ({ className, ref, ...props }: React.HTMLAttributes<HTMLTableRo
   <tr
     ref={ref}
     className={cn(
-      'border-b even:bg-neutrals-50 dark:even:bg-neutrals-950 transition-colors [&:not(:has(th))]:hover:bg-accent dark:[&:not(:has(th))]:hover:hover:bg-accent data-[state=selected]:bg-accent dark:data-[state=selected]:bg-muted',
+      'border-b even:bg-neutrals-50 dark:even:bg-neutrals-950 transition-colors [&:not(:has(th))]:hover:bg-accent dark:[&:not(:has(th))]:hover:hover:bg-accent data-selected:bg-accent dark:data-selected:bg-muted aria-selected:bg-accent dark:aria-selected:bg-muted',
       className
     )}
     {...props}

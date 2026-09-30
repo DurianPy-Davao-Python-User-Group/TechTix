@@ -41,7 +41,7 @@ const AccordionTrigger = ({
     <BaseAccordion.Trigger
       ref={ref}
       className={cn(
-        'flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-panel-open]>svg]:rotate-180 [&[data-state=open]>svg]:rotate-180 data-disabled:text-muted-foreground! data-disabled:no-underline data-disabled:cursor-not-allowed',
+        'flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[aria-expanded=true]>svg]:rotate-180 aria-expanded:[&>svg]:rotate-180 aria-disabled:text-muted-foreground! aria-disabled:no-underline aria-disabled:cursor-not-allowed',
         className
       )}
       {...props}
@@ -63,7 +63,7 @@ const AccordionContent = ({
 }) => (
   <BaseAccordion.Panel
     ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down data-closed:animate-accordion-up data-open:animate-accordion-down"
+    className="overflow-hidden text-sm transition-all data-closed:animate-accordion-up data-open:animate-accordion-down"
     {...props}
   >
     <div className={cn('pb-4 pt-0', className)}>{children}</div>

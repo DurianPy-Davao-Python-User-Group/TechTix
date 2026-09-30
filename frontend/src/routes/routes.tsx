@@ -25,6 +25,10 @@ export const routes = createBrowserRouter(
       path: '/signin/callback',
       element: <Callback />
     },
+    {
+      path: '/preview/badges',
+      lazy: () => import('@/pages/admin/event/badges/AdminBadgePreviewPage')
+    },
 
     // Client User Routes
     {

@@ -15,7 +15,7 @@ const ToastViewport = ({ className, ref, ...props }: React.HTMLAttributes<HTMLDi
 ToastViewport.displayName = 'ToastViewport';
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full',
+  'group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-open:animate-in data-closed:animate-out data-closed:fade-out-80 data-closed:slide-out-to-right-full data-open:slide-in-from-top-full data-open:sm:slide-in-from-bottom-full',
   {
     variants: {
       variant: {
@@ -36,8 +36,10 @@ export interface ToastProps extends React.HTMLAttributes<HTMLDivElement>, Varian
   ref?: React.Ref<HTMLDivElement>;
 }
 
-const Toast = ({ className, variant, ref, ...props }: ToastProps) => {
-  return <div ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />;
+const Toast = ({ className, variant, open = true, ref, ...props }: ToastProps) => {
+  return (
+    <div ref={ref} data-open={open ? '' : undefined} data-closed={!open ? '' : undefined} className={cn(toastVariants({ variant }), className)} {...props} />
+  );
 };
 Toast.displayName = 'Toast';
 

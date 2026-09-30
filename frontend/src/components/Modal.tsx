@@ -6,12 +6,13 @@ import { Dialog as BaseDialog } from '@base-ui/react/dialog';
 function Dialog({ ...props }: React.ComponentProps<typeof BaseDialog.Root>) {
   return <BaseDialog.Root data-slot="dialog" {...props} />;
 }
-function DialogTrigger({ asChild, children, ...props }: React.ComponentProps<typeof BaseDialog.Trigger> & { asChild?: boolean }) {
+function DialogTrigger({ asChild, children, nativeButton, ...props }: React.ComponentProps<typeof BaseDialog.Trigger> & { asChild?: boolean }) {
   if (asChild && React.isValidElement(children)) {
-    return <BaseDialog.Trigger data-slot="dialog-trigger" render={children} {...props} />;
+    const isButton = nativeButton !== undefined ? nativeButton : children.type === 'button';
+    return <BaseDialog.Trigger data-slot="dialog-trigger" render={children} nativeButton={isButton} {...props} />;
   }
   return (
-    <BaseDialog.Trigger data-slot="dialog-trigger" {...props}>
+    <BaseDialog.Trigger data-slot="dialog-trigger" nativeButton={nativeButton} {...props}>
       {children}
     </BaseDialog.Trigger>
   );
@@ -26,10 +27,7 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Base
   return (
     <BaseDialog.Backdrop
       data-slot="dialog-overlay"
-      className={cn(
-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-open:animate-in data-closed:animate-out fixed inset-0 z-50 bg-black/50',
-        className
-      )}
+      className={cn('data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 z-50 bg-black/50', className)}
       {...props}
     />
   );
@@ -49,7 +47,7 @@ function DialogContent({
       <BaseDialog.Popup
         data-slot="dialog-content"
         className={cn(
-          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-open:animate-in data-closed:animate-out fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
+          'bg-background data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
           className
         )}
         {...props}
@@ -58,7 +56,7 @@ function DialogContent({
         {showCloseButton && (
           <BaseDialog.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground data-open:bg-accent data-open:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="ring-offset-background focus:ring-ring data-open:bg-accent data-open:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">Close</span>

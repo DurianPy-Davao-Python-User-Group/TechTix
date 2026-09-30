@@ -10,6 +10,7 @@ const SelectValue = BaseSelect.Value;
 const SelectTrigger = ({
   className,
   children,
+  nativeButton,
   ref,
   ...props
 }: React.ComponentPropsWithoutRef<typeof BaseSelect.Trigger> & {
@@ -17,6 +18,7 @@ const SelectTrigger = ({
 }) => (
   <BaseSelect.Trigger
     ref={ref}
+    nativeButton={nativeButton}
     className={cn(
       'translate-y-0 translate-x-0 flex h-9 w-full items-center justify-between rounded-md border border-border bg-input px-3 py-2 text-sm shadow-xs ring-offset-background hover:bg-accent hover:text-accent-foreground hover:border-border transition-colors placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
       className
@@ -46,7 +48,7 @@ const SelectContent = ({
       <BaseSelect.Popup
         ref={ref}
         className={cn(
-          'relative z-50 min-w-32 overflow-hidden rounded-md border bg-input text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-open:animate-in data-closed:animate-out p-1',
+          'relative z-50 min-w-32 overflow-hidden rounded-md border bg-input text-popover-foreground shadow-md data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 p-1',
           className
         )}
         {...props}
@@ -78,7 +80,7 @@ const SelectItem = ({
   <BaseSelect.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
       className
     )}
     {...props}

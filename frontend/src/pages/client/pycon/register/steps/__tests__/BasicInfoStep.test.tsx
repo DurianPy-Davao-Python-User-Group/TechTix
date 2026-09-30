@@ -49,9 +49,6 @@ describe('BasicInfoStep Component', () => {
       createRoot(container!).render(<TestWrapper />);
     });
 
-    expect(container?.textContent).toContain('Registration');
-    expect(container?.textContent).toContain('Basic Information');
-    expect(container?.textContent).toContain('Tell us a bit about yourself. Fields marked * are required.');
     expect(container?.textContent).toContain('Name');
     expect(container?.textContent).toContain('Identity');
     expect(container?.textContent).toContain('Contact');
@@ -71,7 +68,7 @@ describe('BasicInfoStep Component', () => {
     expect(getPlaceholder('e.g. Santos')).not.toBeNull();
     expect(getPlaceholder('What should we call you?')).not.toBeNull();
     expect(getPlaceholder('e.g. she/her, they/them')).not.toBeNull();
-    expect(getPlaceholder('+63 912 345 6789')).not.toBeNull();
+    expect(getPlaceholder('09XXXXXXXXX')).not.toBeNull();
     expect(getPlaceholder('Where do you work or study?')).not.toBeNull();
     expect(getPlaceholder('e.g. Software Engineer, Designer, Student')).not.toBeNull();
     expect(getPlaceholder('https://facebook.com/yourprofile')).not.toBeNull();

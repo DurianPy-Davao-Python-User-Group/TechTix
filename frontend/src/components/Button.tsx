@@ -42,6 +42,8 @@ const buttonVariants = cva(
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  render?: React.ReactElement;
+  nativeButton?: boolean;
   loading?: boolean;
   icon?: IconName;
   strokeWidth?: number;
@@ -60,6 +62,8 @@ const Button = ({
   iconClassname,
   iconPlacement = 'left',
   asChild = false,
+  render,
+  nativeButton,
   loading = false,
   disabled = false,
   ref,
@@ -83,6 +87,33 @@ const Button = ({
       </>
     );
   };
+
+  const elementToRender = render ?? (asChild && React.isValidElement(children) ? children : null);
+
+  if (elementToRender && React.isValidElement(elementToRender)) {
+    const child = elementToRender as React.ReactElement<{ className?: string; children?: React.ReactNode }>;
+    const hasIconOrLoading = icon || loading;
+    const finalChildren = render && children !== undefined ? children : child.props.children;
+    return React.cloneElement(child, {
+      ...props,
+      ...child.props,
+      className: cn(buttonVariants({ variant, size, loading, className }), iconPlacement === 'right' && 'flex-row-reverse', child.props.className),
+      ref,
+      ...(hasIconOrLoading
+        ? {
+            children: (
+              <>
+                {icon && <Icon strokeWidth={strokeWidth} name={loading ? 'LoaderCircle' : icon} className={iconStyles} />}
+                {loading && !icon && <Loader2 className={iconStyles} />}
+                {finalChildren}
+              </>
+            )
+          }
+        : render && children !== undefined
+          ? { children }
+          : {})
+    } as any);
+  }
 
   return (
     <button

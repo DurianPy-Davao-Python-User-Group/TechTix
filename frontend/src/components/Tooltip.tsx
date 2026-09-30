@@ -44,7 +44,7 @@ const TooltipContent = ({
       <BaseTooltip.Popup
         ref={ref}
         className={cn(
-          'z-50 overflow-hidden rounded-md bg-card text-card-foreground border border-border px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-closed:animate-out data-open:animate-in',
+          'z-50 overflow-hidden rounded-md bg-card text-card-foreground border border-border px-3 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-open:animate-in',
           className
         )}
         {...props}
@@ -56,8 +56,9 @@ TooltipContent.displayName = 'TooltipContent';
 
 export { TooltipContainer, TooltipTrigger, TooltipContent, TooltipProvider };
 
-interface TooltipProps extends React.ComponentPropsWithoutRef<typeof BaseTooltip.Popup> {
+export interface TooltipProps extends React.ComponentPropsWithoutRef<typeof BaseTooltip.Popup> {
   toolTipContent: React.ReactNode;
+  delay?: number;
   delayDuration?: number;
   skipDelayDuration?: number;
   defaultOpen?: boolean;
@@ -65,13 +66,12 @@ interface TooltipProps extends React.ComponentPropsWithoutRef<typeof BaseTooltip
   children?: React.ReactNode;
 }
 
-const Tooltip = ({ children, toolTipContent, delayDuration = 300, defaultOpen = false, side = 'top', ...props }: TooltipProps) => {
+const Tooltip = ({ children, toolTipContent, delay, delayDuration = 300, defaultOpen = false, side = 'top', ...props }: TooltipProps) => {
+  const effectiveDelay = delay ?? delayDuration;
   return (
-    <TooltipProvider delay={delayDuration}>
+    <TooltipProvider delay={effectiveDelay}>
       <TooltipContainer defaultOpen={defaultOpen}>
-        <TooltipTrigger asChild>
-          <div>{children}</div>
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{typeof children === 'string' ? <span>{children}</span> : <div>{children}</div>}</TooltipTrigger>
         <TooltipContent side={side} {...props} sideOffset={8}>
           {toolTipContent}
         </TooltipContent>
@@ -80,8 +80,6 @@ const Tooltip = ({ children, toolTipContent, delayDuration = 300, defaultOpen = 
   );
 };
 
-export default Tooltip;
-
 export const InfoToolTip = ({ toolTipContent, ...props }: TooltipProps) => {
   return (
     <Tooltip toolTipContent={toolTipContent} {...props}>
@@ -89,3 +87,7 @@ export const InfoToolTip = ({ toolTipContent, ...props }: TooltipProps) => {
     </Tooltip>
   );
 };
+
+export const ToolTipWithInfo = InfoToolTip;
+
+export default Tooltip;

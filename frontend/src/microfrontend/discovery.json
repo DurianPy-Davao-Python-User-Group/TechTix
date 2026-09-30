@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-09-22T00:00:00Z",
+  "remotes": {
+    "badge-service-admin-ui": {
+      "url": "http://localhost:3001/remoteEntry.js",
+      "scope": "badge-service-ui",
+      "module": "./AdminApp",
+      "type": "route",
+      "routePrefix": "/admin"
+    },
+    "badge-service-user-ui": {
+      "url": "http://localhost:3001/remoteEntry.js",
+      "scope": "badge-service-ui",
+      "module": "./UserApp",
+      "type": "route",
+      "routePrefix": "/user"
+    },
+    "badge-service-public-ui": {
+      "url": "http://localhost:3001/remoteEntry.js",
+      "scope": "badge-service-ui",
+      "module": "./PublicApp",
+      "type": "widget"
+    }
+  }
+}

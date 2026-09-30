@@ -3,6 +3,7 @@ import ErrorPage from '@/components/ErrorPage';
 import AdminPage from '@/pages/admin/AdminPage';
 import AdminAuthorityPage from '@/pages/admin/authority/AdminAuthorityPage';
 import AdminEventPage from '@/pages/admin/event/AdminEventPage';
+import AdminEventBadges from '@/pages/admin/event/badges/AdminEventBadges';
 import AdminAllEventsPage from '@/pages/admin/event/dashboard/AdminAllEventsPage';
 import CreateEventPage from '@/pages/admin/event/dashboard/CreateEventPage';
 import AdminEventDiscounts from '@/pages/admin/event/discounts/AdminEventDiscounts';
@@ -78,6 +79,22 @@ const adminRoutes: RouteObject[] = [
                   {
                     path: 'faqs',
                     element: <AdminEventFAQs />
+                  },
+                  {
+                    path: 'badges',
+                    element: <AdminEventBadges />
+                  },
+                  {
+                    path: 'badges/*',
+                    element: <AdminEventBadges />
+                  },
+                  {
+                    path: 'badge',
+                    element: <AdminEventBadges />
+                  },
+                  {
+                    path: 'badge/*',
+                    element: <AdminEventBadges />
                   },
                   {
                     path: '*',

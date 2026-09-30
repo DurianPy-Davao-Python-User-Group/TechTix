@@ -31,6 +31,7 @@ const FormItemContext = React.createContext<FormItemContextProps>({} as FormItem
 
 interface FormItemProps<TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>> {
   name: TName;
+  className?: string;
   children: (field: {
     field: ControllerRenderProps<FieldValues, TName>;
     fieldState: ControllerFieldState;
@@ -38,7 +39,11 @@ interface FormItemProps<TFieldValues extends FieldValues, TName extends FieldPat
   }) => React.ReactElement;
 }
 
-export const FormItem = <TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>({ name, children }: FormItemProps<TFieldValues, TName>) => {
+export const FormItem = <TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>({
+  name,
+  className,
+  children
+}: FormItemProps<TFieldValues, TName>) => {
   const { control, getFieldState } = useFormContext();
   const formState = useFormState();
   const id = React.useId();
@@ -60,9 +65,27 @@ export const FormItem = <TFieldValues extends FieldValues, TName extends FieldPa
         fieldState
       }}
     >
-      <div id={formItemId} aria-describedby={ariaDescribedby} aria-invalid={!!fieldState.error}>
-        <Controller name={name} control={control} render={({ field, fieldState, formState }) => children({ field, fieldState, formState })} />
-      </div>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field, fieldState, formState }) => {
+          const child = children({ field, fieldState, formState });
+          if (React.isValidElement(child)) {
+            const childProps = child.props as React.HTMLAttributes<HTMLElement>;
+            return React.cloneElement(child, {
+              id: formItemId,
+              'aria-describedby': ariaDescribedby,
+              'aria-invalid': !!fieldState.error,
+              className: cn(childProps.className, className)
+            } as React.HTMLAttributes<HTMLElement>);
+          }
+          return (
+            <div id={formItemId} className={cn('contents', className)} aria-describedby={ariaDescribedby} aria-invalid={!!fieldState.error}>
+              {child}
+            </div>
+          );
+        }}
+      />
     </FormItemContext.Provider>
   );
 };

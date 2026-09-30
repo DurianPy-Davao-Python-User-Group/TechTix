@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import { federation } from '@module-federation/vite';
 // import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 
@@ -9,6 +10,20 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      federation({
+        name: 'techtix',
+        shared: {
+          react: { requiredVersion: '^19.0.0', singleton: true },
+          'react-dom': { requiredVersion: '^19.0.0', singleton: true },
+          'react-dom/client': { requiredVersion: '^19.0.0', singleton: true },
+          'react-router': { requiredVersion: '^8.0.0', singleton: true },
+          '@tanstack/react-query': { requiredVersion: '^5.0.0', singleton: true },
+          'lucide-react': { requiredVersion: '^1.0.0', singleton: true },
+          'tailwind-merge': { requiredVersion: '^3.0.0', singleton: true },
+          clsx: { requiredVersion: '^2.0.0', singleton: true },
+          '@base-ui/react': { requiredVersion: '^1.0.0', singleton: true }
+        }
+      }),
       ViteImageOptimizer({
         svg: {
           plugins: [
@@ -81,7 +96,8 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-        '@amplify_outputs': mode === 'dummy' ? '/dummy_amplify_outputs.json' : '/amplify_outputs.json'
+        '@amplify_outputs': mode === 'dummy' ? '/dummy_amplify_outputs.json' : '/amplify_outputs.json',
+        'react-router-dom': 'react-router'
       }
     }
   };

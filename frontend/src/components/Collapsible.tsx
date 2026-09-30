@@ -7,16 +7,18 @@ const CollapsibleTrigger = ({
   asChild,
   children,
   ref,
+  nativeButton,
   ...props
 }: React.ComponentPropsWithoutRef<typeof BaseCollapsible.Trigger> & {
   asChild?: boolean;
   ref?: React.Ref<React.ComponentRef<typeof BaseCollapsible.Trigger>>;
 }) => {
   if (asChild && React.isValidElement(children)) {
-    return <BaseCollapsible.Trigger ref={ref} render={children} {...props} />;
+    const isButton = nativeButton !== undefined ? nativeButton : children.type === 'button';
+    return <BaseCollapsible.Trigger ref={ref} render={children} nativeButton={isButton} {...props} />;
   }
   return (
-    <BaseCollapsible.Trigger ref={ref} {...props}>
+    <BaseCollapsible.Trigger ref={ref} nativeButton={nativeButton} {...props}>
       {children}
     </BaseCollapsible.Trigger>
   );
