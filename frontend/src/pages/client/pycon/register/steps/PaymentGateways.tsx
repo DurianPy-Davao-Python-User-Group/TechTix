@@ -1,6 +1,12 @@
 import { FC } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { BPI_LOGO, CHINABANK_LOGO, GCASH_LOGO, MAYA_LOGO, RCBC_LOGO, UPB_LOGO } from '@/assets/paymentGatewaysIcons';
+import {
+  // BPI_LOGO,
+  // CHINABANK_LOGO,
+  GCASH_LOGO, MAYA_LOGO,
+  // RCBC_LOGO,
+  //  UPB_LOGO
+} from '@/assets/paymentGatewaysIcons';
 import { RadioGroup, RadioGroupItem } from '@/components/RadioGroup';
 import { PaymentMethod, eWalletChannelCode, DirectDebitChannelCode, PaymentChannel } from '@/model/payments';
 import { cn } from '@/utils/classes';
@@ -64,9 +70,9 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
 
   return (
     <>
-      <h4 className="font-inter text-xs font-bold uppercase tracking-[0.15em] text-[#072E4799]">Select a payment method:</h4>
+      {/* <h4 className="font-inter text-xs font-bold uppercase tracking-[0.15em] text-[#072E4799]">Select a payment method:</h4> */}
       <RadioGroup value={currentPaymentChannel ?? undefined} className="block space-y-2">
-        <p className="mt-2 font-inter text-sm font-bold uppercase tracking-[0.5px] text-pycon-orange">eWallets:</p>
+        {/* <p className="mt-2 font-inter text-sm font-bold uppercase tracking-[0.5px] text-pycon-orange">eWallets:</p> */}
         <div className="flex flex-wrap gap-y-2">
           <PaymentOption
             paymentTitle="Gcash"
@@ -84,28 +90,28 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
           />
         </div>
 
-        <p className="font-inter text-sm font-bold uppercase tracking-[0.5px] text-pycon-orange">Direct Debit:</p>
+        {/* <p className="font-inter text-sm font-bold uppercase tracking-[0.5px] text-pycon-orange">Direct Debit:</p>
         <div className="flex flex-wrap gap-y-2">
           <PaymentOption
             paymentTitle="BPI"
-            paymentChannelCode="BPI"
+            paymentChannelCode="BPI_DIRECT_DEBIT"
             imgSrc={BPI_LOGO}
             currentPaymentChannel={currentPaymentChannel}
-            onClick={() => setDirectDebitPaymentChannel('BPI')}
+            onClick={() => setDirectDebitPaymentChannel('BPI_DIRECT_DEBIT')}
           />
           <PaymentOption
             paymentTitle="RCBC"
-            paymentChannelCode="RCBC"
+            paymentChannelCode="RCBC_DIRECT_DEBIT"
             imgSrc={RCBC_LOGO}
             currentPaymentChannel={currentPaymentChannel}
-            onClick={() => setDirectDebitPaymentChannel('RCBC')}
+            onClick={() => setDirectDebitPaymentChannel('RCBC_DIRECT_DEBIT')}
           />
           <PaymentOption
             paymentTitle="Union Bank"
-            paymentChannelCode="UBP"
+            paymentChannelCode="UBP_DIRECT_DEBIT"
             imgSrc={UPB_LOGO}
             currentPaymentChannel={currentPaymentChannel}
-            onClick={() => setDirectDebitPaymentChannel('UBP')}
+            onClick={() => setDirectDebitPaymentChannel('UBP_DIRECT_DEBIT')}
           />
           <PaymentOption
             paymentTitle="China Bank"
@@ -114,7 +120,7 @@ const PaymentGateways: FC<Props> = ({ getTransactionFee }) => {
             currentPaymentChannel={currentPaymentChannel}
             onClick={() => setDirectDebitPaymentChannel('CHINABANK')}
           />
-        </div>
+        </div> */}
       </RadioGroup>
     </>
   );

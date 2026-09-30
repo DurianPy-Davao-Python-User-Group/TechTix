@@ -1,4 +1,4 @@
-import { TransactionDetails, EWalletPaymentIn, GetTransactionDetailsOut, PaymentRequestOut, DirectDebitPaymentIn } from '@/model/pycon/payments';
+import { TransactionDetails, EWalletPaymentIn, GetTransactionDetailsOut, PaymentRequestOut, DirectDebitPaymentIn, PaymentRequestOutV2 } from '@/model/pycon/payments';
 import { createApi } from '../utils/createApi';
 
 export const getTransactionDetails = (transactionDetails: TransactionDetails) =>
@@ -12,20 +12,32 @@ export const getTransactionDetails = (transactionDetails: TransactionDetails) =>
 
 
 export const createEwalletPaymentRequest = (paymentDetails: EWalletPaymentIn) =>
-  createApi<PaymentRequestOut>({
+  createApi<PaymentRequestOutV2, PaymentRequestOut>({
     method: 'post',
     authorize: true,
     apiService: 'payments',
-    url: '/e_wallet/payment_method',
-    body: { ...paymentDetails }
+    url: '/v2/e_wallet/payment_method',
+    body: { ...paymentDetails },
+    output: (x) => ({
+      createDate: x.created,
+      paymentUrl: x.actions.find(action => action.type === 'REDIRECT_CUSTOMER')?.value || '',
+      paymentRequestId: x.payment_request_id,
+      referenceId: x.reference_id
+    })
   });
 
 export const initiateDirectDebitPayment = (paymentDetails: DirectDebitPaymentIn) =>
-  createApi<PaymentRequestOut>({
+  createApi<PaymentRequestOutV2, PaymentRequestOut>({
     method: 'post',
     authorize: true,
     apiService: 'payments',
-    url: '/direct_debit/payment_request',
-    body: { ...paymentDetails }
+    url: '/v2/direct_debit/payment_request',
+    body: { ...paymentDetails },
+    output: (x) => ({
+      createDate: x.created,
+      paymentUrl: x.actions.find(action => action.type === 'REDIRECT_CUSTOMER')?.value || '',
+      paymentRequestId: x.payment_request_id,
+      referenceId: x.reference_id
+    })
   });
 

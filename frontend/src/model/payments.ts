@@ -16,7 +16,8 @@ export type PaymentMethod = 'DIRECT_DEBIT' | 'E_WALLET';
 
 export type eWalletChannelCode = 'GCASH' | 'PAYMAYA';
 
-export type DirectDebitChannelCode = 'BPI' | 'UBP' | 'RCBC' | 'CHINABANK';
+export type DirectDebitChannelCode = 'BPI_DIRECT_DEBIT' | 'UBP_DIRECT_DEBIT' | 'RCBC_DIRECT_DEBIT'
+// | 'CHINABANK';
 
 export type PaymentChannel = eWalletChannelCode | DirectDebitChannelCode;
 
