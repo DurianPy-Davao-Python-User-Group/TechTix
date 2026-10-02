@@ -50,6 +50,21 @@ const KASOSYO_BENEFITS: TicketBenefitItem[] = [
 
 const ORANGE_ACCENT_COLOR = '#F99508';
 
+const ADDU_EVENT_ID = 'pycon-davao-2026---for-addu-students';
+
+const ADDU_CODER_BENEFITS: TicketBenefitItem[] = [
+  { label: 'Talks', included: true },
+  { label: 'Open Spaces', included: true },
+  { label: 'Workshops', included: true },
+  { label: 'Panel Discussion', included: true },
+  { label: 'Lunch & Snack', included: false },
+  { label: 'Kit - Lanyard & ID', included: false },
+  { label: 'Stickers', included: false },
+  { label: 'Special Merch', included: false },
+  { label: 'Special Metallic Pin', included: false },
+  { label: 'Kasosyo Night with Speakers & Volunteers', included: false }
+];
+
 const getTicketSoldOutState = (ticketType?: EventTicketType) => {
   if (!ticketType?.maximumQuantity) return false;
   return (ticketType.currentSales ?? 0) >= ticketType.maximumQuantity;
@@ -61,6 +76,8 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
 
   const coderTicket = event.ticketTypes?.find((t) => t.id === 'coder');
   const kasosyoTicket = event.ticketTypes?.find((t) => t.id === 'kasosyo');
+
+  const coderBenefits = event.eventId === ADDU_EVENT_ID ? ADDU_CODER_BENEFITS : CODER_BENEFITS;
 
   const sprintDayPrice = event.sprintDayPrice ?? 200;
 
@@ -96,7 +113,7 @@ const TicketSelectionStep = ({ event, updateEventPrice }: Props) => {
                   ticketId={coderTicket.id}
                   price={coderTicket.price ?? 0}
                   originalPrice={coderTicket.originalPrice}
-                  benefits={CODER_BENEFITS}
+                  benefits={coderBenefits}
                   bestValue
                   backgroundClass="bg-gradient-to-br from-[#5DA144] to-[#4b8935]"
                   selectedBorderColor={ORANGE_ACCENT_COLOR}
