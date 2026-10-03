@@ -2,9 +2,10 @@ import csv
 import os
 import tempfile
 from http import HTTPStatus
-from typing import List, Union
+from typing import List, Optional, Tuple, Union
 
 import ulid
+from model.events.event import Event
 from model.events.events_constants import EventStatus
 from model.file_uploads.file_upload import FileDownloadOut
 from model.pycon_registrations.pycon_registration import (
@@ -12,6 +13,7 @@ from model.pycon_registrations.pycon_registration import (
     PyconRegistrationOut,
     PyconRegistrationPatch,
 )
+from model.ticket_types.ticket_types import TicketType
 from repository.events_repository import EventsRepository
 from repository.payment_transaction_repository import PaymentTransactionRepository
 from repository.registrations_repository import RegistrationsRepository
@@ -47,6 +49,133 @@ class PyconRegistrationUsecase:
         self.__ticket_type_repository = TicketTypeRepository()
         self.__payment_transaction_repository = PaymentTransactionRepository()
 
+    def __resolve_ticket_type_and_price(
+        self, event: Event, registration_in: PyconRegistrationIn
+    ) -> Tuple[Optional[JSONResponse], Optional[TicketType], float]:
+        """Resolves the ticket type entry and base price for the PyCon registration.
+
+        :param event: The event entity.
+        :type event: Event
+        :param registration_in: The incoming registration data.
+        :type registration_in: PyconRegistrationIn
+
+        :return: A tuple of (error_response, ticket_type_entry, base_price).
+        :rtype: Tuple[Optional[JSONResponse], Optional[TicketType], float]
+        """
+        if not event.hasMultipleTicketTypes:
+            return None, None, float(event.price or 0.0)
+
+        ticket_type = getattr(registration_in, "ticketType", None)
+        ticket_type_id = ticket_type.value if ticket_type else None
+        if not ticket_type_id:
+            return (
+                JSONResponse(
+                    status_code=HTTPStatus.BAD_REQUEST,
+                    content={
+                        "message": "Ticket type ID is required for multiple ticket types event"
+                    },
+                ),
+                None,
+                0.0,
+            )
+
+        status, ticket_type_entry, message = (
+            self.__ticket_type_repository.query_ticket_type_with_ticket_type_id(
+                event_id=event.eventId, ticket_type_id=ticket_type_id
+            )
+        )
+        if status != HTTPStatus.OK:
+            return (
+                JSONResponse(status_code=status, content={"message": message}),
+                None,
+                0.0,
+            )
+
+        if ticket_type_entry.currentSales >= ticket_type_entry.maximumQuantity:
+            return (
+                JSONResponse(
+                    status_code=HTTPStatus.BAD_REQUEST,
+                    content={
+                        "message": f"Ticket type {ticket_type_entry.name} is sold out"
+                    },
+                ),
+                None,
+                0.0,
+            )
+
+        return None, ticket_type_entry, float(ticket_type_entry.price or 0.0)
+
+    def __resolve_discount(
+        self, event_id: str, discount_code: Optional[str]
+    ) -> Tuple[Optional[JSONResponse], float]:
+        """Validates a discount code and resolves its discount percentage.
+
+        :param event_id: The ID of the event.
+        :type event_id: str
+        :param discount_code: The discount code entered by the registrant.
+        :type discount_code: Optional[str]
+
+        :return: A tuple of (error_response, discount_percentage).
+        :rtype: Tuple[Optional[JSONResponse], float]
+        """
+        if not discount_code:
+            return None, 0.0
+
+        discount_entry = self.__discount_usecase.get_discount(
+            event_id=event_id, entry_id=discount_code
+        )
+        if isinstance(discount_entry, JSONResponse):
+            return discount_entry, 0.0
+
+        if discount_entry.isReusable and discount_entry.remainingUses <= 0:
+            return (
+                JSONResponse(
+                    status_code=HTTPStatus.BAD_REQUEST,
+                    content={"message": "Discount code has no remaining uses"},
+                ),
+                0.0,
+            )
+
+        if not discount_entry.isReusable and discount_entry.claimed:
+            return (
+                JSONResponse(
+                    status_code=HTTPStatus.BAD_REQUEST,
+                    content={"message": "Discount code has already been claimed"},
+                ),
+                0.0,
+            )
+
+        return None, float(discount_entry.discountPercentage or 0.0)
+
+    def __validate_payment_transaction(
+        self, event_id: str, transaction_id: Optional[str]
+    ) -> Optional[JSONResponse]:
+        """Validates that a transaction ID is provided and exists for paid events.
+
+        :param event_id: The ID of the event.
+        :type event_id: str
+        :param transaction_id: The payment transaction ID.
+        :type transaction_id: Optional[str]
+
+        :return: An error response if validation fails, or None if valid.
+        :rtype: Optional[JSONResponse]
+        """
+        if not transaction_id:
+            return JSONResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content={"message": "Transaction ID is required for paid event"},
+            )
+
+        status, _, message = (
+            self.__payment_transaction_repository.query_payment_transaction_with_payment_transaction_id(
+                event_id=event_id, payment_transaction_id=transaction_id
+            )
+        )
+        if status != HTTPStatus.OK:
+            return JSONResponse(status_code=status, content={"message": message})
+
+        return None
+
     @log_execution
     def create_pycon_registration(
         self, registration_in: PyconRegistrationIn
@@ -60,17 +189,27 @@ class PyconRegistrationUsecase:
         :rtype: Union[JSONResponse, PyconRegistrationOut]
 
         """
-        logger.info(f'Saving PyCon registration for email={mask_email(registration_in.email)}, event_id={registration_in.eventId}')
-        status, event, message = self.__events_repository.query_events(event_id=registration_in.eventId)
+        logger.info(
+            f"Saving PyCon registration for email={mask_email(registration_in.email)}, event_id={registration_in.eventId}"
+        )
+        status, event, message = self.__events_repository.query_events(
+            event_id=registration_in.eventId
+        )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         event_id = registration_in.eventId
 
-        # if registration already exists, return the registration entry
-        (status, registrations, message) = self.__registrations_repository.query_registrations_with_email(event_id=event_id, email=registration_in.email)
+        # If registration already exists, return existing registration entry
+        status, registrations, message = (
+            self.__registrations_repository.query_registrations_with_email(
+                event_id=event_id, email=registration_in.email
+            )
+        )
         if status == HTTPStatus.OK and registrations:
-            logger.info(f'Registration with email {registration_in.email} already exists, returning existing registration')
+            logger.info(
+                f"Registration with email {registration_in.email} already exists, returning existing registration"
+            )
             registration = registrations[0]
             registration_data = self.__convert_data_entry_to_dict(registration)
             registration_out = PyconRegistrationOut(**registration_data)
@@ -80,100 +219,64 @@ class PyconRegistrationUsecase:
         if event.status != EventStatus.OPEN.value:
             return JSONResponse(
                 status_code=HTTPStatus.BAD_REQUEST,
-                content={'message': 'Event is not open for registration'},
+                content={"message": "Event is not open for registration"},
             )
 
-        is_free_ticket = False
-
-        if event.paidEvent:
-            if registration_in.discountCode:
-                discount_entry = self.__discount_usecase.get_discount(
-                    event_id=event_id, entry_id=registration_in.discountCode
-                )
-                if isinstance(discount_entry, JSONResponse):
-                    return discount_entry
-
-                if discount_entry.isReusable and discount_entry.remainingUses <= 0:
-                    return JSONResponse(
-                        status_code=HTTPStatus.BAD_REQUEST, content={'message': 'Discount code has no remaining uses'}
-                    )
-
-                if not discount_entry.isReusable and discount_entry.claimed:
-                    return JSONResponse(
-                        status_code=HTTPStatus.BAD_REQUEST,
-                        content={'message': 'Discount code has already been claimed'},
-                    )
-
-                if discount_entry.discountPercentage == 1 and not registration_in.sprintDay:
-                    is_free_ticket = True
-
-            if not is_free_ticket:
-                transaction_id = registration_in.transactionId
-                if not transaction_id:
-                    return JSONResponse(
-                        status_code=HTTPStatus.BAD_REQUEST,
-                        content={'message': 'Transaction ID is required for paid event'},
-                    )
-
-                (
-                    status,
-                    _,
-                    message,
-                ) = self.__payment_transaction_repository.query_payment_transaction_with_payment_transaction_id(
-                    event_id=event_id, payment_transaction_id=transaction_id
-                )
-                if status != HTTPStatus.OK:
-                    return JSONResponse(status_code=status, content={'message': message})
-
-        # Check if the registration with the same email already exists
-        email = registration_in.email
-        (
-            status,
-            registrations,
-            message,
-        ) = self.__registrations_repository.query_registrations_with_email(event_id=event_id, email=email)
-        if status == HTTPStatus.OK and registrations:
-            logger.info(f'Registration with email {email} already exists, returning existing registration')
-            registration = registrations[0]
-            registration_data = self.__convert_data_entry_to_dict(registration)
-            registration_out = PyconRegistrationOut(**registration_data)
-            return self.collect_pre_signed_url_pycon(registration_out)
-
-        # check if ticket types in event exists
+        # Check event capacity
         future_registrations = event.registrationCount
         if event.isLimitedSlot and future_registrations >= event.maximumSlots:
-            # check if registration count in event is full
             return JSONResponse(
                 status_code=HTTPStatus.BAD_REQUEST,
-                content={'message': f'Event registration is full. Maximum slots: {event.maximumSlots}'},
+                content={
+                    "message": f"Event registration is full. Maximum slots: {event.maximumSlots}"
+                },
             )
 
+        # Check Sprint Day capacity
         if registration_in.sprintDay:
-            if event.maximumSprintDaySlots and event.sprintDayRegistrationCount >= event.maximumSprintDaySlots:
-                return JSONResponse(
-                    status_code=HTTPStatus.BAD_REQUEST, content={'message': 'Sprint Day is already full.'}
-                )
-
-        ticket_type_entry = None
-        if event.hasMultipleTicketTypes:
-            ticket_type_id = registration_in.ticketType.value
-            if not ticket_type_id:
+            if (
+                event.maximumSprintDaySlots
+                and event.sprintDayRegistrationCount >= event.maximumSprintDaySlots
+            ):
                 return JSONResponse(
                     status_code=HTTPStatus.BAD_REQUEST,
-                    content={'message': 'Ticket type ID is required for multiple ticket types event'},
+                    content={"message": "Sprint Day is already full."},
                 )
 
-            status, ticket_type_entry, message = self.__ticket_type_repository.query_ticket_type_with_ticket_type_id(
-                event_id=event_id, ticket_type_id=ticket_type_id
+        # Resolve ticket type and base price
+        error_response, ticket_type_entry, base_price = (
+            self.__resolve_ticket_type_and_price(event, registration_in)
+        )
+        if error_response:
+            return error_response
+
+        # Determine if payment is required
+        is_free_ticket = False
+        if not event.paidEvent:
+            is_free_ticket = True
+        else:
+            # Resolve discount percentage if discount code provided
+            error_response, discount_percentage = self.__resolve_discount(
+                event_id, registration_in.discountCode
             )
-            if status != HTTPStatus.OK:
-                return JSONResponse(status_code=status, content={'message': message})
+            if error_response:
+                return error_response
 
-            if ticket_type_entry.currentSales >= ticket_type_entry.maximumQuantity:
-                return JSONResponse(
-                    status_code=HTTPStatus.BAD_REQUEST,
-                    content={'message': f'Ticket type {ticket_type_entry.name} is sold out'},
+            discounted_ticket_price = base_price * (1.0 - discount_percentage)
+            sprint_day_price = (
+                float(event.sprintDayPrice or 0.0) if registration_in.sprintDay else 0.0
+            )
+            total_amount = discounted_ticket_price + sprint_day_price
+
+            if total_amount <= 0.0:
+                is_free_ticket = True
+
+            if not is_free_ticket:
+                error_response = self.__validate_payment_transaction(
+                    event_id, registration_in.transactionId
                 )
+                if error_response:
+                    return error_response
 
         registration_id = ulid.ulid()
         discount_code = registration_in.discountCode
@@ -186,32 +289,32 @@ class PyconRegistrationUsecase:
             if isinstance(claimed_discount, JSONResponse):
                 return claimed_discount
 
-        (
-            status,
-            registration,
-            message,
-        ) = self.__registrations_repository.store_registration(
-            registration_in=registration_in, registration_id=registration_id
+        status, registration, message = (
+            self.__registrations_repository.store_registration(
+                registration_in=registration_in, registration_id=registration_id
+            )
         )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         logger.info(
-            f'PyCon registration created successfully: event_id={event_id}, registration_id={registration_id}, email={mask_email(registration_in.email)}'
+            f"PyCon registration created successfully: event_id={event_id}, registration_id={registration_id}, email={mask_email(registration_in.email)}"
         )
 
         status, __, message = self.__events_repository.append_event_registration_count(
             event_entry=event, registration_sprint_day=registration_in.sprintDay
         )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         if ticket_type_entry:
-            status, __, message = self.__ticket_type_repository.append_ticket_type_sales(
-                ticket_type_entry=ticket_type_entry
+            status, __, message = (
+                self.__ticket_type_repository.append_ticket_type_sales(
+                    ticket_type_entry=ticket_type_entry
+                )
             )
             if status != HTTPStatus.OK:
-                return JSONResponse(status_code=status, content={'message': message})
+                return JSONResponse(status_code=status, content={"message": message})
 
         registration_data = self.__convert_data_entry_to_dict(registration)
 
@@ -228,7 +331,10 @@ class PyconRegistrationUsecase:
 
     @log_execution
     def update_pycon_registration(
-        self, event_id: str, registration_id: str, registration_in: PyconRegistrationPatch
+        self,
+        event_id: str,
+        registration_id: str,
+        registration_in: PyconRegistrationPatch,
     ) -> Union[JSONResponse, PyconRegistrationOut]:
         """Updates an existing PyCon registration entry.
 
@@ -247,7 +353,7 @@ class PyconRegistrationUsecase:
         """
         status, _, message = self.__events_repository.query_events(event_id=event_id)
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         (
             status,
@@ -257,7 +363,7 @@ class PyconRegistrationUsecase:
             event_id=event_id, registration_id=registration_id
         )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         (
             status,
@@ -267,15 +373,19 @@ class PyconRegistrationUsecase:
             registration_entry=registration, registration_in=registration_in
         )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
-        logger.info(f'PyCon registration updated: event_id={event_id}, registration_id={registration_id}')
+        logger.info(
+            f"PyCon registration updated: event_id={event_id}, registration_id={registration_id}"
+        )
         registration_data = self.__convert_data_entry_to_dict(update_registration)
         registration_out = PyconRegistrationOut(**registration_data)
         return self.collect_pre_signed_url_pycon(registration_out)
 
     @log_execution
-    def get_pycon_registration(self, event_id: str, registration_id: str) -> Union[JSONResponse, PyconRegistrationOut]:
+    def get_pycon_registration(
+        self, event_id: str, registration_id: str
+    ) -> Union[JSONResponse, PyconRegistrationOut]:
         """Retrieves a specific PyCon registration entry by its ID.
 
         :param event_id: The ID of the event
@@ -291,7 +401,7 @@ class PyconRegistrationUsecase:
 
         status, _, message = self.__events_repository.query_events(event_id=event_id)
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         (
             status,
@@ -301,14 +411,16 @@ class PyconRegistrationUsecase:
             event_id=event_id, registration_id=registration_id
         )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         registration_data = self.__convert_data_entry_to_dict(registration)
         registration_out = PyconRegistrationOut(**registration_data)
         return self.collect_pre_signed_url_pycon(registration_out)
 
     @log_execution
-    def get_pycon_registration_by_email(self, event_id: str, email: str) -> Union[JSONResponse, PyconRegistrationOut]:
+    def get_pycon_registration_by_email(
+        self, event_id: str, email: str
+    ) -> Union[JSONResponse, PyconRegistrationOut]:
         """Retrieves a specific PyCon registration entry by its email.
 
         :param event_id: The ID of the event
@@ -325,9 +437,11 @@ class PyconRegistrationUsecase:
             status,
             registrations,
             message,
-        ) = self.__registrations_repository.query_registrations_with_email(event_id=event_id, email=email)
+        ) = self.__registrations_repository.query_registrations_with_email(
+            event_id=event_id, email=email
+        )
         if status != HTTPStatus.OK or not registrations:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         registration = registrations[0]
         registration_data = self.__convert_data_entry_to_dict(registration)
@@ -350,18 +464,22 @@ class PyconRegistrationUsecase:
         """
         status, _, message = self.__events_repository.query_events(event_id=event_id)
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         (
             status,
             registrations,
             message,
-        ) = self.__registrations_repository.query_registrations(event_id=event_id, is_deleted=is_deleted)
+        ) = self.__registrations_repository.query_registrations(
+            event_id=event_id, is_deleted=is_deleted
+        )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         return [
-            self.collect_pre_signed_url_pycon(PyconRegistrationOut(**self.__convert_data_entry_to_dict(registration)))
+            self.collect_pre_signed_url_pycon(
+                PyconRegistrationOut(**self.__convert_data_entry_to_dict(registration))
+            )
             for registration in registrations
         ]
 
@@ -376,16 +494,18 @@ class PyconRegistrationUsecase:
         :rtype: FileDownloadOut
         """
         # Get registrations for a PyCon event
-        status, registrations, message = self.__registrations_repository.query_registrations(event_id=event_id)
+        status, registrations, message = (
+            self.__registrations_repository.query_registrations(event_id=event_id)
+        )
 
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         try:
             with tempfile.TemporaryDirectory() as tmpdir:
-                csv_path = os.path.join(tmpdir, 'pycon_registrations.csv')
+                csv_path = os.path.join(tmpdir, "pycon_registrations.csv")
 
-                with open(csv_path, 'w') as temp:
+                with open(csv_path, "w") as temp:
                     writer = csv.writer(temp)
 
                     # make the first row csv for the keys using the dict keys of the first entry
@@ -398,17 +518,21 @@ class PyconRegistrationUsecase:
                         writer.writerow(entry_dict.values())
 
                 # upload the file to s3
-                csv_object_key = f'csv/pycon_registrations/{event_id}.csv'
-                self.__file_s3_usecase.upload_file(file_name=csv_path, object_name=csv_object_key)
+                csv_object_key = f"csv/pycon_registrations/{event_id}.csv"
+                self.__file_s3_usecase.upload_file(
+                    file_name=csv_path, object_name=csv_object_key
+                )
 
                 return self.__file_s3_usecase.create_download_url(csv_object_key)
 
         except Exception as e:
-            logger.error(f'Error generating the PyCon CSV for {event_id}: {e}')
+            logger.error(f"Error generating the PyCon CSV for {event_id}: {e}")
             return
 
     @log_execution
-    def delete_pycon_registration(self, event_id: str, registration_id: str) -> Union[None, JSONResponse]:
+    def delete_pycon_registration(
+        self, event_id: str, registration_id: str
+    ) -> Union[None, JSONResponse]:
         """Deletes a specific PyCon registration entry by its ID.
 
         :param event_id: The ID of the event
@@ -423,7 +547,7 @@ class PyconRegistrationUsecase:
         """
         status, _, message = self.__events_repository.query_events(event_id=event_id)
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
         (
             status,
@@ -433,17 +557,23 @@ class PyconRegistrationUsecase:
             event_id=event_id, registration_id=registration_id
         )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
-        status, message = self.__registrations_repository.delete_registration(registration_entry=registration)
+        status, message = self.__registrations_repository.delete_registration(
+            registration_entry=registration
+        )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
-        logger.info(f'PyCon registration deleted: event_id={event_id}, registration_id={registration_id}')
+        logger.info(
+            f"PyCon registration deleted: event_id={event_id}, registration_id={registration_id}"
+        )
         return None
 
     @log_execution
-    def collect_pre_signed_url_pycon(self, registration: PyconRegistrationOut) -> PyconRegistrationOut:
+    def collect_pre_signed_url_pycon(
+        self, registration: PyconRegistrationOut
+    ) -> PyconRegistrationOut:
         """Collects the pre-signed URL for the valid ID image for PyCon registrations.
 
         :param registration: The PyCon registration entry to be updated.
@@ -454,7 +584,9 @@ class PyconRegistrationUsecase:
 
         """
         if registration.validIdObjectKey:
-            image_id_url = self.__file_s3_usecase.create_download_url(registration.validIdObjectKey)
+            image_id_url = self.__file_s3_usecase.create_download_url(
+                registration.validIdObjectKey
+            )
             registration.imageIdUrl = image_id_url.downloadLink
 
         return registration
@@ -473,26 +605,35 @@ class PyconRegistrationUsecase:
         :rtype: JSONResponse
 
         """
-        status, event, message = self.__events_repository.query_events(event_id=event_id)
+        status, event, message = self.__events_repository.query_events(
+            event_id=event_id
+        )
         if status != HTTPStatus.OK:
-            return JSONResponse(status_code=status, content={'message': message})
+            return JSONResponse(status_code=status, content={"message": message})
 
-        (status, registrations, message) = self.__registrations_repository.query_registrations_with_email(
-            event_id=event_id, email=email
+        (status, registrations, message) = (
+            self.__registrations_repository.query_registrations_with_email(
+                event_id=event_id, email=email
+            )
         )
 
         if status == HTTPStatus.OK and registrations and registrations[0].transactionId:
             registration = registrations[0]
-            logger.info(f'Resending confirmation email for event {event_id} to {mask_email(email)}')
+            logger.info(
+                f"Resending confirmation email for event {event_id} to {mask_email(email)}"
+            )
             self.__pycon_email_notification.send_registration_success_email(
                 email=email,
                 event=event,
                 is_pycon_event=True,
                 registration_data=registration,
             )
-            return JSONResponse(status_code=HTTPStatus.OK, content={'message': f'Confirmation email sent to {email}'})
+            return JSONResponse(
+                status_code=HTTPStatus.OK,
+                content={"message": f"Confirmation email sent to {email}"},
+            )
 
-        return JSONResponse(status_code=status, content={'message': message})
+        return JSONResponse(status_code=status, content={"message": message})
 
     @staticmethod
     def __convert_data_entry_to_dict(data_entry):
