@@ -20,17 +20,17 @@ interface Props {
 }
 
 const ACCEPTED_VALID_IDS = [
+  'Philippine Identification System (PhilSys) / National ID / ePhilID',
   'Philippine Passport',
   'LTO Driver\'s License',
   'Unified Multi-Purpose ID (UMID) / SSS ID',
   'Professional Regulation Commission (PRC) License',
   'Postal ID',
-  'PhilHealth ID',
-  'Voter\'s ID or Voter\'s Certification',
-  'Taxpayer Identification Number (TIN) ID',
+  'PhilHealth ID (with photo)',
+  'Voter\'s ID',
+  'Taxpayer Identification Number (TIN) ID (with photo)',
   'Persons with Disability (PWD) ID',
   'Senior Citizen\'s ID',
-  'PSA-issued Birth Certificate',
   'School ID (with current registration card, for students)'
 ];
 
