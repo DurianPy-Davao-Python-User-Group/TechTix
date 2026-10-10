@@ -6,6 +6,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectI
 import Slider from '@/components/Slider';
 import { Textarea } from '@/components/TextArea';
 import { QuestionConfigItem } from '@/model/pycon/evaluations';
+import { cn } from '@/utils/classes';
 
 const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>(
   question: QuestionConfigItem,
@@ -14,21 +15,21 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
 ) => {
   switch (question.questionType) {
     case 'text_short':
-      return <Input type="text" {...field} />;
+      return <Input pyconStyles type="text" placeholder="Type your answer here..." {...field} disabled={disabled} />;
     case 'text_long':
-      return <Textarea {...field} variant="custard" />;
+      return <Textarea pyconStyles placeholder="Type your feedback here..." rows={4} {...field} disabled={disabled} />;
     case 'multiple_choice_dropdown':
       return (
-        <Select onValueChange={field.onChange} disabled={disabled}>
-          <SelectTrigger>
-            <SelectValue placeholder="Dropdown Choices" />
+        <Select onValueChange={field.onChange} value={field.value || undefined} disabled={disabled}>
+          <SelectTrigger className="bg-pycon-dirty-white text-pycon-dark-blue font-inter text-base md:text-lg h-13 md:h-14 px-5 py-3.5 rounded-2xl border-2 border-transparent focus-visible:border-pycon-teal/40 focus-visible:ring-2 focus-visible:ring-pycon-teal/10 shadow-xs">
+            <SelectValue placeholder="Select an option" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border border-[#F995081F] rounded-2xl shadow-lg">
             <SelectGroup>
               {question.options &&
                 Array.isArray(question.options) &&
                 question?.options.map((option, index) => (
-                  <SelectItem key={index} value={option}>
+                  <SelectItem key={index} value={option} className="font-inter text-pycon-dark-blue hover:bg-pycon-dirty-white cursor-pointer py-2.5 px-3 rounded-xl">
                     {option}
                   </SelectItem>
                 ))}
@@ -38,14 +39,22 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
       );
     case 'multiple_choice':
       return (
-        <RadioGroup className="space-y-1" onValueChange={field.onChange} {...field} disabled={disabled}>
+        <RadioGroup className="flex flex-col gap-3 py-1" onValueChange={field.onChange} value={field.value} disabled={disabled}>
           {question.options &&
             Array.isArray(question.options) &&
             question?.options.map((option, index) => {
+              const optionId = `${question.name}-${index}`;
               return (
-                <label key={index} htmlFor={option}>
-                  <RadioGroupItem value={option} id={option} />
-                  <span className="ml-1">{option}</span>
+                <label key={index} htmlFor={optionId} className="flex items-center gap-3 cursor-pointer group">
+                  <RadioGroupItem
+                    pyconStyles
+                    value={option}
+                    id={optionId}
+                    className="border-pycon-dark-blue/30 bg-transparent cursor-pointer"
+                  />
+                  <span className="font-inter font-medium text-sm sm:text-base text-pycon-dark-blue group-hover:text-pycon-teal transition-colors">
+                    {option}
+                  </span>
                 </label>
               );
             })}
@@ -53,62 +62,112 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
       );
     case 'multiple_answers':
       return (
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col gap-3 py-1">
           {question.options &&
             Array.isArray(question.options) &&
             question?.options.map((option, index) => {
-              const fieldValue = field.value as unknown as string[];
+              const optionId = `${question.name}-${index}`;
+              const fieldValue = Array.isArray(field.value) ? (field.value as string[]) : [];
 
               return (
-                <label key={index} htmlFor={option}>
+                <label key={index} htmlFor={optionId} className="flex items-center gap-3 cursor-pointer group">
                   <Checkbox
-                    id={option}
+                    pyconStyles
+                    id={optionId}
                     value={option}
                     checked={fieldValue.includes(option)}
                     disabled={disabled}
                     onCheckedChange={(checked) =>
                       checked ? field.onChange([...fieldValue, option]) : field.onChange(fieldValue.filter((item) => item !== option))
                     }
+                    className="cursor-pointer"
                   />
-                  <span className="ml-1">{option}</span>
+                  <span className="font-inter font-medium text-sm sm:text-base text-pycon-dark-blue group-hover:text-pycon-teal transition-colors">
+                    {option}
+                  </span>
                 </label>
               );
             })}
         </div>
       );
-    case 'slider':
+    case 'slider': {
+      const hasRating = Array.isArray(field.value) && field.value.length > 0;
+      const sliderVal = hasRating ? field.value : [3];
+      const currentVal = hasRating ? field.value[0] : null;
+
       return (
-        <div className="w-full">
+        <div className="w-full pt-3 pb-2 px-1">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xs font-inter font-bold text-pycon-dark-blue/40 uppercase tracking-wider">Rating:</span>
+            {currentVal !== null ? (
+              <span className="text-sm font-sora font-extrabold text-[#04B1A4] bg-[#04B1A4]/10 border border-[#04B1A4]/20 px-3.5 py-1 rounded-full">
+                {currentVal} of 5
+              </span>
+            ) : (
+              <span className="text-xs font-inter font-medium text-pycon-dark-blue/40 italic">
+                Slide or tap a number
+              </span>
+            )}
+          </div>
           <Slider
-            className="w-full mt-5"
+            className="w-full"
             min={1}
             max={5}
             step={1}
-            value={Array.isArray(field.value) && !!field.value.length ? field.value : undefined}
+            value={sliderVal}
             onValueChange={field.onChange}
             disabled={disabled}
           />
-          <div className="flex justify-between px-1 mt-5">
-            {[...Array(5)].map((_, index) => (
-              <span key={index}>{index + 1}</span>
+          <div className="flex justify-between px-1 mt-4">
+            {[1, 2, 3, 4, 5].map((val) => (
+              <button
+                type="button"
+                key={val}
+                disabled={disabled}
+                onClick={() => !disabled && field.onChange([val])}
+                className={cn(
+                  'w-9 h-9 rounded-full flex items-center justify-center text-xs font-inter font-bold transition-all cursor-pointer',
+                  currentVal === val
+                    ? 'bg-pycon-orange text-white shadow-xs scale-110'
+                    : 'text-pycon-dark-blue/50 hover:text-pycon-dark-blue hover:bg-pycon-dirty-white'
+                )}
+              >
+                {val}
+              </button>
             ))}
           </div>
         </div>
       );
-    case 'radio_buttons':
+    }
+    case 'radio_buttons': {
+      const selectedValue = String(field.value ?? '');
       return (
-        <RadioGroup onValueChange={field.onChange} {...field} disabled={disabled}>
-          <div className="flex justify-between px-2 mb-1">
-            {[...Array(5)].map((_, index) => (
-              <div key={index} className="flex flex-col items-center gap-2">
-                <span key={index}>{index + 1}</span>
-                <RadioGroupItem value={String(index + 1)} id={String(index + 1)} pyconStyles={true} />
-              </div>
-            ))}
+        <RadioGroup onValueChange={field.onChange} value={selectedValue} disabled={disabled} className="w-full">
+          <div className="grid grid-cols-5 gap-2 sm:gap-4 p-3 bg-pycon-dirty-white/60 rounded-2xl border border-pycon-dark-blue/5">
+            {[1, 2, 3, 4, 5].map((num) => {
+              const strNum = String(num);
+              const isSelected = selectedValue === strNum;
+              const itemId = `${question.name}-${num}`;
+              return (
+                <label
+                  key={num}
+                  htmlFor={itemId}
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-2 p-2.5 rounded-xl cursor-pointer transition-all',
+                    isSelected ? 'bg-white shadow-xs font-bold text-pycon-orange' : 'hover:bg-white/60 text-pycon-dark-blue/70'
+                  )}
+                >
+                  <span className="text-xs sm:text-sm font-inter font-semibold">{num}</span>
+                  <RadioGroupItem value={strNum} id={itemId} pyconStyles={true} className="cursor-pointer" />
+                </label>
+              );
+            })}
           </div>
         </RadioGroup>
       );
+    }
   }
 };
 
 export default QuestionTypeSwitch;
+

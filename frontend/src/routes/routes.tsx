@@ -94,7 +94,7 @@ export const routes = createBrowserRouter(
   {
     async patchRoutesOnNavigation({ path, patch }) {
       // lazy load admin routes
-      if (path.startsWith('/admin')) {
+      if (path === '/admin' || path.startsWith('/admin/')) {
         const children = (await import('@/routes/adminRoutes')).default;
         patch(null, children);
       }

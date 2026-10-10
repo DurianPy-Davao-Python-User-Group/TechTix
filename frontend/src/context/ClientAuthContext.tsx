@@ -16,7 +16,7 @@ export const ClientAuthContext = React.createContext<ClientAuth>(null);
 const ClientAuthContextProvider = () => {
   const location = useLocation();
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
 
   const { data, isPending, refetch } = useQuery({
     queryKey: createQueryKey('getCurrentUser'),
