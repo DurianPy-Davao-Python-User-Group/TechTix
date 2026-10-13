@@ -76,10 +76,14 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
             })}
         </div>
       );
-    case 'slider':
+    case 'slider': {
+      const hasRating = (Array.isArray(field.value) && field.value.length > 0) || (typeof field.value === 'number' && field.value >= 1 && field.value <= 5);
+      const currentVal = Array.isArray(field.value) && field.value.length > 0 ? field.value[0] : typeof field.value === 'number' ? field.value : null;
+      const sliderVal = currentVal !== null ? [currentVal] : [3];
+
       return (
         <div className="w-full">
-          <Slider className="w-full" min={1} max={5} step={1} onValueChange={field.onChange} disabled={disabled} />
+          <Slider className="w-full" min={1} max={5} step={1} hasValue={hasRating} value={sliderVal} onValueChange={field.onChange} disabled={disabled} />
           <div className="flex justify-between px-1 mt-1">
             {[...Array(5)].map((_, index) => (
               <span key={index}>{index + 1}</span>
@@ -87,6 +91,7 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
           </div>
         </div>
       );
+    }
     case 'radio_buttons':
       return (
         <RadioGroup onValueChange={field.onChange} {...field} disabled={disabled}>

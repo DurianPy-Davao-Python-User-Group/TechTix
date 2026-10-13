@@ -29,7 +29,11 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
               {question.options &&
                 Array.isArray(question.options) &&
                 question?.options.map((option, index) => (
-                  <SelectItem key={index} value={option} className="font-inter text-pycon-dark-blue hover:bg-pycon-dirty-white cursor-pointer py-2.5 px-3 rounded-xl">
+                  <SelectItem
+                    key={index}
+                    value={option}
+                    className="font-inter text-pycon-dark-blue hover:bg-pycon-dirty-white cursor-pointer py-2.5 px-3 rounded-xl"
+                  >
                     {option}
                   </SelectItem>
                 ))}
@@ -46,12 +50,7 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
               const optionId = `${question.name}-${index}`;
               return (
                 <label key={index} htmlFor={optionId} className="flex items-center gap-3 cursor-pointer group">
-                  <RadioGroupItem
-                    pyconStyles
-                    value={option}
-                    id={optionId}
-                    className="border-pycon-dark-blue/30 bg-transparent cursor-pointer"
-                  />
+                  <RadioGroupItem pyconStyles value={option} id={optionId} className="border-pycon-dark-blue/30 bg-transparent cursor-pointer" />
                   <span className="font-inter font-medium text-sm sm:text-base text-pycon-dark-blue group-hover:text-pycon-teal transition-colors">
                     {option}
                   </span>
@@ -91,9 +90,9 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
         </div>
       );
     case 'slider': {
-      const hasRating = Array.isArray(field.value) && field.value.length > 0;
-      const sliderVal = hasRating ? field.value : [3];
-      const currentVal = hasRating ? field.value[0] : null;
+      const hasRating = (Array.isArray(field.value) && field.value.length > 0) || (typeof field.value === 'number' && field.value >= 1 && field.value <= 5);
+      const currentVal = Array.isArray(field.value) && field.value.length > 0 ? field.value[0] : typeof field.value === 'number' ? field.value : null;
+      const sliderVal = currentVal !== null ? [currentVal] : [3];
 
       return (
         <div className="w-full pt-3 pb-2 px-1">
@@ -104,20 +103,10 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
                 {currentVal} of 5
               </span>
             ) : (
-              <span className="text-xs font-inter font-medium text-pycon-dark-blue/40 italic">
-                Slide or tap a number
-              </span>
+              <span className="text-xs font-inter font-medium text-pycon-dark-blue/40 italic">Slide or tap a number to rate</span>
             )}
           </div>
-          <Slider
-            className="w-full"
-            min={1}
-            max={5}
-            step={1}
-            value={sliderVal}
-            onValueChange={field.onChange}
-            disabled={disabled}
-          />
+          <Slider className="w-full" min={1} max={5} step={1} hasValue={hasRating} value={sliderVal} onValueChange={field.onChange} disabled={disabled} />
           <div className="flex justify-between px-1 mt-4">
             {[1, 2, 3, 4, 5].map((val) => (
               <button
@@ -170,4 +159,3 @@ const QuestionTypeSwitch = <TFieldValues extends FieldValues, TName extends Fiel
 };
 
 export default QuestionTypeSwitch;
-

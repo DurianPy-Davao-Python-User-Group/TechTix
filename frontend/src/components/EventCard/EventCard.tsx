@@ -25,7 +25,10 @@ const EventCardHeader: React.FC<CardHeaderProps> = ({ event, isDeleteEnabled, is
   const { fileUrl, isPending } = useFileUrl(event.eventId, event.bannerLink);
 
   return (
-    <div className="h-1/2 group-hover:opacity-70 transition" style={{ backgroundImage: `url(${fileUrl})`, backgroundSize: 'cover' }}>
+    <div
+      className="h-1/2 group-hover:opacity-70 transition"
+      style={{ backgroundImage: fileUrl ? `url(${fileUrl})` : undefined, backgroundSize: 'cover' }}
+    >
       {isPending && <Skeleton className="w-full h-full rounded-b-none" />}
       {isDeleteEnabled && (
         <div className="w-full flex p-2 justify-end">

@@ -118,3 +118,36 @@ export const hasOnlyValidKeys = (obj: unknown, validKeys: string[]): obj is Reco
   if (typeof obj !== 'object' || obj === null) return false;
   return Object.keys(obj).every((key) => validKeys.includes(key));
 };
+
+export const isPresignedUrlExpired = (url?: string | null, bufferSeconds = 30): boolean => {
+  if (!url) return true;
+  try {
+    const parsed = new URL(url);
+    const amzDate = parsed.searchParams.get('X-Amz-Date');
+    const amzExpires = parsed.searchParams.get('X-Amz-Expires');
+
+    if (amzDate && amzExpires) {
+      const year = parseInt(amzDate.substring(0, 4), 10);
+      const month = parseInt(amzDate.substring(4, 6), 10) - 1;
+      const day = parseInt(amzDate.substring(6, 8), 10);
+      const hour = parseInt(amzDate.substring(9, 11), 10);
+      const min = parseInt(amzDate.substring(11, 13), 10);
+      const sec = parseInt(amzDate.substring(13, 15), 10);
+
+      const creationTimeMs = Date.UTC(year, month, day, hour, min, sec);
+      const durationMs = parseInt(amzExpires, 10) * 1000;
+      const expirationTimeMs = creationTimeMs + durationMs;
+
+      return Date.now() >= expirationTimeMs - bufferSeconds * 1000;
+    }
+
+    const expires = parsed.searchParams.get('Expires');
+    if (expires) {
+      const expirationTimeMs = parseInt(expires, 10) * 1000;
+      return Date.now() >= expirationTimeMs - bufferSeconds * 1000;
+    }
+  } catch {
+    // If not a valid URL
+  }
+  return false;
+};
